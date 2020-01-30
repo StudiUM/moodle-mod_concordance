@@ -4,18 +4,49 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
       <TABLE NAME="concordance" COMMENT="Defines concordance">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
-      </INDEXES>
-    </TABLE>
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+          <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="descriptionpanelist" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="descriptionpanelistformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="descriptionstudent" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="descriptionstudentformat" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="cmorigin" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="coursegenerated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="cmgenerated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+          <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+          <KEY NAME="coursegenerated" TYPE="foreign" FIELDS="coursegenerated" REFTABLE="course" REFFIELDS="id"/>
+          <KEY NAME="cmorigin" TYPE="foreign" FIELDS="cmorigin" REFTABLE="course_modules" REFFIELDS="id"/>
+          <KEY NAME="cmgenerated" TYPE="foreign" FIELDS="cmgenerated" REFTABLE="course_modules" REFFIELDS="id"/>
+        </KEYS>
+      </TABLE>
+      <TABLE NAME="concordance_panelist" COMMENT="Defines panelist">
+        <FIELDS>
+          <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+          <FIELD NAME="concordance" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="firstname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="lastname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+          <FIELD NAME="nbemailsent" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="bibliography" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+          <FIELD NAME="bibliographyformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+          <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        </FIELDS>
+        <KEYS>
+          <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+          <KEY NAME="concordance" TYPE="foreign" FIELDS="concordance" REFTABLE="concordance" REFFIELDS="id"/>
+          <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        </KEYS>
+        <INDEXES>
+          <INDEX NAME="email" UNIQUE="false" FIELDS="email"/>
+          <INDEX NAME="userconcordance" UNIQUE="true" FIELDS="concordance, email"/>
+        </INDEXES>
+      </TABLE>
   </TABLES>
 </XMLDB>
