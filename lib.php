@@ -78,6 +78,22 @@ function concordance_add_instance($data, $mform) {
     global $DB;
 
     $cmid = $data->coursemodule;
+    $context = context_module::instance($cmid);
+    // Prevent teacher to change concordance visibility.
+    $id = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
+    assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
+
+    if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
+        $data->descriptionpanelist = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance',
+                'descriptionpanelist', 0, concordance_get_editor_options($context), $data->descriptionpanelisteditor['text']);
+        $data->descriptionpanelistformat = $data->descriptionpanelisteditor['format'];
+    }
+
+    if ($draftitemid = $data->descriptionstudenteditor['itemid']) {
+        $data->descriptionstudent = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance', 'descriptionstudent',
+                0, concordance_get_editor_options($context), $data->descriptionstudenteditor['text']);
+        $data->descriptionstudentformat = $data->descriptionstudenteditor['format'];
+    }
 
     $data->id = $DB->insert_record('concordance', $data);
 
@@ -104,6 +120,19 @@ function concordance_update_instance($data, $mform) {
 
     $data->timemodified = time();
     $data->id           = $data->instance;
+
+    $context = context_module::instance($cmid);
+    if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
+        $data->descriptionpanelist = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance',
+                'descriptionpanelist', 0, concordance_get_editor_options($context), $data->descriptionpanelisteditor['text']);
+        $data->descriptionpanelistformat = $data->descriptionpanelisteditor['format'];
+    }
+
+    if ($draftitemid = $data->descriptionstudenteditor['itemid']) {
+        $data->descriptionstudent = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance', 'descriptionstudent',
+                0, concordance_get_editor_options($context), $data->descriptionstudenteditor['text']);
+        $data->descriptionstudentformat = $data->descriptionstudenteditor['format'];
+    }
 
     $DB->update_record('concordance', $data);
 
@@ -197,4 +226,15 @@ function concordance_view($concordance, $course, $cm, $context) {
     // Completion.
     $completion = new completion_info($course);
     $completion->set_module_viewed($cm);
+}
+
+/**
+ * Returns the option for the editor to use in the activity parameters form.
+ * @param context $context
+ * @return array
+ */
+function concordance_get_editor_options($context) {
+    global $CFG;
+    return array('subdirs' => 1, 'maxbytes' => $CFG->maxbytes, 'maxfiles' => -1, 'changeformat' => 1, 'context' => $context,
+        'noclean' => 1, 'trusttext' => 0);
 }
