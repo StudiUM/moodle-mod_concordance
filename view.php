@@ -40,6 +40,7 @@ if ($s) {
     $cm = get_coursemodule_from_id('concordance', $id, 0, true, MUST_EXIST);
     $concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
 }
+$concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
@@ -68,5 +69,7 @@ $output = $PAGE->get_renderer('mod_concordance');
 echo $output->header();
 
 echo $output->heading(format_string($concordance->name), 2);
+
+echo $output->render_wizard($concordancepersistent);
 
 echo $output->footer();

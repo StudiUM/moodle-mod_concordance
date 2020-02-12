@@ -28,6 +28,7 @@ namespace mod_concordance\output;
 defined('MOODLE_INTERNAL') || die;
 
 use plugin_renderer_base;
+use mod_concordance\concordance;
 
 /**
  * Renderer class for mod_concordance plugin.
@@ -39,4 +40,52 @@ use plugin_renderer_base;
  */
 class renderer extends plugin_renderer_base {
 
+    /**
+     * Defer to template to render the wizard.
+     *
+     * @param concordance $concordance Concordance instance we want to show the wizard of.
+     * @return string html for the page
+     */
+    public function render_wizard($concordance) {
+        $data = new \stdClass();
+
+        $phasesetup = array();
+        $phasesetup['name'] = get_string('phase_setup', 'mod_concordance');
+        $phasesetup['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_SETUP)->out(false);
+        $phasesetup['switchnext'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_PANELISTS)->out(false);
+        $phasesetup['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_SETUP) ? true : false;
+        $phasesetup['islast'] = false;
+        $phasesetup['tasks'] = array();
+        $status = $concordance->get_status_settings();
+        $phasesetup['tasks'][] = array('name' => get_string('task_editsettings', 'mod_concordance'),
+            'url' => $concordance->updatemod_url()->out(false), 'statusname' => 'task'.$status, 'statusclass' => $status);
+        $phasesetup['tasks'][] = array('name' => get_string('task_quizselection', 'mod_concordance'), 'url' => '',
+            'statusname' => 'tasktodo', 'statusclass' => 'todo');
+        $phasesetup['tasks'][] = array('name' => get_string('task_panelistsmanagement', 'mod_concordance'), 'url' => '',
+            'statusname' => 'tasktodo', 'statusclass' => 'todo');
+
+        $phasepanelists = array();
+        $phasepanelists['name'] = get_string('phase_panelists', 'mod_concordance');
+        $phasepanelists['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_PANELISTS)->out(false);
+        $phasepanelists['switchnext'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_STUDENTS)->out(false);
+        $phasepanelists['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_PANELISTS) ? true : false;
+        $phasepanelists['islast'] = false;
+        $phasepanelists['tasks'] = array();
+        $phasepanelists['tasks'][] = array('name' => get_string('task_contactpanelists', 'mod_concordance'), 'url' => '',
+            'statusname' => 'taskfail', 'statusclass' => 'fail');
+
+        $phasestudents = array();
+        $phasestudents['name'] = get_string('phase_students', 'mod_concordance');
+        $phasestudents['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_STUDENTS)->out(false);
+        $phasestudents['switchnext'] = null;
+        $phasestudents['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_STUDENTS) ? true : false;
+        $phasestudents['islast'] = true;
+        $phasestudents['tasks'] = array();
+        $phasestudents['tasks'][] = array('name' => get_string('task_generatequiz', 'mod_concordance'), 'url' => '',
+            'statusname' => 'taskfail', 'statusclass' => 'fail');
+
+        $data->phases = array($phasesetup, $phasepanelists, $phasestudents);
+
+        return parent::render_from_template('mod_concordance/wizard', $data);
+    }
 }

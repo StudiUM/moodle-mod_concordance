@@ -28,6 +28,7 @@ namespace mod_concordance;
 defined('MOODLE_INTERNAL') || die();
 
 use \core\persistent;
+use \moodle_url;
 
 /**
  * Class for loading/storing concordance from the DB.
@@ -41,6 +42,30 @@ class concordance extends persistent {
     /** Table name for concordance persistency */
     const TABLE = 'concordance';
 
+    /** Concordance phase : Setup. */
+    const CONCORDANCE_PHASE_SETUP = 1;
+
+    /** Concordance phase : Panelists are answering. */
+    const CONCORDANCE_PHASE_PANELISTS = 2;
+
+    /** Concordance phase : Preparation for students. */
+    const CONCORDANCE_PHASE_STUDENTS = 3;
+
+    /** Concordance task status : To do. */
+    const CONCORDANCE_TASKSTATUS_TODO = 'todo';
+
+    /** Concordance task status : Done. */
+    const CONCORDANCE_TASKSTATUS_DONE = 'done';
+
+    /** Concordance task status : Failed. */
+    const CONCORDANCE_TASKSTATUS_FAILED = 'fail';
+
+    /** Concordance task status : Info. */
+    const CONCORDANCE_TASKSTATUS_INFO = 'info';
+
+    /** @var stdClass $cm The course module. */
+    protected $cm = null;
+
     /**
      * Return the definition of the properties of this model.
      *
@@ -53,28 +78,103 @@ class concordance extends persistent {
             ),
             'cmorigin' => array(
                 'type' => PARAM_INT,
+                'null' => NULL_ALLOWED,
+                'default' => null
             ),
             'coursegenerated' => array(
                 'type' => PARAM_INT,
+                'null' => NULL_ALLOWED,
+                'default' => null
             ),
             'cmgenerated' => array(
                 'type' => PARAM_INT,
+                'null' => NULL_ALLOWED,
+                'default' => null
             ),
             'name' => array(
                 'type' => PARAM_TEXT
             ),
             'descriptionpanelist' => array(
-                'type' => PARAM_RAW
+                'type' => PARAM_RAW,
+                'null' => NULL_ALLOWED
             ),
             'descriptionpanelistformat' => array(
                 'type' => PARAM_INT
             ),
             'descriptionstudent' => array(
-                'type' => PARAM_RAW
+                'type' => PARAM_RAW,
+                'null' => NULL_ALLOWED
             ),
             'descriptionstudentformat' => array(
                 'type' => PARAM_INT
             ),
+            'activephase' => array(
+                'choices' => array(
+                    self::CONCORDANCE_PHASE_SETUP,
+                    self::CONCORDANCE_PHASE_PANELISTS,
+                    self::CONCORDANCE_PHASE_STUDENTS,
+                ),
+                'type' => PARAM_INT,
+                'default' => self::CONCORDANCE_PHASE_SETUP,
+            ),
         );
+    }
+
+    /**
+     * Get the status for the settings task (if all fields are filled, the task is done, otherwise it is 'to do').
+     *
+     * @return string
+     */
+    public function get_status_settings() {
+        if (empty($this->get('name')) || empty($this->get('descriptionpanelist')) || empty($this->get('descriptionstudent'))) {
+            if ($this->get('activephase') == self::CONCORDANCE_PHASE_SETUP) {
+                return self::CONCORDANCE_TASKSTATUS_TODO;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            }
+        } else {
+            return self::CONCORDANCE_TASKSTATUS_DONE;
+        }
+    }
+
+    /**
+     * Returns the course module for this concordance instance.
+     *
+     * @return stdClass
+     */
+    public function get_cm() {
+        if (is_null($this->cm)) {
+            $this->cm = get_coursemodule_from_instance('concordance', $this->get('id'), $this->get('course'), true, MUST_EXIST);
+        }
+        return $this->cm;
+    }
+
+    /**
+     * Returns the moodle_url of this concordance's view page.
+     *
+     * @return moodle_url of this concordance's view page
+     */
+    public function view_url() {
+        return new moodle_url('/mod/concordance/view.php', array('id' => $this->get_cm()->id));
+    }
+
+    /**
+     * Returns the moodle_url of this concordance's switch phase page.
+     *
+     * @param int $phase The internal phase code
+     * @return moodle_url of the script to change the current phase to $phasecode
+     */
+    public function switchphase_url($phase) {
+        $phase = clean_param($phase, PARAM_INT);
+        return new moodle_url('/mod/concordance/switchphase.php', array('cmid' => $this->get_cm()->id, 'phase' => $phase));
+    }
+
+    /**
+     * Returns the moodle_url of the mod_edit form for this concordance.
+     *
+     * @return moodle_url of the mod_edit form
+     */
+    public function updatemod_url() {
+        return new moodle_url('/course/modedit.php', array('update' => $this->get_cm()->id, 'return' => 1));
     }
 }
