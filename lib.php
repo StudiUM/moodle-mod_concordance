@@ -96,6 +96,9 @@ function concordance_add_instance($data, $mform) {
     }
 
     $data->id = $DB->insert_record('concordance', $data);
+    // Create course for panelists.
+    $data->coursegenerated = generate_course_for_panelists($data);
+    $DB->update_record('concordance', $data);
 
     // We need to use context now, so we need to make sure all needed info is already in db.
     $DB->set_field('course_modules', 'instance', $data->id, array('id' => $cmid));
@@ -104,6 +107,32 @@ function concordance_add_instance($data, $mform) {
     \core_completion\api::update_completion_date_event($data->coursemodule, 'concordance', $data->id, $completiontimeexpected);
 
     return $data->id;
+}
+
+/**
+ * Generate course for panelists.
+ *
+ * @param object $data
+ * @return int course id
+ */
+function generate_course_for_panelists($data) {
+    global $DB;
+    $categoryid = get_config('mod_concordance', 'categorypanelcourses');
+    $course = new \stdClass();
+    $course->category = $categoryid;
+    $course->visible = 1;
+    $identifier = $data->course . '-' . $data->id;
+    $i = 1;
+    $shortname = $identifier;
+    while ($found = $DB->record_exists('course', array('shortname' => $shortname))) {
+        $shortname = $identifier . '(' . $i . ')';
+        $i++;
+    }
+    $course->shortname = $shortname;
+    $course->fullname = $shortname;
+
+    $course = create_course($course);
+    return intval($course->id);
 }
 
 /**
@@ -159,6 +188,12 @@ function concordance_delete_instance($id) {
     \core_completion\api::update_completion_date_event($cm->id, 'concordance', $concordance->id, null);
 
     $DB->delete_records('concordance', array('id' => $concordance->id));
+    // Delete course for panelists.
+    if ($concordance->coursegenerated) {
+        delete_course($concordance->coursegenerated, false);
+        // Update course count in categories.
+        fix_course_sortorder();
+    }
 
     return true;
 }
