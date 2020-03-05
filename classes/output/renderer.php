@@ -61,8 +61,9 @@ class renderer extends plugin_renderer_base {
             'url' => $concordance->updatemod_url()->out(false), 'statusname' => 'task'.$status, 'statusclass' => $status);
         $phasesetup['tasks'][] = array('name' => get_string('task_quizselection', 'mod_concordance'), 'url' => '',
             'statusname' => 'tasktodo', 'statusclass' => 'todo');
-        $phasesetup['tasks'][] = array('name' => get_string('task_panelistsmanagement', 'mod_concordance'), 'url' => '',
-            'statusname' => 'tasktodo', 'statusclass' => 'todo');
+        $status = $concordance->get_status_panelists();
+        $phasesetup['tasks'][] = array('name' => get_string('task_panelistsmanagement', 'mod_concordance'),
+            'url' => $concordance->panelists_url()->out(false), 'statusname' => 'tasktodo', 'statusclass' => $status);
 
         $phasepanelists = array();
         $phasepanelists['name'] = get_string('phase_panelists', 'mod_concordance');
@@ -87,5 +88,17 @@ class renderer extends plugin_renderer_base {
         $data->phases = array($phasesetup, $phasepanelists, $phasestudents);
 
         return parent::render_from_template('mod_concordance/wizard', $data);
+    }
+
+    /**
+     * Defer to template.
+     *
+     * @param manage_panelists_page $page
+     *
+     * @return string html for the page
+     */
+    public function render_manage_panelists_page(manage_panelists_page $page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('mod_concordance/manage_panelists_page', $data);
     }
 }

@@ -213,3 +213,7 @@
         border-bottom: 1px solid #ddd;
     }
 }
+
+.path-mod-concordance table.managepanelists td.actions .singlebutton {
+    display: inline-block;
+}

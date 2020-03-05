@@ -52,7 +52,9 @@ class panelist extends persistent {
                 'type' => PARAM_INT
             ),
             'userid' => array(
-                'type' => PARAM_INT
+                'type' => PARAM_INT,
+                'default' => null,
+                'null' => NULL_ALLOWED,
             ),
             'firstname' => array(
                 'type' => PARAM_TEXT
@@ -61,10 +63,12 @@ class panelist extends persistent {
                 'type' => PARAM_TEXT
             ),
             'email' => array(
-                'type' => PARAM_TEXT
+                'type' => PARAM_EMAIL
             ),
             'nbemailsent' => array(
-                'type' => PARAM_INT
+                'type' => PARAM_INT,
+                'default' => null,
+                'null' => NULL_ALLOWED,
             ),
             'bibliography' => array(
                 'type' => PARAM_RAW
@@ -73,5 +77,16 @@ class panelist extends persistent {
                 'type' => PARAM_INT
             ),
         );
+    }
+
+    /**
+     * Count the number of panelists for a concordance.
+     *
+     * @param  int $concordanceid The syllabus ID
+     * @return int
+     */
+    public static function count_records_for_concordance($concordanceid) {
+        $filters = array('concordance' => $concordanceid);
+        return self::count_records($filters);
     }
 }

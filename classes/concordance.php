@@ -138,6 +138,23 @@ class concordance extends persistent {
     }
 
     /**
+     * Get the status for the panelists task (if all fields are filled, the task is done, otherwise it is 'to do').
+     *
+     * @return string
+     */
+    public function get_status_panelists() {
+        if (\mod_concordance\panelist::count_records_for_concordance($this->get('id')) < 1) {
+            if ($this->get('activephase') == self::CONCORDANCE_PHASE_SETUP) {
+                return self::CONCORDANCE_TASKSTATUS_TODO;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            }
+        } else {
+            return self::CONCORDANCE_TASKSTATUS_DONE;
+        }
+    }
+
+    /**
      * Returns the course module for this concordance instance.
      *
      * @return stdClass
@@ -176,5 +193,14 @@ class concordance extends persistent {
      */
     public function updatemod_url() {
         return new moodle_url('/course/modedit.php', array('update' => $this->get_cm()->id, 'return' => 1));
+    }
+
+    /**
+     * Returns the moodle_url of the panelists management page.
+     *
+     * @return moodle_url of the panelists management page
+     */
+    public function panelists_url() {
+        return new moodle_url('/mod/concordance/panelists.php', ['cmid' => $this->get_cm()->id]);
     }
 }

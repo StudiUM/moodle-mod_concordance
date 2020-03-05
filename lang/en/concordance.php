@@ -23,12 +23,16 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['addnewpanelist'] = 'Add new panelist';
+$string['bibliography'] = 'Bibliography';
 $string['categorypanelcourses'] = 'Category for courses for panels of experts';
 $string['concordance:addinstance'] = 'Add a new concordance formation administration';
 $string['concordance:view'] = 'View concordance formation administration';
 $string['configcategorypanelcourses'] = 'Courses used by the panels of experts in the Concordance activity will be placed in this category';
+$string['deletepanelistconfirm'] = 'Are you sure you want to delete this panelist ?';
 $string['descriptionpanelist'] = 'Description for the panelists';
 $string['descriptionstudent'] = 'Description for the students';
+$string['editpanelist'] = 'Edit panelist';
 $string['eventconcordanceupdated'] = 'Concordance updated';
 $string['indicator:cognitivedepth'] = 'Concordance cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Concordance activity.';
@@ -38,8 +42,14 @@ $string['modulename'] = 'Administration of a concordance formation';
 $string['modulename_help'] = 'Concordance help';
 $string['modulename_link'] = 'mod/concordance/view';
 $string['modulenameplural'] = 'Administration of concordance formations';
+$string['nopanelists'] = 'No panelist have been created yet.';
 $string['page-mod-concordance-view'] = 'Concordance module main page';
 $string['page-mod-concordance-x'] = 'Any concordance module page';
+$string['panelistmanagement'] = 'Panelist management';
+$string['panelistcreated'] = 'Panelist created';
+$string['panelistdeleted'] = 'Panelist successfully deleted';
+$string['panelistslist'] = 'List of panelists';
+$string['panelistupdated'] = 'Panelist updated';
 $string['phase_setup'] = 'Setup phase';
 $string['phase_panelists'] = 'Answers by panelists phase';
 $string['phase_students'] = 'Generation for students phase';
