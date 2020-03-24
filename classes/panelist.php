@@ -89,4 +89,25 @@ class panelist extends persistent {
         $filters = array('concordance' => $concordanceid);
         return self::count_records($filters);
     }
+
+    /**
+     * Hook to execute after a create.
+     *
+     * @return void
+     */
+    protected function after_create() {
+        \mod_concordance\panelistmanager::panelistcreated($this);
+    }
+
+    /**
+     * Hook to execute after a delete.
+     *
+     * @param bool $result Whether or not the delete was successful.
+     * @return void
+     */
+    protected function after_delete($result) {
+        if ($result) {
+            \mod_concordance\panelistmanager::panelistdeleted($this->get('userid'));
+        }
+    }
 }

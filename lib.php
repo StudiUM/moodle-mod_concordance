@@ -187,9 +187,10 @@ function concordance_delete_instance($id) {
     $cm = get_coursemodule_from_instance('concordance', $id);
     \core_completion\api::update_completion_date_event($cm->id, 'concordance', $concordance->id, null);
 
-    $DB->delete_records('concordance', array('id' => $concordance->id));
+    $concordancepersistence = new \mod_concordance\concordance($id);
+    $concordancepersistence->delete();
     // Delete course for panelists.
-    if ($concordance->coursegenerated) {
+    if ($concordancepersistence->get('coursegenerated')) {
         delete_course($concordance->coursegenerated, false);
         // Update course count in categories.
         fix_course_sortorder();

@@ -203,4 +203,19 @@ class concordance extends persistent {
     public function panelists_url() {
         return new moodle_url('/mod/concordance/panelists.php', ['cmid' => $this->get_cm()->id]);
     }
+
+    /**
+     * Hook to execute after a delete.
+     *
+     * @param bool $result Whether or not the delete was successful.
+     * @return void
+     */
+    protected function after_delete($result) {
+        if ($result) {
+            $panelists = \mod_concordance\panelist::get_records(['concordance' => $this->get('id')]);
+            foreach ($panelists as $panelist) {
+                $panelist->delete();
+            }
+        }
+    }
 }
