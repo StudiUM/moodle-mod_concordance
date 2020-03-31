@@ -15,21 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Concordance module version information
+ * This file defines observers needed.
  *
  * @package    mod_concordance
  * @copyright  2020 Université de Montréal
- * @author     Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2020040200;
-$plugin->requires = 2018112800;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0.0 (Build 2020012100)';
-$plugin->component = 'mod_concordance';
-$plugin->dependencies = array(
-    'qtype_tcs' => ANY_VERSION
+// List of observers.
+$observers = array(
+    array(
+        'eventname'   => '\core\event\course_module_deleted',
+        'callback'    => '\mod_concordance\concordance::course_module_deleted',
+    )
 );

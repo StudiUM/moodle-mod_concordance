@@ -138,6 +138,30 @@ class concordance extends persistent {
     }
 
     /**
+     * Get the status for the selection quiz task.
+     *
+     * @param stdClass $data Data exported from select_quiz_page
+     * @return string
+     */
+    public function get_status_selectionquiz($data = null) {
+        if (empty($this->get_cmidorigin())) {
+            if ($this->get('activephase') == self::CONCORDANCE_PHASE_SETUP) {
+                return self::CONCORDANCE_TASKSTATUS_TODO;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            }
+        } else {
+            if ($data
+                && ($data->hasconcordancetype === false
+                    || $data->visible == true)) {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_DONE;
+            }
+        }
+    }
+
+    /**
      * Get the status for the panelists task (if all fields are filled, the task is done, otherwise it is 'to do').
      *
      * @return string
@@ -164,6 +188,20 @@ class concordance extends persistent {
             $this->cm = get_coursemodule_from_instance('concordance', $this->get('id'), $this->get('course'), true, MUST_EXIST);
         }
         return $this->cm;
+    }
+
+    /**
+     * Returns the course module id origin for this concordance.
+     *
+     * @return int
+     */
+    public function get_cmidorigin() {
+        $cmorigin = get_coursemodule_from_id('quiz', $this->get('cmorigin'));
+        if ($cmorigin) {
+            return $this->get('cmorigin');
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -205,6 +243,15 @@ class concordance extends persistent {
     }
 
     /**
+     * Returns the moodle_url of the quiz selection page.
+     *
+     * @return moodle_url of of the quiz selection page
+     */
+    public function selectquiz_url() {
+        return new moodle_url('/mod/concordance/selectquiz.php', ['cmid' => $this->get_cm()->id]);
+    }
+
+    /**
      * Hook to execute after a delete.
      *
      * @param bool $result Whether or not the delete was successful.
@@ -216,6 +263,49 @@ class concordance extends persistent {
             foreach ($panelists as $panelist) {
                 $panelist->delete();
             }
+        }
+    }
+
+    /**
+     * Returns the list of quiz in course.
+     *
+     * @param object $course Course object
+     * @return array Array of quiz course modules
+     */
+    public static function quizlist($course) {
+        $modinfo = get_fast_modinfo($course);
+        $quizlist = ['' => get_string('choose')];
+        foreach ($modinfo->instances['quiz'] as $cm) {
+            if (!$cm->uservisible) {
+                continue;
+            }
+            // Quiz name.
+            $modname = $cm->get_formatted_name();
+            // Display the hidden text if necessary.
+            if (!$cm->visible) {
+                $modname .= ' ' . get_string('hiddenwithbrackets');
+            }
+            $quizlist[$cm->id] = $modname;
+        }
+        return $quizlist;
+    }
+
+    /**
+     * Observer that monitors course module deleted event.
+     *
+     * @param \core\event\course_module_deleted $event the event object.
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+        global $DB;
+        $cmid = $event->contextinstanceid;
+        $data = $event->get_data();
+        if (isset($data['other'])
+                && isset($data['other']['modulename'])
+                && $data['other']['modulename'] === 'quiz') {
+            $updatesql = " UPDATE {concordance}
+                              SET cmorigin = NULL
+                            WHERE cmorigin = :cmid";
+            $DB->execute($updatesql, ['cmid' => $cmid]);
         }
     }
 }

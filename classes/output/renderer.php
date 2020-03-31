@@ -58,9 +58,40 @@ class renderer extends plugin_renderer_base {
         $phasesetup['tasks'] = array();
         $status = $concordance->get_status_settings();
         $phasesetup['tasks'][] = array('name' => get_string('task_editsettings', 'mod_concordance'),
-            'url' => $concordance->updatemod_url()->out(false), 'statusname' => 'task'.$status, 'statusclass' => $status);
-        $phasesetup['tasks'][] = array('name' => get_string('task_quizselection', 'mod_concordance'), 'url' => '',
-            'statusname' => 'tasktodo', 'statusclass' => 'todo');
+            'url' => $concordance->updatemod_url()->out(false),
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+        // Quiz selection.
+        $dataquiz = null;
+        if (!empty($concordance->get_cmidorigin())) {
+            $page = new \mod_concordance\output\select_quiz_page($concordance->get_cmidorigin());
+            $dataquiz = $page->export_for_template($this);
+        }
+        $status = $concordance->get_status_selectionquiz($dataquiz);
+        $phasesetup['tasks'][] = array('name' => get_string('task_quizselection', 'mod_concordance'),
+            'url' => $concordance->selectquiz_url()->out(false),
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+        if ($dataquiz) {
+            $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
+            $statusname = get_string('task' . $statusinfo, 'mod_concordance');
+            if ($dataquiz->hasconcordancetype === false) {
+                $phasesetup['tasks'][] = [
+                    'name' => get_string('quizdoesnotcontainconcordancequestion', 'mod_concordance'),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+            if ($dataquiz->hasothertype === true) {
+                $phasesetup['tasks'][] = [
+                    'name' => get_string('quizcontainsotherquestion', 'mod_concordance'),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+            if ($dataquiz->visible == true) {
+                $phasesetup['tasks'][] = [
+                    'name' => get_string('quizvisibletostudent', 'mod_concordance'),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+        }
         $status = $concordance->get_status_panelists();
         $phasesetup['tasks'][] = array('name' => get_string('task_panelistsmanagement', 'mod_concordance'),
             'url' => $concordance->panelists_url()->out(false), 'statusname' => 'tasktodo', 'statusclass' => $status);
@@ -100,5 +131,17 @@ class renderer extends plugin_renderer_base {
     public function render_manage_panelists_page(manage_panelists_page $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('mod_concordance/manage_panelists_page', $data);
+    }
+
+    /**
+     * Defer to template.
+     *
+     * @param select_quiz_page $page
+     *
+     * @return string html for the page
+     */
+    public function render_select_quiz_page(select_quiz_page $page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('mod_concordance/select_quiz_page', $data);
     }
 }

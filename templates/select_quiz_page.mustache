@@ -1,0 +1,51 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    Select quiz template.
+
+    Context variables required for this template:
+    * hasconcordancetype
+    * hasothertype
+    * visible
+}}
+
+{{#hasconcordancetype}}
+    <div class="alert alert-success alert-block fade in " role="alert" data-aria-autofocus="true">
+        <i class="fa fa-check-circle" aria-hidden="true"></i>
+        {{#str}}quizcontainsconcordancequestion, mod_concordance{{/str}}
+    </div>
+{{/hasconcordancetype}}
+{{^hasconcordancetype}}
+    <div class="alert alert-danger alert-block fade in " role="alert" data-aria-autofocus="true">
+        <i class="fa fa-times-circle" aria-hidden="true"></i>
+        {{#str}}quizdoesnotcontainconcordancequestion, mod_concordance{{/str}}
+    </div>
+{{/hasconcordancetype}}
+{{#hasothertype}}
+    <div class="alert alert-warning alert-block fade in " role="alert" data-aria-autofocus="true">
+        <i class="fa fa-exclamation-circle aria-hidden="true"></i>
+        {{#str}}quizcontainsotherquestion, mod_concordance{{/str}}
+    </div>
+{{/hasothertype}}
+{{#visible}}
+    <div class="alert alert-danger alert-block fade in " role="alert" data-aria-autofocus="true">
+        <i class="fa fa-times-circle" aria-hidden="true"></i>
+        {{#str}}quizvisibletostudent, mod_concordance{{/str}}
+    </div>
+{{/visible}}
+
+
