@@ -110,4 +110,25 @@ class panelist extends persistent {
             \mod_concordance\panelistmanager::panelistdeleted($this->get('userid'));
         }
     }
+
+    /**
+     * Get user key.
+     *
+     * @return string
+     */
+    public function get_user_key() {
+        if ($this->get('userid')) {
+            return get_user_key('concordancepanelist', $this->get('userid'));
+        }
+        return null;
+    }
+
+    /**
+     * Get url of quiz access page.
+     *
+     * @return moodle_url The quiz access page.
+     */
+    public function get_quizaccess_url() {
+        return new moodle_url('/mod/concordance/quizaccess.php', array('key' => $this->get_user_key()));
+    }
 }
