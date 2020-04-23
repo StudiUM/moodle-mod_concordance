@@ -103,8 +103,8 @@ class renderer extends plugin_renderer_base {
         $phasepanelists['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_PANELISTS) ? true : false;
         $phasepanelists['islast'] = false;
         $phasepanelists['tasks'] = array();
-        $phasepanelists['tasks'][] = array('name' => get_string('task_contactpanelists', 'mod_concordance'), 'url' => '',
-            'statusname' => 'taskfail', 'statusclass' => 'fail');
+        $phasepanelists['tasks'][] = array('name' => get_string('task_contactpanelists', 'mod_concordance'),
+            'url' => $concordance->contact_panelists_url()->out(false), 'statusname' => 'taskfail', 'statusclass' => 'fail');
 
         $phasestudents = array();
         $phasestudents['name'] = get_string('phase_students', 'mod_concordance');
@@ -131,6 +131,18 @@ class renderer extends plugin_renderer_base {
     public function render_manage_panelists_page(manage_panelists_page $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('mod_concordance/manage_panelists_page', $data);
+    }
+
+    /**
+     * Defer to template.
+     *
+     * @param contact_panelists_page $page
+     *
+     * @return string html for the page
+     */
+    public function render_contact_panelists_page(contact_panelists_page $page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('mod_concordance/contact_panelists_page', $data);
     }
 
     /**

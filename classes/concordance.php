@@ -243,6 +243,15 @@ class concordance extends persistent {
     }
 
     /**
+     * Returns the moodle_url of the contact panelists page.
+     *
+     * @return moodle_url of the contact panelists page
+     */
+    public function contact_panelists_url() {
+        return new moodle_url('/mod/concordance/contactpanelists.php', ['cmid' => $this->get_cm()->id]);
+    }
+
+    /**
      * Returns the moodle_url of the quiz selection page.
      *
      * @return moodle_url of of the quiz selection page

@@ -1,0 +1,45 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_concordance/send_bulk_email
+
+    Template for the send bulk email modal.
+
+    Context variables required for this template:
+}}
+<form>
+<p>
+<label for="subject-bulk-email">
+{{#str}}subject, mod_concordance{{/str}}
+</label>
+    <input type="text" id="subject-bulk-email" class="form-control" value="{{#str}}defaultemailsubject, mod_concordance{{/str}}"/>
+</p>
+<p>
+<label for="body-bulk-email">
+{{#str}}message, mod_concordance{{/str}}
+</label>
+<textarea id="body-bulk-email" rows="7" data-max-rows="10" data-auto-rows="true" cols="30" class="form-control">{{#str}}defaultemailbody, mod_concordance{{/str}}</textarea>
+</p>
+<p class="h6">
+   <small>{{#str}}sendemailnote, mod_concordance{{/str}}</small>
+</p>
+</form>
+{{#js}}
+require(['core/auto_rows'], function(AutoRows) {
+    AutoRows.init(document.getElementById('body-bulk-email'));
+});
+{{/js}}

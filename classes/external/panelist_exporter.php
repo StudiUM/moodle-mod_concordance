@@ -98,9 +98,13 @@ class panelist_exporter extends \core\external\persistent_exporter {
      * @return array
      */
     protected function get_other_values(\renderer_base $output) {
-        $otherproperties = [];
-        $otherproperties['editbutton'] = $this->related['buttons']->editbutton;
-        $otherproperties['deletebutton'] = $this->related['buttons']->deletebutton;
+        $otherproperties = ['editbutton' => '', 'deletebutton' => ''];
+        if (isset($this->related['buttons']->editbutton)) {
+            $otherproperties['editbutton'] = $this->related['buttons']->editbutton;
+        }
+        if (isset($this->related['buttons']->deletebutton)) {
+            $otherproperties['deletebutton'] = $this->related['buttons']->deletebutton;
+        }
 
         return $otherproperties;
     }
