@@ -24,6 +24,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_concordance\panelist;
+use mod_concordance\panelistmanager;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -44,6 +47,7 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
     protected function define_structure() {
         $paths = array();
         $paths[] = new restore_path_element('concordance', '/activity/concordance');
+        $paths[] = new restore_path_element('concordance_panelist', '/activity/concordance/panelists/panelist');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -67,11 +71,50 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
         $newitemid = $DB->insert_record('concordance', $data);
         // Immediately after inserting "activity" record, call this.
         $this->apply_activity_instance($newitemid);
+
+        $data->id = $newitemid;
+        $data->coursegenerated = generate_course_for_panelists($data);
+        $DB->update_record('concordance', $data);
+
+        // Prevent teacher to change concordance visibility.
+        $context = context_module::instance($this->task->get_moduleid());
+        $id = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
+        assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
+        $id = $DB->get_field('role', 'id', array('shortname' => 'associateeditingteacher'));
+        assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
+
+        // EVOSTDM-2091 ou ultérieur : TODO traiter 'cmorigin' et 'cmgenerated'.
+    }
+
+    /**
+     * Process syllabus concordance panelist.
+     *
+     * @param stdClass $data
+     */
+    protected function process_concordance_panelist($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->concordance = $this->get_new_parentid('concordance');
+        $data->nbemailsent = 0;
+
+        $newitemid = $DB->insert_record('concordance_panelist', $data);
+        $panelist = new panelist($newitemid);
+        panelistmanager::panelistcreated($panelist);
+
+        // Mapping is needed for add_related_files.
+        $this->set_mapping('concordance_panelist', $oldid, $newitemid, true);
     }
 
     /**
      * After execute function.
      */
     protected function after_execute() {
+        // Add syllabus related files, no need to match by itemname (just internally handled context).
+        $this->add_related_files('mod_concordance', 'descriptionpanelist', null);
+        $this->add_related_files('mod_concordance', 'descriptionstudent', null);
+        $this->add_related_files('mod_concordance', 'bibliography', 'concordance_panelist');
     }
 }

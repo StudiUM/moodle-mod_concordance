@@ -82,6 +82,8 @@ function concordance_add_instance($data, $mform) {
     // Prevent teacher to change concordance visibility.
     $id = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
     assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
+    $id = $DB->get_field('role', 'id', array('shortname' => 'associateeditingteacher'));
+    assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
 
     if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
         $data->descriptionpanelist = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance',

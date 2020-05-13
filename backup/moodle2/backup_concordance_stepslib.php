@@ -43,10 +43,28 @@ class backup_concordance_activity_structure_step extends backup_activity_structu
     protected function define_structure() {
         // Define each element separated.
         $concordance = new backup_nested_element('concordance', array('id'), array(
-            'name', 'course', 'timemodified'));
+            'name', 'course', 'timemodified', 'descriptionpanelist', 'descriptionpanelistformat', 'descriptionstudent',
+            'descriptionstudentformat', 'activephase'));
+
+        // EVOSTDM-2091 ou ultérieur : TODO traiter 'cmorigin' et 'cmgenerated'.
+
+        $panelists = new backup_nested_element('panelists');
+
+        $panelist = new backup_nested_element('panelist', array('id'), array(
+            'firstname', 'lastname', 'email', 'nbemailsent', 'bibliography', 'bibliographyformat', 'timemodified'));
+
+        // Build the tree.
+        $concordance->add_child($panelists);
+        $panelists->add_child($panelist);
 
         // Define sources.
         $concordance->set_source_table('concordance', array('id' => backup::VAR_ACTIVITYID));
+        $panelist->set_source_table('concordance_panelist', array('concordance' => backup::VAR_PARENTID));
+
+        // Define file annotations.
+        $panelist->annotate_files('mod_concordance', 'descriptionpanelist', null); // This file area does not have an itemid.
+        $panelist->annotate_files('mod_concordance', 'descriptionstudent', null); // This file area does not have an itemid.
+        $panelist->annotate_files('mod_concordance', 'bibliography', null); // This file area does not have an itemid.
 
         // Return the root element, wrapped into standard activity structure.
         return $this->prepare_activity_structure($concordance);

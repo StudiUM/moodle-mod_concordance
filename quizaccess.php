@@ -42,7 +42,7 @@ if (!$panelist) {
 }
 $concordance = \mod_concordance\concordance::get_record(['id' => $panelist->get('concordance')]);
 // EVOSTDM-2091 remplacer l'url du cours par celle du quiz.
-//$quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated')]);
+// $quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated')]);.
 $quizurl = new moodle_url('/course/view.php', ['id' => $concordance->get('coursegenerated')]);
 if (isloggedin() and !$confirm) {
     if ($USER->id === $user->id) {
