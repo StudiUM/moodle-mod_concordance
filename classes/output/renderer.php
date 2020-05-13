@@ -103,8 +103,20 @@ class renderer extends plugin_renderer_base {
         $phasepanelists['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_PANELISTS) ? true : false;
         $phasepanelists['islast'] = false;
         $phasepanelists['tasks'] = array();
+        $status = $concordance->get_status_contactpanelists();
         $phasepanelists['tasks'][] = array('name' => get_string('task_contactpanelists', 'mod_concordance'),
-            'url' => $concordance->contact_panelists_url()->out(false), 'statusname' => 'taskfail', 'statusclass' => 'fail');
+            'url' => $concordance->contact_panelists_url()->out(false),
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+        $nbcontacted = \mod_concordance\panelist::count_panelistscontacted_for_concordance($concordance->get('id'));
+        $nbtotal = \mod_concordance\panelist::count_records_for_concordance($concordance->get('id'));
+        if ($nbcontacted > 0 && ($nbtotal > $nbcontacted) ) {
+            $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
+            $statusname = get_string('task' . $statusinfo, 'mod_concordance');
+            $phasepanelists['tasks'][] = [
+                'name' => get_string('atleastpanelistnotcontacted', 'mod_concordance'),
+                'url' => '',
+                'statusname' => $statusname, 'statusclass' => $statusinfo];
+        }
 
         $phasestudents = array();
         $phasestudents['name'] = get_string('phase_students', 'mod_concordance');

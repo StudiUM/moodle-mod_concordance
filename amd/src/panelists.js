@@ -120,14 +120,15 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
             } else {
                 titlePromise = Str.get_string('sendbulkmessage', 'core_message', users.length);
             }
-
+            var loadingtxtPromise = Str.get_string('loading');
             return $.when(
                     ModalFactory.create({
                         type: ModalFactory.types.SAVE_CANCEL,
                         body: Templates.render('mod_concordance/send_bulk_email', {})
                     }),
-                    titlePromise
-                    ).then(function (modal, title) {
+                    titlePromise,
+                    loadingtxtPromise
+                    ).then(function (modal, title, loadingtxt) {
                         // Keep a reference to the modal.
                         this.modal = modal;
 
@@ -139,7 +140,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
                             this.modal.getRoot().remove();
                         }.bind(this));
 
-                        this.modal.getRoot().on(ModalEvents.save, this.submitSendEmail.bind(this, users));
+                        this.modal.getRoot().on(ModalEvents.save, this.submitSendEmail.bind(this, users, loadingtxt));
                         var self = this;
                         this.modal.getRoot().on('change keyup', '#subject-bulk-email, #body-bulk-email', function () {
                             var messageText = self.modal.getRoot().find('form textarea').val();
@@ -165,17 +166,26 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
          * @method submitSendEmail
          * @private
          * @param {int[]} users
+         * @param String loadingtxt
          * @param {Event} e Form submission event.
          * @return {Promise}
          */
-        Panelists.prototype.submitSendEmail = function (users) {
-
+        Panelists.prototype.submitSendEmail = function (users, loadingtxt, e) {
+            e.preventDefault();
             var messageText = this.modal.getRoot().find('form textarea').val();
             var subject = this.modal.getRoot().find('form input').val();
-
+            var loading = '<i class="fa fa-spinner fa-pulse m-l-1"></i><span class="sr-only">' + loadingtxt + '</span>';
+            this.modal.getRoot().find('button[data-action="save"]').append(loading);
+            this.modal.getRoot().find('.modal-content').css('pointer-events', 'none');
             return Ajax.call([{
                 methodname: 'mod_concordance_send_message',
-                args: {users: users, message: messageText, subject: subject, displaynotification: true}
+                args: {
+                    users: users,
+                    message: messageText,
+                    subject: subject,
+                    cmid : this.cmid,
+                    displaynotification: true
+                }
                 }])[0].then(function (result) {
                     if (result) {
                         window.location.reload(true);

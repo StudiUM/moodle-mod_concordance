@@ -91,6 +91,17 @@ class panelist extends persistent {
     }
 
     /**
+     * Count the number of panelists contacted for a concordance.
+     *
+     * @param  int $concordanceid The syllabus ID
+     * @return int
+     */
+    public static function count_panelistscontacted_for_concordance($concordanceid) {
+        $params['concordance'] = $concordanceid;
+        return self::count_records_select("nbemailsent >= 1 AND concordance = :concordance", $params);
+    }
+
+    /**
      * Hook to execute after a create.
      *
      * @return void
@@ -124,11 +135,42 @@ class panelist extends persistent {
     }
 
     /**
+     * Get user.
+     *
+     * @return stdClass user
+     */
+    public function get_user() {
+        global $DB;
+        if ($this->get('userid')) {
+            return $DB->get_record('user', array('id' => $this->get('userid')));
+        }
+        return null;
+    }
+
+    /**
      * Get url of quiz access page.
      *
      * @return moodle_url The quiz access page.
      */
     public function get_quizaccess_url() {
-        return new moodle_url('/mod/concordance/quizaccess.php', array('key' => $this->get_user_key()));
+        return new \moodle_url('/mod/concordance/quizaccess.php', array('key' => $this->get_user_key()));
+    }
+
+    /**
+     * Get panelists by ids.
+     *
+     * @param array $ids Array of ids
+     * @param int $concordanceid concordance id
+     * @return panelist[] Return array of panelists.
+     */
+    public static function get_concordancepanelists_by_ids($ids, $concordanceid) {
+        global $DB;
+        $panelists = [];
+        if (!empty($ids)) {
+            list($insql, $params) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+            $params['concordance'] = $concordanceid;
+            $panelists = self::get_records_select("id $insql AND concordance = :concordance", $params);
+        }
+        return $panelists;
     }
 }

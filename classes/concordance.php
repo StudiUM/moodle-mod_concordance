@@ -162,6 +162,24 @@ class concordance extends persistent {
     }
 
     /**
+     * Get the status for the contact panelists task
+     * (if at least one panelist contacted, the task is done, otherwise it is 'to do')
+     *
+     * @return string
+     */
+    public function get_status_contactpanelists() {
+        if (\mod_concordance\panelist::count_panelistscontacted_for_concordance($this->get('id')) < 1) {
+            if ($this->get('activephase') == self::CONCORDANCE_PHASE_SETUP) {
+                return self::CONCORDANCE_TASKSTATUS_TODO;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            }
+        } else {
+            return self::CONCORDANCE_TASKSTATUS_DONE;
+        }
+    }
+
+    /**
      * Get the status for the panelists task (if all fields are filled, the task is done, otherwise it is 'to do').
      *
      * @return string

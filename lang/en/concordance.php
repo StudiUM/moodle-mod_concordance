@@ -24,7 +24,8 @@
  */
 
 $string['addnewpanelist'] = 'Add new panelist';
-$string['bibliography'] = 'Bibliography';
+$string['atleastpanelistnotcontacted'] = 'At least one panelist was not contacted';
+$string['bibliography'] = 'Biography';
 $string['categorypanelcourses'] = 'Category for courses for panels of experts';
 $string['concordance:addinstance'] = 'Add a new concordance formation administration';
 $string['concordance:view'] = 'View concordance formation administration';
@@ -37,6 +38,7 @@ $string['descriptionpanelist'] = 'Description for the panelists';
 $string['descriptionstudent'] = 'Description for the students';
 $string['editpanelist'] = 'Edit panelist';
 $string['eventconcordanceupdated'] = 'Concordance updated';
+$string['eventemailsent'] = 'Email sent to panelist';
 $string['indicator:cognitivedepth'] = 'Concordance cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Concordance activity.';
 $string['indicator:socialbreadth'] = 'Concordance social';
