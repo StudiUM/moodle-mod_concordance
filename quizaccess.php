@@ -41,11 +41,10 @@ if (!$panelist) {
     throw new moodle_exception('Can not find panelist');
 }
 $concordance = \mod_concordance\concordance::get_record(['id' => $panelist->get('concordance')]);
-// EVOSTDM-2091 remplacer l'url du cours par celle du quiz.
-// $quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated')]);.
-$quizurl = new moodle_url('/course/view.php', ['id' => $concordance->get('coursegenerated')]);
 if (isloggedin() and !$confirm) {
     if ($USER->id === $user->id) {
+        $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'),
+            'sesskey' => sesskey()]);
         redirect($quizurl);
     }
     echo $OUTPUT->header();
@@ -61,5 +60,7 @@ if (isloggedin() and !$confirm) {
     complete_user_login($user);
     \core\session\manager::apply_concurrent_login_limit($user->id, session_id());
 
+    // The sesskey() function must be called after the login.
+    $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'), 'sesskey' => sesskey()]);
     redirect($quizurl);
 }

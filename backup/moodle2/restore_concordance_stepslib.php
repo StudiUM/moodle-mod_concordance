@@ -83,7 +83,7 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
         $id = $DB->get_field('role', 'id', array('shortname' => 'associateeditingteacher'));
         assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
 
-        // EVOSTDM-2091 ou ultérieur : TODO traiter 'cmorigin' et 'cmgenerated'.
+        // TODO EVOSTDM-2175 : traiter 'cmorigin' et 'cmgenerated'.
     }
 
     /**

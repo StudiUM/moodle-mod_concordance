@@ -55,23 +55,33 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
     $strplural = get_string('modulenameplural', 'quiz');
     echo $OUTPUT->notification(get_string('thereareno', 'moodle', $strplural));
 } else {
-    $quizlist = \mod_concordance\concordance::quizlist($course);
-    $form = new \mod_concordance\form\quizselection($url->out(false),
-            array('quizlist' => $quizlist, 'context' => $context));
-
-    $form->set_data(['cmorigin' => $concordancepersistent->get('cmorigin')]);
-    $data = $form->get_submitted_data();
-    if ($data) {
-        if (isset($data->cmorigin)) {
-            $contextcmorigin = context_module::instance($data->cmorigin);
-            require_capability('mod/quiz:manage', $contextcmorigin);
-            $concordancepersistent->set('cmorigin', $data->cmorigin);
-        } else {
-            $concordancepersistent->set('cmorigin', null);
+    $count = \mod_concordance\panelist::count_panelistscontacted_for_concordance($concordancepersistent->get('id'));
+    if ($count > 0) {
+        echo $OUTPUT->notification(get_string('selectquiz_panelistcontacted', 'mod_concordance'));
+        $cm = get_coursemodule_from_id('', $concordancepersistent->get('cmorigin'), 0, true, IGNORE_MISSING);
+        if (!empty($cm)) {
+            echo '<p>'.get_string('pluginname', 'quiz').' : '.$cm->name.'</p>';
         }
-        $concordancepersistent->update();
+    } else {
+        $quizlist = \mod_concordance\concordance::quizlist($course);
+        $form = new \mod_concordance\form\quizselection($url->out(false),
+                array('quizlist' => $quizlist, 'context' => $context));
+
+        $form->set_data(['cmorigin' => $concordancepersistent->get('cmorigin')]);
+        $data = $form->get_submitted_data();
+        if ($data) {
+            if (isset($data->cmorigin)) {
+                $contextcmorigin = context_module::instance($data->cmorigin);
+                require_capability('mod/quiz:manage', $contextcmorigin);
+                $concordancepersistent->set('cmorigin', $data->cmorigin);
+            } else {
+                $concordancepersistent->set('cmorigin', null);
+            }
+            \mod_concordance\quizmanager::duplicatequizforpanelists($concordancepersistent);
+            $concordancepersistent->update();
+        }
+        $form->display();
     }
-    $form->display();
     if ($cmid = $concordancepersistent->get('cmorigin')) {
         $contextcmorigin = context_module::instance($cmid);
         require_capability('mod/quiz:manage', $contextcmorigin);

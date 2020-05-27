@@ -46,14 +46,18 @@ class contact_panelists_page implements renderable, templatable {
     /** @var \mod_concordance\panelist[] $panelists array of panelists. */
     protected $panelists = [];
 
+    /** @var \mod_concordance\concordance The Concordance persistence object. */
+    protected $concordance;
+
     /**
      * Construct this renderable.
      * @param int $cmid
-     * @param int $concordanceid
+     * @param Concordance $concordance Concordance persistence object.
      */
-    public function __construct($cmid, $concordanceid) {
+    public function __construct($cmid, $concordance) {
         $this->cmid = $cmid;
-        $this->panelists = \mod_concordance\panelist::get_records(['concordance' => $concordanceid]);
+        $this->concordance = $concordance;
+        $this->panelists = \mod_concordance\panelist::get_records(['concordance' => $concordance->get('id')]);
     }
 
     /**
@@ -75,6 +79,11 @@ class contact_panelists_page implements renderable, templatable {
             $exporter = new \mod_concordance\external\panelist_exporter($panelist, $relateds);
             $data->panelists[] = $exporter->export($output);
         }
+        $data->isquizselected = !empty($this->concordance->get('cmorigin'));
+        $data->noquizselectedwarning = (object)array(
+            'message' => get_string('noquizselected_cantcontact', 'mod_concordance'),
+            'closebutton' => false
+        );
         return $data;
     }
 }

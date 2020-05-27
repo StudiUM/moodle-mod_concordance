@@ -19,15 +19,24 @@
 
     Context variables required for this template:
     * panelists - list of panelist persistence
+    * isquizselected - boolean
+    * noquizselectedwarning - array of warning info if no quiz is selected
 }}
 <div data-region="contactpanelists">
+{{^isquizselected}}
+    {{#noquizselectedwarning}}
+        {{> core/notification_warning}}
+    {{/noquizselectedwarning}}
+{{/isquizselected}}
 <table class="generaltable fullwidth managepanelists">
     <caption>{{#str}}panelistslist, mod_concordance{{/str}}</caption>
     <thead>
         <tr>
-            <th scope="col">{{#str}}select{{/str}} <br>
-                <a href="#" id="checkall">{{#str}}all{{/str}}</a> / <a href="#" id="checknone">{{#str}}none{{/str}}</a>
-            </th>
+            {{#isquizselected}}
+                <th scope="col">{{#str}}select{{/str}} <br>
+                    <a href="#" id="checkall">{{#str}}all{{/str}}</a> / <a href="#" id="checknone">{{#str}}none{{/str}}</a>
+                </th>
+            {{/isquizselected}}
             <th scope="col">{{#str}}lastname{{/str}}</th>
             <th scope="col">{{#str}}firstname{{/str}}</th>
             <th scope="col">{{#str}}email{{/str}}</th>
@@ -38,7 +47,9 @@
     <tbody>
         {{#panelists}}
         <tr>
-            <td><input type="checkbox" name="panelists" value="{{id}}"/></td>
+            {{#isquizselected}}
+                <td><input type="checkbox" name="panelists" value="{{id}}"/></td>
+            {{/isquizselected}}
             <td>{{firstname}}</td>
             <td>{{lastname}}</td>
             <td>{{email}}</td>
@@ -48,10 +59,10 @@
         {{/panelists}}
     </tbody>
 </table>
-{{#haspanelists}}
-<input id="showpanelistemailpopup" type="submit" value="{{#str}}messageselectadd{{/str}}" class="btn btn-secondary" disabled="true">
-{{/haspanelists}}
-    
+{{#haspanelists}}{{#isquizselected}}
+    <input id="showpanelistemailpopup" type="submit" value="{{#str}}messageselectadd{{/str}}" class="btn btn-secondary" disabled="true">
+{{/isquizselected}}{{/haspanelists}}
+
 {{^haspanelists}}
 <p class="alert alert-info">
     {{#str}}nopanelists, mod_concordance{{/str}}

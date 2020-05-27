@@ -49,6 +49,6 @@ $output = $PAGE->get_renderer('mod_concordance');
 echo $output->header();
 
 echo $output->heading($contactpanelistsstring);
-$page = new \mod_concordance\output\contact_panelists_page($cm->id, $concordance->id);
+$page = new \mod_concordance\output\contact_panelists_page($cm->id, $concordancepersistent);
 echo $output->render($page);
 echo $output->footer();
