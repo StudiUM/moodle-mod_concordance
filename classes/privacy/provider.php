@@ -26,14 +26,38 @@ namespace mod_concordance\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_privacy\local\metadata\collection;
+
 /**
- * The mod_concordance module does not store any data.
+ * Privacy Subsystem implementation for mod_concordance.
  *
  * @copyright  2020 Université de Montréal
  * @author     Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get information about the user data stored by this plugin.
+     *
+     * @param  collection $collection An object for storing metadata.
+     * @return collection The metadata.
+     */
+    public static function get_metadata(collection $collection) : collection {
+        $collection->add_database_table('concordance_panelist', [
+            'userid' => 'privacy:metadata:panelist:userid',
+            'firstname' => 'privacy:metadata:panelist:firstname',
+            'lastname' => 'privacy:metadata:panelist:lastname',
+            'email' => 'privacy:metadata:panelist:email',
+            'bibliography' => 'privacy:metadata:panelist:bibliography',
+            'timemodified' => 'privacy:metadata:timemodified',
+        ], 'privacy:metadata:concordance_panelist');
+
+        return $collection;
+    }
+
     /**
      * Get the language string identifier with the component's language
      * file to explain why this plugin stores no data.
