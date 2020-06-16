@@ -66,6 +66,21 @@ class quizmanager_testcase extends advanced_testcase {
         // Create the concordance activity.
         $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id,
             'descriptionpanelist' => '', 'descriptionstudent' => ''));
+        $concordancem = get_coursemodule_from_instance('concordance', $concordance->id, $course->id, true, MUST_EXIST);
+        $context = \context_module::instance($concordancem->id);
+        $filerecord = array(
+            'contextid' => $context->id,
+            'component' => 'mod_concordance',
+            'filearea'  => 'descriptionpanelist',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename'  => 'fakeimage.png',
+        );
+        $fs = get_file_storage();
+        $fs->create_file_from_string($filerecord, 'img contents');
+        $concordance->descriptionpanelist = '<p>description panelist</p> <img src="@@PLUGINFILE@@/fakeimage.png">';
+        $concordance->descriptionpanelistformat = FORMAT_HTML;
+        $DB->update_record('concordance', $concordance);
         $concordancepersistent   = new \mod_concordance\concordance($concordance->id);
 
         // Duplicate the quiz, when there are no quiz yet.
@@ -96,6 +111,13 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertEquals(1, $quiztocheck1->visible);
         $quiztocheck1details = $DB->get_record('quiz', array('id' => $quiztocheck1->instance), '*', MUST_EXIST);
         $this->assertEquals('securewindow', $quiztocheck1details->browsersecurity);
+        $this->assertEquals('description panelist', trim(strip_tags($quiztocheck1details->intro)));
+        // Check that file was copied.
+        $contextcm = \context_module::instance($quiztocheck1->id);
+        $files = $fs->get_area_files($contextcm->id, 'mod_quiz', 'intro', 0, "itemid, filepath, filename", false);
+        $this->assertCount(1, $files);
+        $file = array_values($files)[0];
+        $this->assertEquals('fakeimage.png', $file->get_filename());
 
         // Change the quiz of the Concordance activity.
         $concordancepersistent->set('cmorigin', $quiz2->cmid);
@@ -116,5 +138,73 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertEquals('Second quiz', $quiztocheck2->name);
         $quiztocheck2details = $DB->get_record('quiz', array('id' => $quiztocheck2->instance), '*', MUST_EXIST);
         $this->assertEquals('securewindow', $quiztocheck2details->browsersecurity);
+    }
+
+    /**
+     * Test duplicatequizforstudents.
+     * @return void
+     */
+    public function test_duplicatequizforstudents() {
+        global $DB, $PAGE, $CFG;
+        // Test panelist created.
+        // Create a course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Create and enrol the teacher.
+        $teacher = $this->getDataGenerator()->create_user();
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
+        $this->getDataGenerator()->enrol_user($teacher->id,  $course->id, $teacherrole->id);
+
+        $this->setUser($teacher);
+
+        // Create the concordance activity.
+        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id,
+            'descriptionpanelist' => '', 'descriptionstudent' => ''));
+        $concordancem = get_coursemodule_from_instance('concordance', $concordance->id, $course->id, true, MUST_EXIST);
+        $context = \context_module::instance($concordancem->id);
+        $filerecord = array(
+            'contextid' => $context->id,
+            'component' => 'mod_concordance',
+            'filearea'  => 'descriptionstudent',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename'  => 'fakeimage.png',
+        );
+        $fs = get_file_storage();
+        $fs->create_file_from_string($filerecord, 'img contents');
+        $concordance->descriptionstudent = '<p>description student</p> <img src="@@PLUGINFILE@@/fakeimage.png">';
+        $concordance->descriptionstudentformat = FORMAT_HTML;
+        $DB->update_record('concordance', $concordance);
+        $concordancepersistent   = new \mod_concordance\concordance($concordance->id);
+
+        // Duplicate the quiz for students, when there are no panelist quiz yet.
+        $cmid = quizmanager::duplicatequizforstudents($concordancepersistent);
+        $this->assertNull($cmid);
+
+        // Add quiz to the course.
+        $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
+        $quiz1 = $quizgenerator->create_instance(array('course' => $course->id, 'name' => 'First quiz', 'visible' => false));
+
+        // Select a quiz for the Concordance activity and duplicate it for panelists.
+        $concordancepersistent->set('cmorigin', $quiz1->cmid);
+        quizmanager::duplicatequizforpanelists($concordancepersistent, false);
+
+        // Duplicate quiz for students.
+        $cmid = quizmanager::duplicatequizforstudents($concordancepersistent);
+        $this->assertNotNull($cmid);
+
+        $courseinfo = get_fast_modinfo($course);
+        $cm = get_coursemodule_from_id('quiz', $cmid);
+        $context = \context_module::instance($cm->id);
+        $this->assertTrue(array_key_exists($cm->instance, $courseinfo->instances['quiz']));
+        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $this->assertEquals('-', $quiz->browsersecurity);
+        $this->assertEquals(0, $cm->visible);
+        $this->assertEquals('description student', trim(strip_tags($quiz->intro)));
+        // Check that file was copied.
+        $files = $fs->get_area_files($context->id, 'mod_quiz', 'intro', 0, "itemid, filepath, filename", false);
+        $this->assertCount(1, $files);
+        $file = array_values($files)[0];
+        $this->assertEquals('fakeimage.png', $file->get_filename());
     }
 }

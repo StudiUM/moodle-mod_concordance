@@ -125,8 +125,29 @@ class renderer extends plugin_renderer_base {
         $phasestudents['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_STUDENTS) ? true : false;
         $phasestudents['islast'] = true;
         $phasestudents['tasks'] = array();
-        $phasestudents['tasks'][] = array('name' => get_string('task_generatequiz', 'mod_concordance'), 'url' => '',
-            'statusname' => 'taskfail', 'statusclass' => 'fail');
+        $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
+        $status = $concordance->get_status_generatestudentquiz();
+        $phasestudents['tasks'][] = array('name' => get_string('task_generatequiz', 'mod_concordance'),
+            'url' => $concordance->generate_studentquiz_url()->out(false),
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+        if ($status == concordance::CONCORDANCE_TASKSTATUS_FAILED) {
+            $nbpanelists = \mod_concordance\panelist::count_records_for_concordance($concordance->get('id'));
+            $cmpanelistgenerated = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'));
+            $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
+            $statusname = get_string('task' . $statusinfo, 'mod_concordance');
+            if ($nbpanelists == 0) {
+                $phasestudents['tasks'][] = [
+                    'name' => get_string('nopanelists', 'mod_concordance'),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+            if (!$cmpanelistgenerated) {
+                $phasestudents['tasks'][] = [
+                    'name' => get_string('panelistsquiznotfound', 'mod_concordance'),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+        }
 
         $data->phases = array($phasesetup, $phasepanelists, $phasestudents);
 

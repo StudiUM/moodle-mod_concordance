@@ -220,3 +220,25 @@
 .path-mod-concordance .concordance-wizard ul.tasks li.info {
     margin-left: 1rem;
 }
+
+.path-mod-concordance #fgroup_id_paneliststoinclude label.form-check.fitem {
+    clear: none;
+    justify-content: flex-start;
+    width: 100%;
+}
+.path-mod-concordance #fgroup_id_paneliststoinclude .form-inline.col-md-9 {
+    width: 100%;
+    float: left;
+    max-width: none;
+    clear: left;
+}
+.path-mod-concordance #fgroup_id_paneliststoinclude .col-md-3 {
+    width: auto;
+    max-width: none;
+}
+.path-mod-concordance #fgroup_id_paneliststoinclude {
+    float: left;
+    display: inline-block;
+    line-height: 1;
+    width: 100%;
+}

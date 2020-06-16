@@ -65,14 +65,72 @@ class quizmanager {
             $coursegeneratedid = $concordance->get('coursegenerated');
             $course = $DB->get_record('course', array('id' => $coursegeneratedid), '*', MUST_EXIST);
 
+            $concordancem = get_coursemodule_from_instance('concordance',
+                    $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
+            $context = \context_module::instance($concordancem->id);
             $newcm = self::duplicate_module($course, $cm);
             set_coursemodule_visible($newcm->id, 1);
             $concordance->set('cmgenerated', $newcm->id);
 
             $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
+
+            // Move files if exists.
+            $newcontext = \context_module::instance($newcm->id);
+            $newfilerecord = array('contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0);
+            $fs = get_file_storage();
+            if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'descriptionpanelist', 0)) {
+                foreach ($files as $file) {
+                    $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                }
+            }
+            $quiz->intro = $concordance->get('descriptionpanelist');
             $DB->update_record('quiz', $quiz);
         }
+    }
+
+    /**
+     * Duplicate the panelist quiz so it can be used by the students.
+     *
+     * @param concordance $concordance Concordance persistence object.
+     * @return int the new cm id generated
+     */
+    public static function duplicatequizforstudents($concordance) {
+        global $DB;
+
+        // Duplicate the panelist quiz in the students course and make it hidden.
+        if (!is_null($concordance->get('cmgenerated'))) {
+            $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $concordance->get('course')), '*', MUST_EXIST);
+
+            $concordancem = get_coursemodule_from_instance('concordance',
+                    $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
+            $context = \context_module::instance($concordancem->id);
+            $newcm = self::duplicate_module($course, $cm, $concordance->get('coursegenerated'));
+            set_coursemodule_visible($newcm->id, 0);
+
+            $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
+            // Move files if exists.
+            $newcontext = \context_module::instance($newcm->id);
+            $newfilerecord = array('contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0);
+            $fs = get_file_storage();
+            // Delete any file related to intro filearea.
+            $fs->delete_area_files($newcontext->id, 'mod_quiz', 'intro');
+            if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'descriptionstudent', 0)) {
+                foreach ($files as $file) {
+                    $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                }
+            }
+            $quiz->intro = $concordance->get('descriptionstudent');
+            $quiz->browsersecurity = '-';
+            $DB->update_record('quiz', $quiz);
+            // Move to the right section.
+            $section = $DB->get_record('course_sections',
+                    array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
+            moveto_module($newcm, $section);
+            return $newcm->id;
+        }
+        return null;
     }
 
     /**
@@ -82,6 +140,7 @@ class quizmanager {
      *
      * @param object $course course object.
      * @param object $cm course module object to be duplicated.
+     * @param int    $courseidavoidcap the course on which we want to avoid the capability check.
      *
      * @throws Exception
      * @throws coding_exception
@@ -90,20 +149,23 @@ class quizmanager {
      *
      * @return cm_info|null cminfo object if we sucessfully duplicated the mod and found the new cm.
      */
-    private static function duplicate_module($course, $cm) {
+    private static function duplicate_module($course, $cm, $courseidavoidcap = null) {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
         require_once($CFG->libdir . '/filelib.php');
 
         // Concordance modification : Temporarily enrol teacher in panelist course to avoid capability errors.
+        if (!$courseidavoidcap) {
+            $courseidavoidcap = $course->id;
+        }
         $enrolplugin = enrol_get_plugin('manual');
         $roleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'), MUST_EXIST);
-        $context = context_course::instance($course->id);
-        $isenrolled = user_has_role_assignment($USER->id, $roleid, $context->id);
+        $contextcoursecap = context_course::instance($courseidavoidcap);
+        $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
         if (!$isenrolled) {
             $instances = $DB->get_records('enrol',
-                    array('courseid' => $course->id, 'enrol' => 'manual'));
+                    array('courseid' => $courseidavoidcap, 'enrol' => 'manual'));
             $enrolinstance = reset($instances);
             $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid);
         }

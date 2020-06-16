@@ -24,6 +24,7 @@
 
 require('../../config.php');
 require_once("$CFG->libdir/externallib.php");
+require_once($CFG->dirroot.'/mod/quiz/locallib.php');
 
 $keytoken = required_param('key', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
@@ -33,6 +34,7 @@ $PAGE->set_context($context);
 $PAGE->set_pagelayout('secure');
 $urlquizaccess = new moodle_url('/mod/concordance/quizaccess.php', ['key' => $keytoken]);
 $PAGE->set_url($urlquizaccess);
+$output = $PAGE->get_renderer('mod_quiz');
 
 $key = validate_user_key($keytoken, 'concordancepanelist', null);
 $user = core_user::get_user($key->userid, '*', MUST_EXIST);
@@ -43,9 +45,18 @@ if (!$panelist) {
 $concordance = \mod_concordance\concordance::get_record(['id' => $panelist->get('concordance')]);
 if (isloggedin() and !$confirm) {
     if ($USER->id === $user->id) {
+        $cm = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'));
+        $context = context_module::instance($cm->id);
+        $quizobj = quiz::create($cm->instance, $USER->id);
+        $quiz = $quizobj->get_quiz();
         $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'),
             'sesskey' => sesskey()]);
-        redirect($quizurl);
+        $button = new single_button($quizurl, get_string('attemptquiznow', 'quiz'));
+        $info = $output->view_information($quiz, $cm, $context, []);
+        echo $OUTPUT->header();
+        echo $output->render_from_template('mod_concordance/accesspanelistquiz',
+                ['body' => $info, 'footer' => $output->render($button)]);
+        return;
     }
     echo $OUTPUT->header();
     $url = new moodle_url('/mod/concordance/quizaccess.php', ['key' => $keytoken, 'confirm' => 1]);
@@ -60,7 +71,5 @@ if (isloggedin() and !$confirm) {
     complete_user_login($user);
     \core\session\manager::apply_concurrent_login_limit($user->id, session_id());
 
-    // The sesskey() function must be called after the login.
-    $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'), 'sesskey' => sesskey()]);
-    redirect($quizurl);
+    redirect($urlquizaccess);
 }

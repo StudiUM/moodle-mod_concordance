@@ -180,6 +180,25 @@ class concordance extends persistent {
     }
 
     /**
+     * Get the status for the generate student quiz task.
+     *
+     * @return string
+     */
+    public function get_status_generatestudentquiz() {
+        $nbpanelists = \mod_concordance\panelist::count_records_for_concordance($this->get('id'));
+        $cmpanelistgenerated = get_coursemodule_from_id('quiz', $this->get('cmgenerated'));
+        if ($this->get('activephase') != self::CONCORDANCE_PHASE_STUDENTS) {
+            return self::CONCORDANCE_TASKSTATUS_TODO;
+        } else {
+            if ($nbpanelists == 0 || !$cmpanelistgenerated) {
+                return self::CONCORDANCE_TASKSTATUS_FAILED;
+            } else {
+                return self::CONCORDANCE_TASKSTATUS_INFO;
+            }
+        }
+    }
+
+    /**
      * Get the status for the panelists task (if all fields are filled, the task is done, otherwise it is 'to do').
      *
      * @return string
@@ -267,6 +286,15 @@ class concordance extends persistent {
      */
     public function contact_panelists_url() {
         return new moodle_url('/mod/concordance/contactpanelists.php', ['cmid' => $this->get_cm()->id]);
+    }
+
+    /**
+     * Returns the moodle_url of the generate student quiz page.
+     *
+     * @return moodle_url of the generate student quiz page
+     */
+    public function generate_studentquiz_url() {
+        return new moodle_url('/mod/concordance/generatestudentquiz.php', ['cmid' => $this->get_cm()->id]);
     }
 
     /**
