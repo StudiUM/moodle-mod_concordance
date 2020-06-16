@@ -28,6 +28,8 @@ namespace mod_concordance;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
+require_once($CFG->dirroot . '/lib/adminlib.php');
 
 use \stdClass;
 use \moodle_exception;
@@ -74,6 +76,12 @@ class quizmanager {
 
             $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
+
+            // The panelists should see no feedback.
+            $quiz->preferredbehaviour = 'deferredfeedback';
+            foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                $quiz->{'review'.$field} = 0;
+            }
 
             // Move files if exists.
             $newcontext = \context_module::instance($newcm->id);
@@ -123,6 +131,14 @@ class quizmanager {
             }
             $quiz->intro = $concordance->get('descriptionstudent');
             $quiz->browsersecurity = '-';
+
+            // The students should see the feedbacks immediatly.
+            $quiz->preferredbehaviour = 'immediatefeedback';
+            foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                $default = \mod_quiz_admin_review_setting::all_on();
+                $quiz->{'review'.$field} = $default;
+            }
+
             $DB->update_record('quiz', $quiz);
             // Move to the right section.
             $section = $DB->get_record('course_sections',
