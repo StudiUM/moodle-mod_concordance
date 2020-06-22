@@ -30,8 +30,8 @@ $string['categorypanelcourses'] = 'Category for courses for panels of experts';
 $string['concordance:addinstance'] = 'Add a new concordance formation administration';
 $string['concordance:view'] = 'View concordance formation administration';
 $string['configcategorypanelcourses'] = 'Courses used by the panels of experts in the Concordance activity will be placed in this category';
-$string['defaultemailbody'] = 'As an expert, you are invited to answer a questionnaire concerning your field of expertise. A link is provided to you at the bottom of this email to access it.
-Your answers will then be collated with those of other experts, to allow students to carry out a training activity by concordance.';
+$string['defaultemailbody'] = 'As a panelist, you are invited to answer a questionnaire concerning your field of expertise. A link is provided to you at the bottom of this email to access it.
+Your answers will then be collated with those of other panelists, to allow students to carry out a training activity by concordance.';
 $string['defaultemailsubject'] = 'Online quiz - Concordance formation';
 $string['deletepanelistconfirm'] = 'Are you sure you want to delete this panelist ?';
 $string['descriptionpanelist'] = 'Description for the panelists';
@@ -48,7 +48,6 @@ $string['indicator:socialbreadth_help'] = 'This indicator is based on the social
 $string['message'] = 'Message';
 $string['modulename'] = 'Administration of a concordance formation';
 $string['modulename_help'] = 'Concordance help';
-$string['modulename_link'] = 'mod/concordance/view';
 $string['modulenameplural'] = 'Administration of concordance formations';
 $string['nbemailssent'] = 'Nb. emails sent';
 $string['nopanelists'] = 'No panelist have been created yet.';
