@@ -63,7 +63,7 @@ if (count($panelists) == 0) {
 
     $data = $form->get_submitted_data();
     if ($data) {
-        $cmgenerated = \mod_concordance\quizmanager::duplicatequizforstudents($concordancepersistent);
+        $cmgenerated = \mod_concordance\quizmanager::duplicatequizforstudents($concordancepersistent, $data);
         if ($cmgenerated) {
             $message = get_string('studentquizgenerated', 'mod_concordance');
             $newcmurl = new moodle_url("/mod/quiz/view.php", ['id' => $cmgenerated]);

@@ -52,6 +52,7 @@ class quizmanager {
      *
      * @param concordance $concordance Concordance persistence object.
      * @param boolean $async True to delete the old quiz async, false otherwise (usually false only for test purpose).
+     * @return obj The new quiz object from the DB.
      */
     public static function duplicatequizforpanelists($concordance, $async = true) {
         global $DB;
@@ -94,6 +95,8 @@ class quizmanager {
             }
             $quiz->intro = $concordance->get('descriptionpanelist');
             $DB->update_record('quiz', $quiz);
+
+            return $quiz;
         }
     }
 
@@ -101,9 +104,10 @@ class quizmanager {
      * Duplicate the panelist quiz so it can be used by the students.
      *
      * @param concordance $concordance Concordance persistence object.
+     * @param object $formdata The data submitted by the form.
      * @return int the new cm id generated
      */
-    public static function duplicatequizforstudents($concordance) {
+    public static function duplicatequizforstudents($concordance, $formdata) {
         global $DB;
 
         // Duplicate the panelist quiz in the students course and make it hidden.
@@ -140,10 +144,15 @@ class quizmanager {
             }
 
             $DB->update_record('quiz', $quiz);
+
             // Move to the right section.
             $section = $DB->get_record('course_sections',
                     array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
             moveto_module($newcm, $section);
+
+            // Compile the answers for panelists.
+            self::compileanswers($cm, $quiz, $newcm, $course, $formdata);
+
             return $newcm->id;
         }
         return null;
@@ -276,5 +285,88 @@ class quizmanager {
         }
 
         return isset($newcm) ? $newcm : null;
+    }
+
+    /**
+     * Compile the answers from the panelists in the feedback for each choice of answer.
+     *
+     * @param stdClass $quizanswered The course module for the quiz answered by the panelists.
+     * @param stdClass $newquizstd The quiz object from the DB.
+     * @param stdClass $newquizcm The course module for the new quiz (for the students).
+     * @param stdClass $newquizcourse The course object from the DB (for the student quiz).
+     * @param array $formdata An array of data submitted by the 'Generate student quiz' form.
+     */
+    private static function compileanswers($quizanswered, $newquizstd, $newquizcm, $newquizcourse, $formdata) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
+        require_once($CFG->dirroot . '/mod/quiz/accessmanager.php');
+
+        $params = array();
+        $conditions = ' AND state = :state';
+        $params['quizid'] = $quizanswered->instance;
+        $params['state'] = \quiz_attempt::FINISHED;
+
+        $attempts = $DB->get_records_select('quiz_attempts',
+            "quiz = :quizid " . $conditions,
+            $params, 'quiz, userid, attempt DESC');
+
+        $combinedanswers = array();
+        $previoususerid = -1;
+        foreach ($attempts as $attempt) {
+            $panelist = panelist::get_record(array('userid' => $attempt->userid));
+            // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
+            if ($attempt->userid != $previoususerid && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
+                $previoususerid = $attempt->userid;
+                $quizattempt = new \quiz_attempt($attempt, $newquizstd, $newquizcm, $newquizcourse);
+                $slots = $quizattempt->get_slots();
+                foreach ($slots as $slot) {
+                    $questionattempt = $quizattempt->get_question_attempt($slot);
+                    $question = $questionattempt->get_question();
+                    if ($question instanceof \qtype_tcs_question) {
+                        $qtdata = $questionattempt->get_last_qt_data();
+                        $qtchoiceorder = $qtdata['answer'];
+
+                        if (!isset($combinedanswers[$slot])) {
+                            $combinedanswers[$slot] = array();
+                        }
+                        if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
+                            $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+                        }
+
+                        $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
+
+                        $namebl = \html_writer::tag('strong', $panelist->get('firstname').' '.$panelist->get('lastname').'&nbsp;:');
+                        $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
+                        $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $qtdata['answerfeedback']);
+                    }
+                }
+
+            }
+        }
+
+        // Save the combined feedbacks and number of experts in the new quiz questions.
+        $newquiz = new \quiz($newquizstd, $newquizcm, $newquizcourse);
+        $newquiz->preload_questions();
+        $newquiz->load_questions();
+        $questions = $newquiz->get_questions();
+        $questionorder = 1; // Order of questions begin at 1.
+        foreach ($questions as $question) {
+            $answerorder = 0; // Order of answers begin at 0.
+            foreach ($question->options->answers as $answer) {
+                if (isset($combinedanswers[$questionorder][$answerorder])) {
+                    $answer->fraction = $combinedanswers[$questionorder][$answerorder]['nbexperts'];
+                    $answer->feedback = $combinedanswers[$questionorder][$answerorder]['feedback'];
+                } else {
+                    // Empty this answer.
+                    $answer->fraction = 0;
+                    $answer->feedback = '';
+                }
+                $DB->update_record('question_answers', $answer);
+                $answerorder++;
+            }
+            // Important to notify that the question was edited or the changes will not be visible.
+            \question_bank::notify_question_edited($question->id);
+            $questionorder++;
+        }
     }
 }
