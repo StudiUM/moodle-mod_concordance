@@ -31,6 +31,8 @@ require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
+require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
+require_once($CFG->dirroot . '/mod/quiz/accessmanager.php');
 
 use \stdClass;
 use \moodle_exception;
@@ -119,6 +121,10 @@ class quizmanager {
             $concordancem = get_coursemodule_from_instance('concordance',
                     $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
             $context = \context_module::instance($concordancem->id);
+            // Before duplicate, update stamp and version fields for questions.
+            $quizpanelist = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $coursepanelist = $DB->get_record('course', array('id' => $concordance->get('coursegenerated')), '*', MUST_EXIST);
+            self::updatestampandversionquestions($quizpanelist, $cm, $coursepanelist);
             $newcm = self::duplicate_module($course, $cm, $concordance->get('coursegenerated'));
             set_coursemodule_visible($newcm->id, 0);
 
@@ -150,7 +156,6 @@ class quizmanager {
             $section = $DB->get_record('course_sections',
                     array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
             moveto_module($newcm, $section);
-
             // Compile the answers for panelists.
             self::compileanswers($cm, $quiz, $newcm, $course, $formdata);
 
@@ -299,8 +304,6 @@ class quizmanager {
      */
     private static function compileanswers($quizanswered, $newquizstd, $newquizcm, $newquizcourse, $formdata) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
-        require_once($CFG->dirroot . '/mod/quiz/accessmanager.php');
 
         $params = array();
         $conditions = ' AND state = :state';
@@ -390,4 +393,27 @@ class quizmanager {
                          AND t1.quiz = :quizid";
         return $DB->get_records_sql($query, $params);
     }
+
+    /**
+     * Update version and stamp fields for quiz questions.
+     *
+     * @param stdClass $quizobjet Quiz
+     * @param stdClass $cm   Course module
+     * @param stdClass $course Course
+     */
+    private static function updatestampandversionquestions($quizobjet, $cm, $course) {
+        global $DB;
+        $quiz = new \quiz($quizobjet, $cm, $course);
+        $quiz->preload_questions();
+        $quiz->load_questions();
+        $questions = $quiz->get_questions();
+        foreach ($questions as $question) {
+            $q = $DB->get_record('question', array('id' => $question->id), '*', MUST_EXIST);
+            $q->stamp = make_unique_id_code();
+            $q->version = make_unique_id_code();
+            $q->timemodified = time();
+            $DB->update_record('question', $q);
+        }
+    }
+
 }
