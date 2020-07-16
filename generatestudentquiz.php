@@ -58,8 +58,9 @@ if (count($panelists) == 0) {
 } else if (!$cm = get_coursemodule_from_id('quiz', $cmgenerated, $coursegenerated)) {
     echo $OUTPUT->notification(get_string('panelistsquiznotfound', 'mod_concordance'));
 } else {
+    $attempts = \mod_concordance\quizmanager::getusersattemptedquiz($concordancepersistent);
     $form = new \mod_concordance\form\studentquizgeneration($url->out(false),
-            array('panelists' => $panelists, 'context' => $context));
+            array('panelists' => $panelists, 'context' => $context, 'attempts' => $attempts));
 
     $data = $form->get_submitted_data();
     if ($data) {
@@ -68,7 +69,7 @@ if (count($panelists) == 0) {
             $message = get_string('studentquizgenerated', 'mod_concordance');
             $newcmurl = new moodle_url("/mod/quiz/view.php", ['id' => $cmgenerated]);
             $link = html_writer::link($newcmurl, get_string('gotogeneratedquiz', 'mod_concordance'));
-            echo $OUTPUT->notification($message . ' ' . $link, \core\output\notification::NOTIFY_SUCCESS);;
+            echo $OUTPUT->notification($message . ' ' . $link, \core\output\notification::NOTIFY_SUCCESS);
         }
     }
     $form->display();

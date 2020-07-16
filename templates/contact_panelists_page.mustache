@@ -41,6 +41,7 @@
             <th scope="col">{{#str}}lastname{{/str}}</th>
             <th scope="col">{{#str}}email{{/str}}</th>
             <th scope="col">{{#str}}nbemailssent, mod_concordance{{/str}}</th>
+            <th scope="col">{{#str}}quizstate, mod_concordance{{/str}}</th>
         </tr>
     </thead>
     <tbody>
@@ -53,6 +54,7 @@
             <td>{{lastname}}</td>
             <td>{{email}}</td>
             <td>{{nbemailsent}}</td>
+            <td><span class="label {{quizstateclass}}">{{quizstate}}</span></td>
         </tr>
         {{/panelists}}
     </tbody>

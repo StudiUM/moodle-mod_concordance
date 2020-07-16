@@ -52,6 +52,8 @@ class panelist_exporter extends \core\external\persistent_exporter {
             'bibliography',
             $this->persistent->get('id')
         );
+        $this->data->nbemailsent = (empty($this->persistent->get('nbemailsent'))) ? 0 :
+                $this->persistent->get('nbemailsent');
     }
 
     /**

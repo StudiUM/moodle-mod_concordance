@@ -67,6 +67,8 @@ class contact_panelists_page implements renderable, templatable {
      * @return stdClass
      */
     public function export_for_template(renderer_base $output) {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
         $data = new stdClass();
         $data->cmid = $this->cmid;
         $relateds = [
@@ -75,9 +77,30 @@ class contact_panelists_page implements renderable, templatable {
         ];
         $data->panelists = [];
         $data->haspanelists = (count($this->panelists) > 0) ? true : false;
+        $usersattemptedquiz = \mod_concordance\quizmanager::getusersattemptedquiz($this->concordance);
         foreach ($this->panelists as $panelist) {
             $exporter = new \mod_concordance\external\panelist_exporter($panelist, $relateds);
-            $data->panelists[] = $exporter->export($output);
+            $exporteddata = $exporter->export($output);
+            $exporteddata->quizstate = null;
+            $exporteddata->quizstateclass = '';
+
+            if (key_exists($exporteddata->userid, $usersattemptedquiz)) {
+                $state = $usersattemptedquiz[$panelist->get('userid')]->state;
+                if (!empty($state)) {
+                    $exporteddata->quizstate = get_string('state' . $state, 'mod_quiz');
+                    if ($state == \quiz_attempt::FINISHED) {
+                        $exporteddata->quizstateclass = 'label-success';
+                    }
+                    if ($state == \quiz_attempt::IN_PROGRESS) {
+                        $exporteddata->quizstateclass = 'label-warning';
+                    }
+                } else {
+                    $exporteddata->quizstate = get_string('notcompleted', 'mod_concordance');
+                }
+            } else {
+                $exporteddata->quizstate = get_string('notcompleted', 'mod_concordance');
+            }
+            $data->panelists[] = $exporteddata;
         }
         $data->isquizselected = !empty($this->concordance->get('cmorigin'));
         $data->noquizselectedwarning = (object)array(

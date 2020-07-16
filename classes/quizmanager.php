@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
+require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
 
 use \stdClass;
@@ -308,7 +309,7 @@ class quizmanager {
 
         $attempts = $DB->get_records_select('quiz_attempts',
             "quiz = :quizid " . $conditions,
-            $params, 'quiz, userid, attempt DESC');
+            $params, 'quiz, userid, timestart DESC');
 
         $combinedanswers = array();
         $previoususerid = -1;
@@ -368,5 +369,25 @@ class quizmanager {
             \question_bank::notify_question_edited($question->id);
             $questionorder++;
         }
+    }
+
+    /**
+     * Get users who have attempted the quiz.
+     *
+     * @param concordance $concordance Concordance persistence object.
+     * @return array Array of users id.
+     */
+    public static function getusersattemptedquiz($concordance) {
+        global $DB;
+        $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
+        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $params['quizid'] = $quiz->id;
+        $query = "SELECT t1.userid AS userid, t1.state as state
+                    FROM {quiz_attempts} t1
+                   WHERE t1.timestart = (SELECT MAX(t2.timestart)
+                                     FROM {quiz_attempts} t2
+                                     WHERE t2.userid = t1.userid)
+                         AND t1.quiz = :quizid";
+        return $DB->get_records_sql($query, $params);
     }
 }

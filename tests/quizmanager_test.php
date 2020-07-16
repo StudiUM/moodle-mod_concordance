@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
 
 use \mod_concordance\quizmanager;
 use \mod_concordance\concordance;
@@ -200,5 +201,111 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertCount(1, $files);
         $file = array_values($files)[0];
         $this->assertEquals('fakeimage2.png', $file->get_filename());
+    }
+
+    /**
+     * Test getusersattemptedquiz.
+     * @return void
+     */
+    public function test_getusersattemptedquiz() {
+        global $DB;
+        $this->resetAfterTest();
+
+        $dg = $this->getDataGenerator();
+        $quizgen = $dg->get_plugin_generator('mod_quiz');
+        $course = $dg->create_course();
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+        $u4 = $dg->create_user();
+        $u5 = $dg->create_user();
+        $role = $DB->get_record('role', ['shortname' => 'student']);
+
+        $dg->enrol_user($u1->id, $course->id, $role->id);
+        $dg->enrol_user($u2->id, $course->id, $role->id);
+        $dg->enrol_user($u3->id, $course->id, $role->id);
+        $dg->enrol_user($u4->id, $course->id, $role->id);
+        $dg->enrol_user($u5->id, $course->id, $role->id);
+
+        $quiz1 = $quizgen->create_instance(['course' => $course->id, 'sumgrades' => 2]);
+
+        // Questions.
+        $questgen = $dg->get_plugin_generator('core_question');
+        $quizcat = $questgen->create_question_category();
+        $question = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+        quiz_add_quiz_question($question->id, $quiz1);
+
+        $quizobj1a = quiz::create($quiz1->id, $u1->id);
+        $quizobj1b = quiz::create($quiz1->id, $u2->id);
+        $quizobj1c = quiz::create($quiz1->id, $u3->id);
+        $quizobj1d = quiz::create($quiz1->id, $u4->id);
+
+        // Set attempts.
+        $quba1a = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj1a->get_context());
+        $quba1a->set_preferred_behaviour($quizobj1a->get_quiz()->preferredbehaviour);
+        $quba1b = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj1b->get_context());
+        $quba1b->set_preferred_behaviour($quizobj1b->get_quiz()->preferredbehaviour);
+        $quba1c = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj1c->get_context());
+        $quba1c->set_preferred_behaviour($quizobj1c->get_quiz()->preferredbehaviour);
+        $quba1d = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj1d->get_context());
+        $quba1d->set_preferred_behaviour($quizobj1d->get_quiz()->preferredbehaviour);
+
+        $timenow = time();
+
+        // User 1 passes quiz 1.
+        $attempt = quiz_create_attempt($quizobj1a, 1, false, $timenow, false, $u1->id);
+        quiz_start_new_attempt($quizobj1a, $quba1a, $attempt, 1, $timenow);
+        quiz_attempt_save_started($quizobj1a, $quba1a, $attempt);
+        $attemptobj = quiz_attempt::create($attempt->id);
+        $attemptobj->process_submitted_actions($timenow, false, [1 => ['answer' => '3.14']]);
+        $attemptobj->process_finish($timenow, false);
+
+        // User 2 goes overdue in quiz 1.
+        $attempt = quiz_create_attempt($quizobj1b, 1, false, $timenow, false, $u2->id);
+        quiz_start_new_attempt($quizobj1b, $quba1b, $attempt, 1, $timenow);
+        quiz_attempt_save_started($quizobj1b, $quba1b, $attempt);
+        $attemptobj = quiz_attempt::create($attempt->id);
+        $attemptobj->process_going_overdue($timenow, true);
+
+        // User 3 does not finish quiz 1.
+        $attempt = quiz_create_attempt($quizobj1c, 1, false, $timenow, false, $u3->id);
+        quiz_start_new_attempt($quizobj1c, $quba1c, $attempt, 1, $timenow);
+        quiz_attempt_save_started($quizobj1c, $quba1c, $attempt);
+
+        // User 4 abandons the quiz 1.
+        $attempt = quiz_create_attempt($quizobj1d, 1, false, $timenow, false, $u4->id);
+        quiz_start_new_attempt($quizobj1d, $quba1d, $attempt, 1, $timenow);
+        quiz_attempt_save_started($quizobj1d, $quba1d, $attempt);
+        $attemptobj = quiz_attempt::create($attempt->id);
+        $attemptobj->process_abandon($timenow, true);
+
+        // Check for users in quiz1.
+        $concordance = new \mod_concordance\concordance();
+        $concordance->set('coursegenerated', $course->id);
+        $cm = get_coursemodule_from_instance('quiz', $quiz1->id, $course->id, false, MUST_EXIST);
+        $concordance->set('cmgenerated', $cm->id);
+        $users = \mod_concordance\quizmanager::getusersattemptedquiz($concordance);
+        // User5 did not start quiz.
+        $this->assertCount(4, $users);
+
+        // User1.
+        $user1 = array_shift($users);
+        $this->assertEquals(quiz_attempt::FINISHED, $user1->state);
+        $this->assertEquals($u1->id, $user1->userid);
+
+        // User2.
+        $user2 = array_shift($users);
+        $this->assertEquals(quiz_attempt::OVERDUE, $user2->state);
+        $this->assertEquals($u2->id, $user2->userid);
+
+        // User3.
+        $user3 = array_shift($users);
+        $this->assertEquals(quiz_attempt::IN_PROGRESS, $user3->state);
+        $this->assertEquals($u3->id, $user3->userid);
+
+        // User4.
+        $user4 = array_shift($users);
+        $this->assertEquals(quiz_attempt::ABANDONED, $user4->state);
+        $this->assertEquals($u4->id, $user4->userid);
     }
 }
