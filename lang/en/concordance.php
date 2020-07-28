@@ -27,12 +27,12 @@ $string['addnewpanelist'] = 'Add new panelist';
 $string['atleastpanelistnotcontacted'] = 'At least one panelist was not contacted';
 $string['bibliography'] = 'Biography';
 $string['categorypanelcourses'] = 'Category for courses for panels of experts';
-$string['concordance:addinstance'] = 'Add a new concordance formation administration';
-$string['concordance:view'] = 'View concordance formation administration';
+$string['concordance:addinstance'] = 'Add a new learning by concordance management';
+$string['concordance:view'] = 'View learning by concordance management';
 $string['configcategorypanelcourses'] = 'Courses used by the panels of experts in the Concordance activity will be placed in this category';
-$string['defaultemailbody'] = 'As a panelist, you are invited to answer a questionnaire concerning your field of expertise. A link is provided to you at the bottom of this email to access it.
+$string['defaultemailbody'] = 'As a panelist, you are invited to answer a questionnaire. A link is provided to you at the bottom of this email to access it.
 Your answers will then be collated with those of other panelists, to allow students to carry out a training activity by concordance.';
-$string['defaultemailsubject'] = 'Online quiz - Concordance formation';
+$string['defaultemailsubject'] = 'Online quiz - Learning by concordance';
 $string['deletepanelistconfirm'] = 'Are you sure you want to delete this panelist ?';
 $string['descriptionpanelist'] = 'Description for the panelists';
 $string['descriptionstudent'] = 'Description for the students';
@@ -46,9 +46,21 @@ $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cogni
 $string['indicator:socialbreadth'] = 'Concordance social';
 $string['indicator:socialbreadth_help'] = 'This indicator is based on the social breadth reached by the student in a Concordance activity.';
 $string['message'] = 'Message';
-$string['modulename'] = 'Administration of a concordance formation';
-$string['modulename_help'] = 'Concordance help';
-$string['modulenameplural'] = 'Administration of concordance formations';
+$string['modulename'] = 'Learning by concordance management';
+$string['modulename_help'] = 'Learning by concordance (LbC) is an online training modality which places the participants in professional situation and which requests micro-judgments on frequently encountered questions in practice. The LbC module of management allows you to carry out the key stages of the pedagogical scenario of a LbC.
+<p>For each question to which the participant answers, an automated feedback appears, based on the answers previously given by members of a reference panel. The participant can thus:</p>
+<ul>
+    <li>self-calibrate by discovering how their response is compared to those of the panel;</li>
+    <li>explore the reasoning of the panel members using the justifications they gave for their responses;</li>
+    <li>discover educational summaries after a certain number of questions.</li>
+</ul>
+The LbC module of management simplifies the process of setting up an LBC which is carried out in three phases:
+<ol>
+    <li>Setting up an LbC</li>
+    <li>Collecting responses from panelists</li>
+    <li>Generating the quiz for students</li>
+</ol>';
+$string['modulenameplural'] = 'Learning by concordance management';
 $string['nbemailssent'] = 'Nb. emails sent';
 $string['nopanelists'] = 'No panelist have been created yet.';
 $string['noquizselected_cantcontact'] = 'It is not possible to contact the panelists because the quiz for panelists is not selected.';
@@ -81,7 +93,7 @@ $string['quizdoesnotcontainconcordancequestion'] = 'The quiz does not contain Co
 $string['quizselection'] = 'Selection of the quiz for panelists';
 $string['quizstate'] = 'Quiz state';
 $string['quizvisibletostudent'] = 'The selected quiz is currently visible to students of the course';
-$string['search:activity'] = 'Administration of a concordance formation';
+$string['search:activity'] = 'Learning by concordance management';
 $string['sendemailnote'] = 'Note: A personalized link will be added automatically at the end of each email to allow the panelist to connect automatically to the quiz to answer.';
 $string['selectquiz_panelistcontacted'] = 'It is not possible to change the quiz because at least one panelist was already contacted. To be able to select a new quiz, you need to delete the contacted panelists. The link they already received by email will not work anymore, and you will need to re-create and re-contact them.';
 $string['studentquizgenerated'] = 'A new quiz has been generated for students, it is not visible to students for now.';
