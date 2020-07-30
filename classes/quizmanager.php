@@ -328,20 +328,24 @@ class quizmanager {
                     $question = $questionattempt->get_question();
                     if ($question instanceof \qtype_tcs_question) {
                         $qtdata = $questionattempt->get_last_qt_data();
-                        $qtchoiceorder = $qtdata['answer'];
+                        if (isset($qtdata['answer'])) {
+                            $qtchoiceorder = $qtdata['answer'];
 
-                        if (!isset($combinedanswers[$slot])) {
-                            $combinedanswers[$slot] = array();
+                            if (!isset($combinedanswers[$slot])) {
+                                $combinedanswers[$slot] = array();
+                            }
+                            if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
+                                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+                            }
+
+                            $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
+
+                            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+                            $namebl = \html_writer::tag('strong', $panelistname.'&nbsp;:');
+                            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
+                            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
+                                $qtdata['answerfeedback']);
                         }
-                        if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
-                            $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
-                        }
-
-                        $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
-
-                        $namebl = \html_writer::tag('strong', $panelist->get('firstname').' '.$panelist->get('lastname').'&nbsp;:');
-                        $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
-                        $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $qtdata['answerfeedback']);
                     }
                 }
 
@@ -382,6 +386,9 @@ class quizmanager {
      */
     public static function getusersattemptedquiz($concordance) {
         global $DB;
+        if (empty($concordance->get('cmgenerated'))) {
+            return array();
+        }
         $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
         $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
         $params['quizid'] = $quiz->id;

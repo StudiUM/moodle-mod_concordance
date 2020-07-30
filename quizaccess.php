@@ -56,11 +56,13 @@ if (isloggedin() and !$confirm) {
         echo $OUTPUT->header();
         echo $output->render_from_template('mod_concordance/accesspanelistquiz',
                 ['body' => $info, 'footer' => $output->render($button)]);
+        echo $OUTPUT->footer();
         return;
     }
     echo $OUTPUT->header();
     $url = new moodle_url('/mod/concordance/quizaccess.php', ['key' => $keytoken, 'confirm' => 1]);
     echo $OUTPUT->confirm(get_string('alreadyloggedin', 'error', fullname($USER)), $url, $CFG->wwwroot);
+    echo $OUTPUT->footer();
 } else {
     core_user::require_active_user($user, true, true);
     // Do the user log-in.
