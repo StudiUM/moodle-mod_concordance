@@ -198,7 +198,7 @@ class quizmanager {
             $instances = $DB->get_records('enrol',
                     array('courseid' => $courseidavoidcap, 'enrol' => 'manual'));
             $enrolinstance = reset($instances);
-            $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid);
+            $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
         }
 
         $a          = new stdClass();
