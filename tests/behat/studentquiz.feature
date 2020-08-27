@@ -157,8 +157,7 @@ Feature: Students quiz generation
     And I click on "Generate" "button"
     And I should see "A new quiz has been generated"
     And I click on "Go to the generated quiz" "link"
-    And I click on "Activity administration" "button"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 1      |
       | Availability  | Show on course page |
@@ -169,8 +168,7 @@ Feature: Students quiz generation
     And I click on "Donald Fletcher" "checkbox"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
-    And I click on "Activity administration" "button"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 2      |
       | Availability  | Show on course page |
@@ -182,8 +180,7 @@ Feature: Students quiz generation
     And I click on "Donald Fletcher" "checkbox"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
-    And I click on "Activity administration" "button"
-    And I follow "Edit settings"
+    And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 3      |
       | Availability  | Show on course page |

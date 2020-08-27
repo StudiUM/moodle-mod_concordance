@@ -248,6 +248,9 @@
 .path-mod-concordance #paneliststoincludetable td .form-group {
     margin-top: 0.25rem !important;
 }
+#page-mod-concordance-quizaccess .modal {
+    position: relative;
+}
 @media (min-width: 768px) {
     .path-mod-concordance #paneliststoincludetable .col-md-3 {
         flex: 0 0 0%;

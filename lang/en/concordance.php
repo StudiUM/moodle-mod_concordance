@@ -74,6 +74,7 @@ $string['panelistslist'] = 'List of panelists';
 $string['panelistsquiznotfound'] = 'No test found for panelists';
 $string['paneliststoinclude'] = 'Panelists to include';
 $string['panelistupdated'] = 'Panelist updated';
+$string['phase'] = 'Phase';
 $string['phase_setup'] = 'Setup phase';
 $string['phase_panelists'] = 'Answers by panelists phase';
 $string['phase_students'] = 'Generation for students phase';
