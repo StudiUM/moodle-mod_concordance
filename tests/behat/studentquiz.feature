@@ -1,7 +1,7 @@
 @mod @mod_concordance @javascript
 Feature: Students quiz generation
   As a teacher
-  In order to use a concordance formation in my course
+  In order to do a learning by concordance activity in my course
   I need to be able to generate the quiz for students
 
   Background:
@@ -102,6 +102,7 @@ Feature: Students quiz generation
     # Panelist 1 completes the quiz.
     And I log in as concordance panelist "rebeccaa@example.com"
     And I wait until the page is ready
+    And I should see "The description for the panelists"
     And I click on "Attempt quiz now" "button"
     And I should see "First question"
     And I click on "Weakened" "radio" in the "First question" "question"
@@ -197,6 +198,7 @@ Feature: Students quiz generation
     # Student answer the quiz and see feedbacks correctly.
     # Quiz 1 answered by Rebecca only.
     And I follow "Student quiz 1"
+    And I should see "The description for the students"
     And I click on "Attempt quiz now" "button"
     And I click on "Weakened" "radio" in the "First question" "question"
     And I click on "Check" "button" in the "First question" "question"

@@ -1,7 +1,7 @@
 @mod @mod_concordance @javascript
 Feature: Contact panelists page
   As a teacher
-  In order to use a concordance formation in my course
+  In order to do a learning by concordance activity in my course
   I need to be able to contact the panelists
 
   Background:
@@ -89,6 +89,7 @@ Feature: Contact panelists page
     And I click on "panelists" "checkbox" in the "Rebecca" "table_row"
     And the "Send a message" "button" should be enabled
     And I click on "Send a message" "button"
+    And I wait until the page is ready
     And "Send message to 1 person" "dialogue" should be visible
     And I click on "Send message to 1 person" "button"
     And I wait until the page is ready
@@ -96,6 +97,7 @@ Feature: Contact panelists page
     # Send a message to all panelists.
     And I click on "All" "link"
     And I click on "Send a message" "button"
+    And I wait until the page is ready
     And "Send message to 2 people" "dialogue" should be visible
     And I click on "Send message to 2 people" "button"
     And I wait until the page is ready

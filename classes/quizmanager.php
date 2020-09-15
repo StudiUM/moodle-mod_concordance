@@ -96,7 +96,7 @@ class quizmanager {
                     $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
                 }
             }
-            $quiz->intro = $concordance->get('descriptionpanelist');
+            $quiz->intro = is_null($concordance->get('descriptionpanelist')) ? '' : $concordance->get('descriptionpanelist');
             $DB->update_record('quiz', $quiz);
 
             return $quiz;

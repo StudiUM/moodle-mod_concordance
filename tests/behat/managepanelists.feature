@@ -1,7 +1,7 @@
 @mod @mod_concordance @javascript
 Feature: Manage panelists page
   As a teacher
-  In order to use a concordance formation in my course
+  In order to do a learning by concordance activity in my course
   I need to be able to manage the panelists
 
   Background:
