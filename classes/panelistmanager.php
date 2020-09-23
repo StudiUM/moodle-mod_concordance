@@ -61,7 +61,7 @@ class panelistmanager {
                 $userid = user_create_user($user, false, false);
                 // Enrol user in panelist course.
                 $plugin = enrol_get_plugin('manual');
-                $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'), MUST_EXIST);
+                $roleid = get_config('mod_concordance', 'panelistsrole');
                 $instances = $DB->get_records('enrol',
                         array('courseid' => $panelistcourse, 'enrol' => 'manual'));
                 $instance = reset($instances);

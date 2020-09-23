@@ -28,4 +28,20 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     $settings->add(new admin_settings_coursecat_select('mod_concordance/categorypanelcourses',
         get_string('categorypanelcourses', 'mod_concordance'), get_string('configcategorypanelcourses', 'mod_concordance'), 1));
+
+    $studentroles = array();
+    $roles = role_fix_names(get_all_roles(), null, ROLENAME_ORIGINALANDSHORT);
+    foreach ($roles as $role) {
+        if ($role->archetype == 'student') {
+            $defaultstudentroleid = isset($defaultstudentroleid) ? $defaultstudentroleid : $role->id;
+            $studentroles[$role->id] = $role->localname;
+        }
+    }
+    if (empty($studentroles)) {
+        $studentroles[0] = new lang_string('none');
+        $defaultstudentroleid = 0;
+    }
+
+    $settings->add(new admin_setting_configselect('mod_concordance/panelistsrole', get_string('panelistsrole', 'mod_concordance'),
+        get_string('configpanelistsrole', 'mod_concordance'), $defaultstudentroleid, $studentroles));
 }
