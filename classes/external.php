@@ -124,7 +124,7 @@ class external extends external_api {
                 $event = \mod_concordance\event\email_sent::create(array(
                     'context' => $context,
                     'userid' => $USER->id,
-                    'relateduserid' => $panelist->get('id')
+                    'other' => ['panelistid' => $panelist->get('id'), 'fullname' => fullname($recipient)]
                 ));
                 $event->trigger();
                 $nbsent = $panelist->get('nbemailsent') + 1;

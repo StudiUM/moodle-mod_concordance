@@ -62,8 +62,8 @@ class email_sent extends base {
      * @return string
      */
     public function get_description() {
-        return "Email sent for contacting panelists from the user with id '$this->userid' to the panelist with id " .
-               "'$this->relateduserid'.";
+        return "Email sent for contacting panelists from the user with id '$this->userid' " .
+               "to the panelist '" . $this->data['other']['fullname'] . "' with id '" . $this->data['other']['panelistid'] . "'";
     }
 
     /**

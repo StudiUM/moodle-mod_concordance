@@ -100,19 +100,21 @@ class mod_concordance_external_testcase extends externallib_advanced_testcase {
 
         // Check the events data.
         $this->assertInstanceOf('\mod_concordance\event\email_sent', $eventpan2);
-        $this->assertEquals($panelist2->get('id'), $eventpan2->relateduserid);
+        $this->assertNull($eventpan2->relateduserid);
         $this->assertEquals($teacher->id, $eventpan2->userid);
         $this->assertEquals($context->id, $eventpan2->contextid);
-        $eventdescpan2 = "Email sent for contacting panelists from the user with id "
-                . "'$teacher->id' to the panelist with id '". $panelist2->get('id') . "'";
+        $panleist2fullname = trim($panelist2->get('firstname') . ' ' . $panelist2->get('lastname'));
+        $eventdescpan2 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
+               "to the panelist '$panleist2fullname' with id '" . $panelist2->get('id') . "'";
         $this->assertContains($eventdescpan2, $eventpan2->get_description());
 
         $this->assertInstanceOf('\mod_concordance\event\email_sent', $eventpan1);
-        $this->assertEquals($panelist1->get('id'), $eventpan1->relateduserid);
+        $this->assertNull($eventpan1->relateduserid);
         $this->assertEquals($teacher->id, $eventpan1->userid);
         $this->assertEquals($context->id, $eventpan1->contextid);
-        $eventdescpan1 = "Email sent for contacting panelists from the user with id "
-                . "'$teacher->id' to the panelist with id '". $panelist1->get('id') . "'";
+        $panleist1fullname = trim($panelist1->get('firstname') . ' ' . $panelist1->get('lastname'));
+        $eventdescpan1 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
+               "to the panelist '$panleist1fullname' with id '" . $panelist1->get('id') . "'";
         $this->assertContains($eventdescpan1, $eventpan1->get_description());
 
         $this->assertSame($panelist2->get('email'), $result[0]->to);
