@@ -39,9 +39,6 @@ use stdClass;
  */
 class select_quiz_page implements renderable, templatable {
 
-    /** @var The concordance question type. */
-    const CONCORDANCE_TYPE = 'tcs';
-
     /** @var int The course module id. */
     protected $cmid;
 
@@ -76,7 +73,7 @@ class select_quiz_page implements renderable, templatable {
         $concordancetypefound = false;
         $othertypefound = false;
         foreach ($questions as $question) {
-            if ($question->qtype === self::CONCORDANCE_TYPE) {
+            if (\question_bank::make_question($question) instanceof \qtype_tcs_question) {
                 $data->hasconcordancetype = true;
                 $concordancetypefound = true;
             } else {

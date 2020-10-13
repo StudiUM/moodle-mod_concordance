@@ -319,7 +319,8 @@ class quizmanager {
         foreach ($attempts as $attempt) {
             $panelist = panelist::get_record(array('userid' => $attempt->userid));
             // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
-            if ($attempt->userid != $previoususerid && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
+            if ($attempt->userid != $previoususerid && !empty($panelist)
+                    && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
                 $previoususerid = $attempt->userid;
                 $quizattempt = new \quiz_attempt($attempt, $newquizstd, $newquizcm, $newquizcourse);
                 $slots = $quizattempt->get_slots();

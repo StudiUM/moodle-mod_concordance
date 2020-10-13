@@ -79,8 +79,8 @@ class behat_mod_concordance extends behat_base {
      * @param int $questionnb The question number.
      */
     public function i_should_see_for_panelist_for_answer_of_question($comment, $panelist, $answer, $questionnb) {
-        $xpath = "(//div[contains(@class,'tcs')])[$questionnb]//div[contains(@class,'specificfeedback')]/p[contains(.,'$answer')]"
-            . "/following::div[1]/p[contains(.,'$panelist')]/following::p[1]";
+        $xpath = "(//div[contains(@class,'que tcs')])[$questionnb]//div[contains(@class,'specificfeedback')]"
+            . "/p[contains(.,'$answer')]/following::div[1]/p[contains(.,'$panelist')]/following::p[1]";
         $this->execute("behat_general::assert_element_contains_text",
             array($comment, $xpath, "xpath_element")
         );

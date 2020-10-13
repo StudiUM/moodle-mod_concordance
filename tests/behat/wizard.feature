@@ -20,7 +20,7 @@ Feature: Wizard
       | Name          | Test quiz             |
       | Description   | Test quiz description |
       | Availability  | Hide from students    |
-    And I add a "Script concordance test" question to the "Test quiz" quiz with:
+    And I add a "Concordance of reasoning" question to the "Test quiz" quiz with:
       | Question name     | Q1                          |
       | Question text     | First question              |
       | Option            | The option is ABC           |

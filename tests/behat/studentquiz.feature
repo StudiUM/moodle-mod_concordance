@@ -28,12 +28,12 @@ Feature: Students quiz generation
       | Name          | Test quiz name        |
       | Description   | Test quiz description |
       | Availability  | Hide from students    |
-    And I add a "Script concordance test" question to the "Test quiz name" quiz with:
+    And I add a "Concordance of reasoning" question to the "Test quiz name" quiz with:
       | Question name     | Q1                          |
       | Question text     | First question              |
       | Option            | The option is ABC           |
       | New information   | The new information is DEF  |
-    And I add a "Script concordance test" question to the "Test quiz name" quiz with:
+    And I add a "Concordance of reasoning" question to the "Test quiz name" quiz with:
       | Question name     | Q2                          |
       | Question text     | Second question             |
       | Option            | The option is GHI           |
