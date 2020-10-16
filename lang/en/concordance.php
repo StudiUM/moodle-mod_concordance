@@ -26,6 +26,7 @@
 $string['addnewpanelist'] = 'Add new panelist';
 $string['atleastpanelistnotcontacted'] = 'At least one panelist was not contacted';
 $string['bibliography'] = 'Biography';
+$string['cannotremoveallsectionslots'] = 'It is not allowed to remove all questions under a section heading.';
 $string['categorypanelcourses'] = 'Category for courses for panels of experts';
 $string['concordance:addinstance'] = 'Add a new learning by concordance management';
 $string['concordance:view'] = 'View learning by concordance management';
@@ -90,6 +91,7 @@ $string['privacy:metadata:panelist:lastname'] = 'The lastname of the panelist';
 $string['privacy:metadata:panelist:userid'] = 'The ID of the user linked to the panelist';
 $string['privacy:metadata:timemodified'] = 'The time when the record was edited';
 $string['privacy:metadata:concordance_panelist'] = 'A record of the state of panelist';
+$string['questionstoinclude'] = 'Questions to include';
 $string['quizcontainsconcordancequestion'] = 'The quiz contains Concordance questions';
 $string['quizcontainsotherquestion'] = 'The quiz contains certain questions of a type other than Concordance (the answers to these questions by the panelists will not be compiled or made visible to students)';
 $string['quizdoesnotcontainconcordancequestion'] = 'The quiz does not contain Concordance questions';

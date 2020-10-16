@@ -112,9 +112,9 @@ class quizmanager {
      */
     public static function duplicatequizforstudents($concordance, $formdata) {
         global $DB;
-
+        $hasquestions = isset($formdata->questionstoinclude) && !empty($formdata->questionstoinclude);
         // Duplicate the panelist quiz in the students course and make it hidden.
-        if (!is_null($concordance->get('cmgenerated'))) {
+        if (!is_null($concordance->get('cmgenerated')) && $hasquestions) {
             $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $concordance->get('course')), '*', MUST_EXIST);
 
@@ -156,9 +156,29 @@ class quizmanager {
             $section = $DB->get_record('course_sections',
                     array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
             moveto_module($newcm, $section);
-            // Compile the answers for panelists.
-            self::compileanswers($cm, $quiz, $newcm, $course, $formdata);
+            $quizobj = new \quiz($quiz, $newcm, $course);
+            $quizobj->preload_questions();
+            $quizobj->load_questions();
+            $questions = $quizobj->get_questions();
+            $structure = $quizobj->get_structure();
+            $removed = false;
+            foreach ($questions as $question) {
+                if (!key_exists($question->slot, $formdata->questionstoinclude)) {
+                    // Remove question.
+                    if (!$slot = $DB->get_record('quiz_slots', array('quizid' => $quiz->id, 'id' => $question->slotid))) {
+                        throw new moodle_exception('Bad slot ID '.$question->slotid);
+                    }
+                    $structure->remove_slot($slot->slot);
+                    $removed = true;
+                }
+            }
+            if ($removed) {
+                quiz_delete_previews($quiz);
+                quiz_update_sumgrades($quiz);
+            }
 
+            // Compile the answers for panelists and questions included.
+            self::compileanswers($cm, $quizpanelist, $coursepanelist, $quizobj, $formdata);
             return $newcm->id;
         }
         return null;
@@ -297,13 +317,13 @@ class quizmanager {
      * Compile the answers from the panelists in the feedback for each choice of answer.
      *
      * @param stdClass $quizanswered The course module for the quiz answered by the panelists.
-     * @param stdClass $newquizstd The quiz object from the DB.
-     * @param stdClass $newquizcm The course module for the new quiz (for the students).
-     * @param stdClass $newquizcourse The course object from the DB (for the student quiz).
+     * @param stdClass $quizpanelist The quiz object from the DB (for the panelist).
+     * @param stdClass $coursepanelist The course object from the DB (for the panelist quiz).
+     * @param Quiz $newquiz The new quiz (for the students).
      * @param array $formdata An array of data submitted by the 'Generate student quiz' form.
      */
-    private static function compileanswers($quizanswered, $newquizstd, $newquizcm, $newquizcourse, $formdata) {
-        global $DB, $CFG;
+    private static function compileanswers($quizanswered, $quizpanelist, $coursepanelist, $newquiz, $formdata) {
+        global $DB;
 
         $params = array();
         $conditions = ' AND state = :state';
@@ -322,9 +342,12 @@ class quizmanager {
             if ($attempt->userid != $previoususerid && !empty($panelist)
                     && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
                 $previoususerid = $attempt->userid;
-                $quizattempt = new \quiz_attempt($attempt, $newquizstd, $newquizcm, $newquizcourse);
+                $quizattempt = new \quiz_attempt($attempt, $quizpanelist, $quizanswered, $coursepanelist);
                 $slots = $quizattempt->get_slots();
                 foreach ($slots as $slot) {
+                    if (!key_exists($slot, $formdata->questionstoinclude)) {
+                        continue;
+                    }
                     $questionattempt = $quizattempt->get_question_attempt($slot);
                     $question = $questionattempt->get_question();
                     if ($question instanceof \qtype_tcs_question) {
@@ -354,17 +377,16 @@ class quizmanager {
         }
 
         // Save the combined feedbacks and number of experts in the new quiz questions.
-        $newquiz = new \quiz($newquizstd, $newquizcm, $newquizcourse);
-        $newquiz->preload_questions();
-        $newquiz->load_questions();
         $questions = $newquiz->get_questions();
-        $questionorder = 1; // Order of questions begin at 1.
         foreach ($questions as $question) {
+            if (!key_exists($question->slot, $formdata->questionstoinclude)) {
+                continue;
+            }
             $answerorder = 0; // Order of answers begin at 0.
             foreach ($question->options->answers as $answer) {
-                if (isset($combinedanswers[$questionorder][$answerorder])) {
-                    $answer->fraction = $combinedanswers[$questionorder][$answerorder]['nbexperts'];
-                    $answer->feedback = $combinedanswers[$questionorder][$answerorder]['feedback'];
+                if (isset($combinedanswers[$question->slot][$answerorder])) {
+                    $answer->fraction = $combinedanswers[$question->slot][$answerorder]['nbexperts'];
+                    $answer->feedback = $combinedanswers[$question->slot][$answerorder]['feedback'];
                 } else {
                     // Empty this answer.
                     $answer->fraction = 0;
@@ -375,7 +397,6 @@ class quizmanager {
             }
             // Important to notify that the question was edited or the changes will not be visible.
             \question_bank::notify_question_edited($question->id);
-            $questionorder++;
         }
     }
 
@@ -400,6 +421,25 @@ class quizmanager {
                                      WHERE t2.userid = t1.userid)
                          AND t1.quiz = :quizid";
         return $DB->get_records_sql($query, $params);
+    }
+
+    /**
+     * Get structure from panelist quiz.
+     *
+     * @param concordance $concordance Concordance persistence object.
+     * @return \mod_quiz\structure Quiz structure.
+     */
+    public static function getquizstructure($concordance) {
+        global $DB;
+        if (empty($concordance->get('cmgenerated'))) {
+            return array();
+        }
+        $coursegeneratedid = $concordance->get('coursegenerated');
+        $course = $DB->get_record('course', array('id' => $coursegeneratedid), '*', MUST_EXIST);
+        $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
+        $quizobjet = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $quiz = new \quiz($quizobjet, $cm, $course);
+        return $quiz->get_structure();
     }
 
     /**

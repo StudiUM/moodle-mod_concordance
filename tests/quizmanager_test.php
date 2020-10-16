@@ -174,16 +174,38 @@ class quizmanager_testcase extends advanced_testcase {
         $formdata = new \stdClass();
         $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
         $this->assertNull($cmid);
+        $dg = $this->getDataGenerator();
 
         // Add quiz to the course.
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
         $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'First quiz', 'visible' => false));
 
+        // Questions.
+        $questgen = $dg->get_plugin_generator('core_question');
+        $quizcat = $questgen->create_question_category();
+        $question1 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+        $questgen->update_question($question1);
+        $question2 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+        quiz_add_quiz_question($question1->id, $quiz1);
+        quiz_add_quiz_question($question2->id, $quiz1);
+
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $cmpanelist = get_coursemodule_from_id('', $this->concordancepersistent->get('cmgenerated'), 0, true, MUST_EXIST);
+        $quizpanelist = $DB->get_record('quiz', array('id' => $cmpanelist->instance), '*', MUST_EXIST);
+        $coursepanelist = $DB->get_record('course',
+                array('id' => $this->concordancepersistent->get('coursegenerated')), '*', MUST_EXIST);
+        $quizobj = new \quiz($quizpanelist, $cmpanelist, $coursepanelist);
+        $quizobj->preload_questions();
+        $quizobj->load_questions();
+        $questions = array_values($quizobj->get_questions());
+        $this->assertCount(2, $questions);
+        $slot1 = $questions[0]->slot;
+        $slot2 = $questions[1]->slot;
 
-        // Duplicate quiz for students.
+        // Duplicate quiz for students and 2 questions.
+        $formdata->questionstoinclude = ["$slot1" => 1, "$slot2" => 1];
         $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
         $this->assertNotNull($cmid);
 
@@ -192,15 +214,41 @@ class quizmanager_testcase extends advanced_testcase {
         $context = \context_module::instance($cm->id);
         $this->assertTrue(array_key_exists($cm->instance, $courseinfo->instances['quiz']));
         $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $quizobj = new \quiz($quiz, $cm, $this->course);
+        $quizobj->preload_questions();
+        $quizobj->load_questions();
+        $questions = $quizobj->get_questions();
         $this->assertEquals('-', $quiz->browsersecurity);
         $this->assertEquals(0, $cm->visible);
         $this->assertEquals('description student', trim(strip_tags($quiz->intro)));
+        $this->assertCount(2, $questions);
         // Check that file was copied.
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_quiz', 'intro', 0, "itemid, filepath, filename", false);
         $this->assertCount(1, $files);
         $file = array_values($files)[0];
         $this->assertEquals('fakeimage2.png', $file->get_filename());
+
+        // Duplicate quiz for students and 1 question.
+        $quizobj = new \quiz($quizpanelist, $cmpanelist, $coursepanelist);
+        $quizobj->preload_questions();
+        $quizobj->load_questions();
+        $questions = array_values($quizobj->get_questions());
+        $this->assertCount(2, $questions);
+        $slot1 = $questions[0]->slot;
+        $formdata->questionstoinclude = ["$slot1" => 1];
+        $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
+        $this->assertNotNull($cmid);
+        $courseinfo = get_fast_modinfo($this->course);
+        $cm = get_coursemodule_from_id('quiz', $cmid);
+        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $quizobj = new \quiz($quiz, $cm, $this->course);
+        $quizobj->preload_questions();
+        $quizobj->load_questions();
+        $questions = $quizobj->get_questions();
+        $question = current($questions);
+        $this->assertCount(1, $questions);
+        $this->assertEquals($question1->name, $question->name);
     }
 
     /**

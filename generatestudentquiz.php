@@ -59,8 +59,10 @@ if (count($panelists) == 0) {
     echo $OUTPUT->notification(get_string('panelistsquiznotfound', 'mod_concordance'));
 } else {
     $attempts = \mod_concordance\quizmanager::getusersattemptedquiz($concordancepersistent);
+    $structure = \mod_concordance\quizmanager::getquizstructure($concordancepersistent);
     $form = new \mod_concordance\form\studentquizgeneration($url->out(false),
-            array('panelists' => $panelists, 'context' => $context, 'attempts' => $attempts));
+            array('panelists' => $panelists, 'context' => $context, 'attempts' => $attempts, 'structure' => $structure),
+            'post', '', ['id' => 'generatestudentquizform']);
 
     $data = $form->get_submitted_data();
     if ($data) {

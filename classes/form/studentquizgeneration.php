@@ -27,6 +27,7 @@ namespace mod_concordance\form;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 /**
  * Student quiz generation form.
@@ -42,12 +43,12 @@ class studentquizgeneration extends \moodleform {
      * Define the form - called by parent constructor
      */
     public function definition() {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
         $mform = $this->_form;
 
         // Panelists.
         $mform->addElement('header', 'paneliststoincludeheader',
-                get_string('paneliststoinclude', 'mod_concordance'));
+                \html_writer::tag('h3', get_string('paneliststoinclude', 'mod_concordance')));
         $statelabel = get_string('quizstate', 'mod_concordance');
         $mform->addElement('html',
                 "<table id='paneliststoincludetable'><thead><tr><th></th><th>$statelabel</th></tr></thead>");
@@ -83,10 +84,42 @@ class studentquizgeneration extends \moodleform {
         }
         $mform->addElement('html', '</tbody></table>');
 
+        // Questions.
+        $mform->addElement('header', 'questionstoincludeheader',
+                \html_writer::tag('h3', get_string('questionstoinclude', 'mod_concordance')));
+        $structure = $this->_customdata['structure'];
+        foreach ($structure->get_sections() as $section) {
+            $mform->addElement('html', \html_writer::start_div('concordancequestionsection'));
+            if (!empty($section->heading)) {
+                $mform->addElement('html', \html_writer::tag('h4', $section->heading));
+            }
+            foreach ($structure->get_slots_in_section($section->id) as $slot) {
+                $pagenumber = $structure->get_page_number_for_slot($slot);
+                // Put page in a heading for accessibility and styling.
+                if ($structure->is_first_slot_on_page($slot)) {
+                    $page = get_string('page') . ' ' . $pagenumber;
+                    $tag = !empty($section->heading) ? 'h5' : 'h4';
+                    $mform->addElement('html', \html_writer::tag($tag, $page));
+                }
+                $question = $structure->get_question_in_slot($slot);
+
+                $qtype = \question_bank::get_qtype($question->qtype, false);
+                $namestr = $qtype->local_name();
+                $icon = $OUTPUT->pix_icon('icon', $namestr, $qtype->plugin_name(), array('title' => $namestr,
+                        'class' => 'activityicon', 'alt' => ' ', 'role' => 'presentation'));
+                $label = quiz_question_tostring($question);
+                $mform->addElement('checkbox', 'questionstoinclude['. $slot .']', '', $icon . $label);
+                $mform->setDefault('questionstoinclude['. $slot .']', 1);
+            }
+            $mform->addElement('html', \html_writer::end_div());
+        }
+
         // Disable short forms.
         $mform->setDisableShortforms();
         $this->add_action_buttons(false, get_string('generate', 'mod_concordance'));
 
+        $PAGE->requires->string_for_js('cannotremoveallsectionslots', 'mod_concordance');
+        $PAGE->requires->string_for_js('cannotremoveslots', 'mod_quiz');
         $PAGE->requires->js_call_amd('mod_concordance/studentquizgeneration', 'init', []);
     }
 }

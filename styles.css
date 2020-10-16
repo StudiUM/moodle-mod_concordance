@@ -251,12 +251,17 @@
 }
 
 @media (min-width: 768px) {
-    .path-mod-concordance #paneliststoincludetable .col-md-3 {
+    .path-mod-concordance #paneliststoincludetable .col-md-3,
+    #id_questionstoincludeheader  .col-md-3 {
         flex: 0 0 0%;
         max-width: 0%;
     }
-    .path-mod-concordance #paneliststoincludetable .col-md-9 {
+    .path-mod-concordance #paneliststoincludetable .col-md-9,
+    #id_questionstoincludeheader  .col-md-9 {
         flex: 0 0 100%;
         max-width: 100%;
     }
+}
+.path-mod-concordance .questionname {
+    font-weight: 700;
 }

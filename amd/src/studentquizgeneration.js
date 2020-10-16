@@ -22,13 +22,49 @@
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery'],
-    function($) {
+define(['jquery', 'core/yui'],
+    function($, Y) {
 
         var SELECTORS = {
             PANELISTSSELECTEDCHECKBOXES: "input[name^='paneliststoinclude']:checked",
             PANELISTSCHECKBOXES: "input[name^='paneliststoinclude']",
-            SUBMITBUTTON: "input[name='submitbutton']"
+            QUESTIONSSELECTEDCHECKBOXES: "input[name^='questionstoinclude']:checked",
+            QUESTIONSCHECKBOXES: "input[name^='questionstoinclude']",
+            SUBMITBUTTON: "input[name='submitbutton']",
+            SECTIONSELECTOR: ".concordancequestionsection",
+            FORMSELECTOR: "#generatestudentquizform"
+        };
+
+        var validateform = function () {
+            if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0 &&
+                    $(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length > 0) {
+                $(SELECTORS.SUBMITBUTTON).prop('disabled', false);
+            } else {
+                $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
+            }
+        };
+
+        var checkquestionremove = function () {
+            var valid = true;
+            $(SELECTORS.SECTIONSELECTOR).each(function() {
+                if ($(this).find(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length === 0) {
+                    valid = false;
+                    return false;
+                }
+            });
+
+            if (valid === false) {
+                Y.use('moodle-core-notification-alert', function() {
+                    var alert = new M.core.alert({
+                        title: M.util.get_string('cannotremoveslots', 'mod_quiz'),
+                        message: M.util.get_string('cannotremoveallsectionslots', 'mod_concordance')
+                    });
+
+                    alert.show();
+                });
+                return false;
+            }
+            return true;
         };
 
         return /** @alias module:mod_concordance/studentquizgeneration */ {
@@ -41,13 +77,14 @@ define(['jquery'],
              */
             'init': function() {
                 $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
-                $(SELECTORS.PANELISTSCHECKBOXES).on('change', function() {
+                $(SELECTORS.PANELISTSCHECKBOXES + ',' + SELECTORS.QUESTIONSCHECKBOXES).on('change', function() {
                     // Enable/disable submitbutton.
-                    if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0) {
-                        $(SELECTORS.SUBMITBUTTON).prop('disabled', false);
-                    } else {
-                        $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
-                    }
+                    validateform();
+                });
+                validateform();
+                // Check questions removal on submit.
+                $(SELECTORS.FORMSELECTOR).on("submit", function(){
+                    return checkquestionremove();
                 });
             }
         };
