@@ -15,12 +15,21 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
+    @template mod_concordance/select_quiz_page
+
     Select quiz template.
 
     Context variables required for this template:
     * hasconcordancetype
     * hasothertype
     * visible
+
+    Example context (json):
+    {
+        "hasconcordancetype": false,
+        "hasothertype": true,
+        "visible": true
+    }
 }}
 
 {{#hasconcordancetype}}
@@ -37,7 +46,7 @@
 {{/hasconcordancetype}}
 {{#hasothertype}}
     <div class="alert alert-warning alert-block fade in " role="alert" data-aria-autofocus="true">
-        <i class="fa fa-exclamation-circle aria-hidden="true"></i>
+        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
         {{#str}}quizcontainsotherquestion, mod_concordance{{/str}}
     </div>
 {{/hasothertype}}

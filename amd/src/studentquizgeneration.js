@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery'],
-    function ($) {
+    function($) {
 
         var SELECTORS = {
             PANELISTSSELECTEDCHECKBOXES: "input[name^='paneliststoinclude']:checked",
@@ -39,9 +39,9 @@ define(['jquery'],
              *
              * @method init
              */
-            'init': function () {
+            'init': function() {
                 $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
-                $(SELECTORS.PANELISTSCHECKBOXES).on('change', function () {
+                $(SELECTORS.PANELISTSCHECKBOXES).on('change', function() {
                     // Enable/disable submitbutton.
                     if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0) {
                         $(SELECTORS.SUBMITBUTTON).prop('disabled', false);

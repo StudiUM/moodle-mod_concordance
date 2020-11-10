@@ -15,12 +15,25 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
+    @template mod_concordance/contact_panelists_page
+
     Contact panelists template.
 
     Context variables required for this template:
     * panelists - list of panelist persistence
     * isquizselected - boolean
     * noquizselectedwarning - array of warning info if no quiz is selected
+    
+    Example context (json):
+    {
+        "panelists": [{
+		"firstname": "Joe",
+		"lastname": "Smith",
+		"email": "joesmith@email.com"
+	}],
+        "isquizselected": true,
+        "noquizselectedwarning": ["waring1", "warning2"]
+    }
 }}
 <div data-region="contactpanelists">
 {{^isquizselected}}
@@ -71,6 +84,6 @@
 </div>
 {{#js}}
 require(['mod_concordance/panelists'], function(Panelists) {
-   Panelists.init({cmid: {{cmid}} });
+    Panelists.init({cmid: parseInt("{{cmid}}")});
 });
 {{/js}}

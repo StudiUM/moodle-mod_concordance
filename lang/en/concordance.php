@@ -34,7 +34,7 @@ $string['configpanelistsrole'] = 'The panelists in the Concordance activity will
 $string['defaultemailbody'] = 'As a panelist, you are invited to answer a questionnaire. A link is provided to you at the bottom of this email to access it.
 Your answers will then be collated with those of other panelists, to allow students to carry out a training activity by concordance.';
 $string['defaultemailsubject'] = 'Online quiz - Learning by concordance';
-$string['deletepanelistconfirm'] = 'Are you sure you want to delete this panelist ?';
+$string['deletepanelistconfirm'] = 'Are you sure you want to delete this panelist&nbsp;?';
 $string['descriptionpanelist'] = 'Description for the panelists';
 $string['descriptionstudent'] = 'Description for the students';
 $string['editpanelist'] = 'Edit panelist';

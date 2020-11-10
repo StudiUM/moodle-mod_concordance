@@ -18,8 +18,14 @@
     @template mod_concordance/email_panelist
 
     Context variables required for this template:
-    * text
-    * url
+    * text The text message of the email
+    * url The url to access to the quiz 
+    
+    Example context (json):
+    {
+        "text": "message text",
+        "url": "localhost/quiz"
+    }
 }}
 
 {{text}}

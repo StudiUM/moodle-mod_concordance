@@ -205,10 +205,6 @@ function concordance_delete_instance($id) {
  * Given a coursemodule object, this function returns the extra
  * information needed to print this activity in various places.
  *
- * If concordance needs to be displayed inline we store additional information
- * in customdata, so functions {@link concordance_cm_info_dynamic()} and
- * {@link concordance_cm_info_view()} do not need to do DB queries
- *
  * @param cm_info $cm
  * @return cached_cm_info info
  */

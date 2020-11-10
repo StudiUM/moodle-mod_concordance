@@ -27,6 +27,8 @@ require(__DIR__.'/../../config.php');
 $cmid       = required_param('cmid', PARAM_INT);            // Course module.
 $phase      = required_param('phase', PARAM_INT);           // The code of the new phase.
 
+require_sesskey();
+
 $cm         = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
 $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 $concordance   = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);

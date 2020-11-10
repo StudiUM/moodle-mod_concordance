@@ -15,10 +15,11 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    Missing required fields template.
+    @template mod_concordance/wizard
+    
+    Wizard template.
 
     Context variables required for this template:
-    * all properties from the concordance instance
     * phases - array of 
         * name - string 
         * switchphase - string 
@@ -30,6 +31,23 @@
             * url - string
             * statusname - string
             * statusclass - string
+    
+    Example context (json):
+    {
+	"phases": [{
+		"name": "Manage panelists",
+		"switchphase": "Switch phase",
+		"switchnext": "Switch to next phase",
+		"isactive": true,
+		"islast": true,
+		"tasks": [{
+			"name": "Edit settings",
+			"url": "localhost/concordance",
+			"statusname": "Fail",
+			"statusclass": "fail"
+		}]
+	}]
+    }
 }}
 
 <div class="concordance-wizard">

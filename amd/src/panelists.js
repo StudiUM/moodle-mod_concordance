@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/templates', 'core/notification', 'core/ajax'],
-    function ($, Str, ModalFactory, ModalEvents, Templates, Notification, Ajax) {
+    function($, Str, ModalFactory, ModalEvents, Templates, Notification, Ajax) {
 
         var SELECTORS = {
             SENDACTIONBUTTON: "#showpanelistemailpopup",
@@ -38,7 +38,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
          *
          * @param {Object} options Object containing options.
          */
-        var Panelists = function (options) {
+        var Panelists = function(options) {
 
             this.cmid = options.cmid;
 
@@ -65,12 +65,12 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
          * @method attachEventListeners
          * @private
          */
-        Panelists.prototype.attachEventListeners = function () {
-            $(SELECTORS.SENDACTIONBUTTON).on('click', function (e) {
+        Panelists.prototype.attachEventListeners = function() {
+            $(SELECTORS.SENDACTIONBUTTON).on('click', function(e) {
                 e.preventDefault();
 
                 var ids = [];
-                $(SELECTORS.PANELISTSSELECTEDCHECKBOXES).each(function (index, ele) {
+                $(SELECTORS.PANELISTSSELECTEDCHECKBOXES).each(function(index, ele) {
                     var id = $(ele).val();
                     ids.push(id);
                 });
@@ -78,19 +78,19 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
                 this.showSendEmail(ids).fail(Notification.exception);
             }.bind(this));
 
-            $(SELECTORS.CHECKALLLINK).on('click', function (e) {
+            $(SELECTORS.CHECKALLLINK).on('click', function(e) {
                 e.preventDefault();
                 $(SELECTORS.PANELISTSCHECKBOXES).prop('checked', true);
                 $(SELECTORS.SENDACTIONBUTTON).prop('disabled', false);
             });
 
-            $(SELECTORS.CHECKNONELINK).on('click', function (e) {
+            $(SELECTORS.CHECKNONELINK).on('click', function(e) {
                 e.preventDefault();
                 $(SELECTORS.PANELISTSCHECKBOXES).prop('checked', false);
                 $(SELECTORS.SENDACTIONBUTTON).prop('disabled', true);
             });
 
-            $(SELECTORS.PANELISTSCHECKBOXES).on('change', function () {
+            $(SELECTORS.PANELISTSCHECKBOXES).on('change', function() {
                 // Enable/disable buttonsend.
                 if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0) {
                     $(SELECTORS.SENDACTIONBUTTON).prop('disabled', false);
@@ -108,7 +108,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
          * @param {int[]} users
          * @return {Promise}
          */
-        Panelists.prototype.showSendEmail = function (users) {
+        Panelists.prototype.showSendEmail = function(users) {
 
             if (users.length == 0) {
                 // Nothing to do.
@@ -128,21 +128,21 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
                     }),
                     titlePromise,
                     loadingtxtPromise
-                    ).then(function (modal, title, loadingtxt) {
+                    ).then(function(modal, title, loadingtxt) {
                         // Keep a reference to the modal.
                         this.modal = modal;
 
                         this.modal.setTitle(title);
                         this.modal.setSaveButtonText(title);
 
-                        this.modal.getRoot().on(ModalEvents.hidden, function () {
+                        this.modal.getRoot().on(ModalEvents.hidden, function() {
                             $(SELECTORS.SENDACTIONBUTTON).focus();
                             this.modal.getRoot().remove();
                         }.bind(this));
 
                         this.modal.getRoot().on(ModalEvents.save, this.submitSendEmail.bind(this, users, loadingtxt));
                         var self = this;
-                        this.modal.getRoot().on('change keyup', '#subject-bulk-email, #body-bulk-email', function () {
+                        this.modal.getRoot().on('change keyup', '#subject-bulk-email, #body-bulk-email', function() {
                             var messageText = self.modal.getRoot().find('form textarea').val();
                             var subject = self.modal.getRoot().find('form input').val();
                             messageText = messageText.trim();
@@ -166,11 +166,11 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
          * @method submitSendEmail
          * @private
          * @param {int[]} users
-         * @param String loadingtxt
+         * @param {String} loadingtxt
          * @param {Event} e Form submission event.
          * @return {Promise}
          */
-        Panelists.prototype.submitSendEmail = function (users, loadingtxt, e) {
+        Panelists.prototype.submitSendEmail = function(users, loadingtxt, e) {
             e.preventDefault();
             var messageText = this.modal.getRoot().find('form textarea').val();
             var subject = this.modal.getRoot().find('form input').val();
@@ -183,13 +183,14 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
                     users: users,
                     message: messageText,
                     subject: subject,
-                    cmid : this.cmid,
+                    cmid: this.cmid,
                     displaynotification: true
                 }
-                }])[0].then(function (result) {
+                }])[0].then(function(result) {
                     if (result) {
                         window.location.reload(true);
                     }
+                    return true;
                 }).catch(Notification.exception);
         };
 
@@ -203,7 +204,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
              * @param {Object} options - List of options.
              * @return {Panelists}
              */
-            'init': function (options) {
+            'init': function(options) {
                 return new Panelists(options);
             }
         };

@@ -90,7 +90,7 @@ Feature: Wizard
     And I follow "TestConcordance"
     And the status of concordance task "Contact panelists" should be "done"
 
-Scenario: Test the wizard navigation.
+  Scenario: Test the wizard navigation.
     # Create a basic concordance activity.
     Given I am on "Course1" course homepage
     When I add a "Learning by concordance management" to section "1" and I fill the form with:

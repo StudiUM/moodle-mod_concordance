@@ -258,7 +258,8 @@ class concordance extends persistent {
      */
     public function switchphase_url($phase) {
         $phase = clean_param($phase, PARAM_INT);
-        return new moodle_url('/mod/concordance/switchphase.php', array('cmid' => $this->get_cm()->id, 'phase' => $phase));
+        return new moodle_url('/mod/concordance/switchphase.php', array('cmid' => $this->get_cm()->id, 'phase' => $phase,
+            'sesskey' => sesskey()));
     }
 
     /**

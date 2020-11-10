@@ -15,6 +15,8 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
+    @template mod_concordance/manage_panelists_page
+
     Manage panelists template.
 
     Context variables required for this template:
@@ -25,6 +27,18 @@
         * editbutton
         * deletebutton
     * addbutton - button for adding panelists
+
+    Example context (json):
+    {
+	"panelists": [{
+		"firstname": "Joe",
+		"lastname": "Smith",
+		"email": "joesmith@email.com",
+		"editbutton": "<button>Edit</button>",
+		"deletebutton": "<button>Delete</button>"
+	}],
+	"addbutton": "<button>Button</button>"
+    }
 }}
 <div data-region="managepanelists">
 <div class="pull-left">

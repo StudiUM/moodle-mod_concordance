@@ -71,9 +71,8 @@
  * Styles for the active phase.
  */
 .path-mod-concordance .concordance-wizard dl.active dt {
-
     background-color: #5aaa09;
-    color:#fff;
+    color: #fff;
 }
 
 .path-mod-concordance .concordance-wizard dl.active dd {
@@ -93,9 +92,8 @@
  * Styles for tasks.
  */
 .path-mod-concordance .concordance-wizard dd ul.tasks li {
-    background-position: top right;
-    background-image: url([[pix:mod_workshop|userplan/task-todo]]);
     background-position: top left;
+    background-image: url([[pix:mod_workshop|userplan/task-todo]]);
     background-repeat: no-repeat;
     list-style-type: none;
     min-height: 16px;
@@ -246,11 +244,12 @@
     vertical-align: top;
 }
 .path-mod-concordance #paneliststoincludetable td .form-group {
-    margin-top: 0.25rem !important;
+    margin-top: 0.25rem;
 }
 #page-mod-concordance-quizaccess .modal {
     position: relative;
 }
+
 @media (min-width: 768px) {
     .path-mod-concordance #paneliststoincludetable .col-md-3 {
         flex: 0 0 0%;

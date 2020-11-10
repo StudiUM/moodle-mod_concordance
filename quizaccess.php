@@ -72,6 +72,7 @@ if (isloggedin() and !$confirm) {
 
     complete_user_login($user);
     \core\session\manager::apply_concurrent_login_limit($user->id, session_id());
+    require_login(null, false);
 
     redirect($urlquizaccess);
 }
