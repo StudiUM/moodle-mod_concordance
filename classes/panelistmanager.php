@@ -53,7 +53,7 @@ class panelistmanager {
             if ($panelistcourse = $concordance->get('coursegenerated')) {
                 // Create user Moodle.
                 $user = new \stdClass();
-                $user->username = 'concordance-panelist-' . $panelist->get('id');
+                $user->username = uniqid('concordance-panelist-');
                 $user->firstname = 'Panelist-' . $panelist->get('id');
                 $user->lastname = $user->firstname;
                 $user->email = $user->username;

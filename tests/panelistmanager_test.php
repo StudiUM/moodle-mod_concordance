@@ -63,8 +63,6 @@ class mod_concordance_panelistmanager_testcase extends advanced_testcase {
         // Check that new moodle user is created.
         $this->assertNotNull($panelist->get('userid'));
         $user = $DB->get_record('user', ['id' => $panelist->get('userid')]);
-        $this->assertEquals('concordance-panelist-' . $panelist->get('id'), $user->username);
-        $this->assertEquals('concordance-panelist-' . $panelist->get('id'), $user->email);
         $this->assertEquals('Panelist-' . $panelist->get('id'), $user->firstname);
         $this->assertEquals('Panelist-' . $panelist->get('id'), $user->lastname);
         $this->assertEquals(1, $user->confirmed);
