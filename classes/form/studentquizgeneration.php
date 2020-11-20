@@ -68,7 +68,6 @@ class studentquizgeneration extends \moodleform {
                     }
                     if ($state == \quiz_attempt::IN_PROGRESS) {
                         $quizstateclass = 'label-warning';
-                        $mform->freeze(['paneliststoinclude['. $panelist->get("id").']']);
                     }
                 } else {
                     $quizstate = get_string('notcompleted', 'mod_concordance');

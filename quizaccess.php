@@ -49,8 +49,12 @@ if (isloggedin() and !$confirm) {
         $context = context_module::instance($cm->id);
         $quizobj = quiz::create($cm->instance, $USER->id);
         $quiz = $quizobj->get_quiz();
-        $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'),
-            'sesskey' => sesskey()]);
+        if ($panelist->has_attempted_quiz($quiz->id)) {
+            $quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated'), 'sesskey' => sesskey()]);
+        } else {
+            $quizurl = new moodle_url('/mod/quiz/startattempt.php', ['cmid' => $concordance->get('cmgenerated'),
+                'sesskey' => sesskey()]);
+        }
         $button = new single_button($quizurl, get_string('attemptquiznow', 'quiz'));
         $info = $output->view_information($quiz, $cm, $context, []);
         echo $OUTPUT->header();

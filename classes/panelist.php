@@ -157,6 +157,17 @@ class panelist extends persistent {
     }
 
     /**
+     * Return true if this panelist attempted this quiz, false otherwise.
+     *
+     * @param int $quizid The quiz id to check.
+     * @return boolean
+     */
+    public function has_attempted_quiz($quizid) {
+        global $DB;
+        return $DB->record_exists('quiz_attempts', array('quiz' => $quizid, 'userid' => $this->get('userid')));
+    }
+
+    /**
      * Get panelists by ids.
      *
      * @param array $ids Array of ids

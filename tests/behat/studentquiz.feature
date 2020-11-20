@@ -59,6 +59,7 @@ Feature: Students quiz generation
     And I should not see "No panelist have been created yet."
     And "Generate" "button" should not be visible
 
+  @_switch_window
   Scenario: Test the options on the "Generate the quiz for students" page
     # Select the quiz for panelists.
     Given I follow "TestConcordance"
@@ -113,6 +114,15 @@ Feature: Students quiz generation
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
     And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    # Check that Rebecca can't attempt again, but can review her attempt.
+    And I log in as concordance panelist "rebeccaa@example.com"
+    And I wait until the page is ready
+    And I click on "Attempt quiz now" "button"
+    And I should see "Summary of your previous attempts"
+    And I should see "No more attempts are allowed"
+    And I click on "Review" "button"
+    And I switch to "quizpopup" window
+    And I should see "Comments from Rebecca for Q1"
     # Panelist 2 completes the quiz.
     And I log in as concordance panelist "donaldf@example.com"
     And I click on "Continue" "button"
@@ -150,7 +160,7 @@ Feature: Students quiz generation
     And I should see "Not completed" in the "Stepanie Grant" "table_row"
     And the "Rebecca Armenta" "checkbox" should be enabled
     And the "Donald Fletcher" "checkbox" should be enabled
-    And the "Pablo Menendez" "checkbox" should be disabled
+    And the "Pablo Menendez" "checkbox" should be enabled
     And the "Stepanie Grant" "checkbox" should be disabled
     # Generate the quiz for students (Quiz 1).
     And I click on "Rebecca Armenta" "checkbox"

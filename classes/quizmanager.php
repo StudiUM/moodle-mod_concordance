@@ -78,13 +78,19 @@ class quizmanager {
             set_coursemodule_visible($newcm->id, 1);
             $concordance->set('cmgenerated', $newcm->id);
 
+            // Change some params in the quiz.
             $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
+            $quiz->attempts = 1;
 
-            // The panelists should see no feedback.
+            // The panelists should see no feedback, but can review their attempts.
             $quiz->preferredbehaviour = 'deferredfeedback';
             foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
-                $quiz->{'review'.$field} = 0;
+                if ($field == 'attempt') {
+                    $quiz->{'review'.$field} = \mod_quiz_admin_review_setting::all_on();
+                } else {
+                    $quiz->{'review'.$field} = 0;
+                }
             }
 
             // Move files if exists.
@@ -326,12 +332,10 @@ class quizmanager {
         global $DB;
 
         $params = array();
-        $conditions = ' AND state = :state';
         $params['quizid'] = $quizanswered->instance;
-        $params['state'] = \quiz_attempt::FINISHED;
 
         $attempts = $DB->get_records_select('quiz_attempts',
-            "quiz = :quizid " . $conditions,
+            "quiz = :quizid ",
             $params, 'quiz, userid, timestart DESC');
 
         $combinedanswers = array();

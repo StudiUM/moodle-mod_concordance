@@ -134,6 +134,7 @@ class quizmanager_testcase extends advanced_testcase {
         $quiztocheck1details = $DB->get_record('quiz', array('id' => $quiztocheck1->instance), '*', MUST_EXIST);
         $this->assertEquals('securewindow', $quiztocheck1details->browsersecurity);
         $this->assertEquals('description panelist', trim(strip_tags($quiztocheck1details->intro)));
+        $this->assertEquals(1, $quiztocheck1details->attempts);
         // Check that file was copied.
         $contextcm = \context_module::instance($quiztocheck1->id);
         $fs = get_file_storage();
@@ -355,5 +356,31 @@ class quizmanager_testcase extends advanced_testcase {
         $user4 = array_shift($users);
         $this->assertEquals(quiz_attempt::ABANDONED, $user4->state);
         $this->assertEquals($u4->id, $user4->userid);
+
+        // Also check the has_attempted_quiz function, for each panelist.
+        $panelistinfo = new \stdClass();
+        $panelistinfo->userid = $u1->id;
+        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
+
+        $panelistinfo = new \stdClass();
+        $panelistinfo->userid = $u2->id;
+        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
+
+        $panelistinfo = new \stdClass();
+        $panelistinfo->userid = $u3->id;
+        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
+
+        $panelistinfo = new \stdClass();
+        $panelistinfo->userid = $u4->id;
+        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
+
+        $panelistinfo = new \stdClass();
+        $panelistinfo->userid = $u5->id;
+        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $this->assertFalse($panelist->has_attempted_quiz($quiz1->id));
     }
 }
