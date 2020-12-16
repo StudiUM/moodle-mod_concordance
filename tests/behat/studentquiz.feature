@@ -196,6 +196,12 @@ Feature: Students quiz generation
       | Name          | Student quiz 3      |
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
+    # Check the gradebook.
+    And I navigate to "Gradebook setup" in current page administration
+    And I should see "Student quiz 1"
+    And I should see "Student quiz 2"
+    And I should see "Student quiz 3"
+    And I should not see "Test quiz name"
     And I log out
 
     # Student logs in and see generated quizzes only.

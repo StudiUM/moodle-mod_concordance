@@ -78,6 +78,13 @@ class quizmanager {
             set_coursemodule_visible($newcm->id, 1);
             $concordance->set('cmgenerated', $newcm->id);
 
+            // Remove the selected quiz from the gradebook.
+            $originquiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $originquiz->instance = $originquiz->id;
+            quiz_set_grade(0, $originquiz);
+            quiz_update_all_final_grades($originquiz);
+            quiz_update_grades($originquiz, 0, true);
+
             // Change some params in the quiz.
             $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
@@ -157,6 +164,13 @@ class quizmanager {
             }
 
             $DB->update_record('quiz', $quiz);
+
+            // By default, add the student quiz to the gradebook.
+            $quizconfig = get_config('quiz');
+            $quiz->instance = $quiz->id;
+            quiz_set_grade($quizconfig->maximumgrade, $quiz);
+            quiz_update_all_final_grades($quiz);
+            quiz_update_grades($quiz, 0, true);
 
             // Move to the right section.
             $section = $DB->get_record('course_sections',

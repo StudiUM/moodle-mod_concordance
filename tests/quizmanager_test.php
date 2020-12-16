@@ -118,10 +118,13 @@ class quizmanager_testcase extends advanced_testcase {
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
         // Check the original course and quiz.
+        $cm = get_coursemodule_from_id('', $this->concordancepersistent->get('cmorigin'), 0, true, MUST_EXIST);
+        $quiz1record = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
         $courseinfo = get_fast_modinfo($this->course);
         $this->assertCount(2, $courseinfo->instances['quiz']);
         $this->assertEquals($this->course->id, $this->concordancepersistent->get('course'));
         $this->assertEquals($quiz1->cmid, $this->concordancepersistent->get('cmorigin'));
+        $this->assertEquals($quiz1record->grade, 0);
         // Check the duplicated course and quiz.
         $courseinfo = get_fast_modinfo($this->concordancepersistent->get('coursegenerated'));
         $this->assertCount(1, $courseinfo->instances['quiz']);
@@ -223,6 +226,8 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertEquals(0, $cm->visible);
         $this->assertEquals('description student', trim(strip_tags($quiz->intro)));
         $this->assertCount(2, $questions);
+        $quizconfig = get_config('quiz');
+        $this->assertEquals(quiz_format_grade($quiz, $quizconfig->maximumgrade), quiz_format_grade($quiz, $quiz->grade));
         // Check that file was copied.
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_quiz', 'intro', 0, "itemid, filepath, filename", false);
