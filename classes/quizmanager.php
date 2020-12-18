@@ -176,16 +176,19 @@ class quizmanager {
             quiz_update_all_final_grades($quiz);
             quiz_update_grades($quiz, 0, true);
 
-            // Move to the right section.
+            // Move the quiz to the right section.
             $section = $DB->get_record('course_sections',
                     array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
             moveto_module($newcm, $section);
+
+            // Remove the questions that were not selected.
             $quizobj = new \quiz($quiz, $newcm, $course);
             $quizobj->preload_questions();
             $quizobj->load_questions();
             $questions = $quizobj->get_questions();
             $structure = $quizobj->get_structure();
             $removed = false;
+            $questionsids = array();
             foreach ($questions as $question) {
                 if (!key_exists($question->slot, $formdata->questionstoinclude)) {
                     // Remove question.
@@ -194,8 +197,26 @@ class quizmanager {
                     }
                     $structure->remove_slot($slot->slot);
                     $removed = true;
+                } else {
+                    $questionsids[] = $question->id;
                 }
             }
+
+            // Move the questions in a new category.
+            $coursecontext = context_course::instance($course->id);
+            $newcategory = new stdClass();
+            $newcategory->parent = question_get_default_category($coursecontext->id)->id;
+            $newcategory->contextid = $coursecontext->id;
+            $maxlen = strlen(get_string('questionscategoryname', 'mod_concordance', ''));
+            $quizname = shorten_text($quizobj->get_quiz_name(), 255 - $maxlen);
+            $newcategory->name = get_string('questionscategoryname', 'mod_concordance', $quizname);
+            $date = userdate(time(), get_string('strftimedatetime', 'langconfig'));
+            $newcategory->info = get_string('questionscategoryinfo', 'mod_concordance', $date);
+            $newcategory->sortorder = 999;
+            $newcategory->stamp = make_unique_id_code();
+            $newcategory->id = $DB->insert_record('question_categories', $newcategory);
+            question_move_questions_to_category($questionsids, $newcategory->id);
+
             if ($removed) {
                 quiz_delete_previews($quiz);
                 quiz_update_sumgrades($quiz);

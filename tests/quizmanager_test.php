@@ -186,12 +186,15 @@ class quizmanager_testcase extends advanced_testcase {
 
         // Questions.
         $questgen = $dg->get_plugin_generator('core_question');
-        $quizcat = $questgen->create_question_category();
+        $quizcat = $questgen->create_question_category(array('contextid' => \context_course::instance($this->course->id)->id));
         $question1 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
         $questgen->update_question($question1);
         $question2 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
         quiz_add_quiz_question($question1->id, $quiz1);
         quiz_add_quiz_question($question2->id, $quiz1);
+        // Check that the questions are in the category that we created.
+        $this->assertEquals($quizcat->id, $question1->category);
+        $this->assertEquals($quizcat->id, $question2->category);
 
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
@@ -226,6 +229,12 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertEquals(0, $cm->visible);
         $this->assertEquals('description student', trim(strip_tags($quiz->intro)));
         $this->assertCount(2, $questions);
+        // Check that all questions are in a new category, that is a child of the category we created.
+        foreach ($questions as $question) {
+            $this->assertNotEquals($quizcat->id, $question->category);
+            $this->assertEquals($quizcat->id, $question->categoryobject->parent);
+            $firstchildcategory = $question->category;
+        }
         $quizconfig = get_config('quiz');
         $this->assertEquals(quiz_format_grade($quiz, $quizconfig->maximumgrade), quiz_format_grade($quiz, $quiz->grade));
         // Check that file was copied.
@@ -255,6 +264,11 @@ class quizmanager_testcase extends advanced_testcase {
         $question = current($questions);
         $this->assertCount(1, $questions);
         $this->assertEquals($question1->name, $question->name);
+        // Check that the question is in a new category, that is a child of the category we created
+        // (and not the same as the other quiz we generated).
+        $this->assertNotEquals($quizcat->id, $question->category);
+        $this->assertEquals($quizcat->id, $question->categoryobject->parent);
+        $this->assertNotEquals($firstchildcategory, $question->category);
     }
 
     /**
