@@ -60,6 +60,22 @@ class renderer extends plugin_renderer_base {
         $phasesetup['tasks'][] = array('name' => get_string('task_editsettings', 'mod_concordance'),
             'url' => $concordance->updatemod_url()->out(false),
             'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+        if ($status === concordance::CONCORDANCE_TASKSTATUS_FAILED) {
+            $statusname = get_string('task' . concordance::CONCORDANCE_TASKSTATUS_INFO, 'mod_concordance');
+            $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
+            if (empty($concordance->get('descriptionpanelist'))) {
+                $phasesetup['tasks'][] = [
+                    'name' => get_string('unfilledfield', 'mod_concordance', get_string('descriptionpanelist', 'mod_concordance')),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+            if (empty($concordance->get('descriptionstudent'))) {
+                $phasesetup['tasks'][] = [
+                    'name' => get_string('unfilledfield', 'mod_concordance', get_string('descriptionstudent', 'mod_concordance')),
+                    'url' => '',
+                    'statusname' => $statusname, 'statusclass' => $statusinfo];
+            }
+        }
         // Quiz selection.
         $dataquiz = null;
         if (!empty($concordance->get_cmidorigin())) {

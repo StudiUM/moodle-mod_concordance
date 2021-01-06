@@ -32,15 +32,29 @@ define(['jquery', 'core/yui'],
             QUESTIONSCHECKBOXES: "input[name^='questionstoinclude']",
             SUBMITBUTTON: "input[name='submitbutton']",
             SECTIONSELECTOR: ".concordancequestionsection",
-            FORMSELECTOR: "#generatestudentquizform"
+            FORMSELECTOR: "#generatestudentquizform",
+            QUIZNAME: "#generatestudentquizform input[name='name']",
+            QUESTIONSINCLUDEERROR: "#questionstoincludeerror",
+            PANELISTSINCLUDEERROR: "#paneliststoincludeerror"
         };
 
         var validateform = function () {
             if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0 &&
-                    $(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length > 0) {
+                    $(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length > 0 &&
+                    $(SELECTORS.QUIZNAME).val() !== '') {
                 $(SELECTORS.SUBMITBUTTON).prop('disabled', false);
             } else {
                 $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
+            }
+            if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length === 0) {
+                $(SELECTORS.PANELISTSINCLUDEERROR).show();
+            } else {
+                $(SELECTORS.PANELISTSINCLUDEERROR).hide();
+            }
+            if ($(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length === 0) {
+                $(SELECTORS.QUESTIONSINCLUDEERROR).show();
+            } else {
+                $(SELECTORS.QUESTIONSINCLUDEERROR).hide();
             }
         };
 
@@ -78,6 +92,10 @@ define(['jquery', 'core/yui'],
             'init': function() {
                 $(SELECTORS.SUBMITBUTTON).prop('disabled', true);
                 $(SELECTORS.PANELISTSCHECKBOXES + ',' + SELECTORS.QUESTIONSCHECKBOXES).on('change', function() {
+                    // Enable/disable submitbutton.
+                    validateform();
+                });
+                $(SELECTORS.QUIZNAME).on('change', function() {
                     // Enable/disable submitbutton.
                     validateform();
                 });

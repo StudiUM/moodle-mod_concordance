@@ -162,6 +162,10 @@ class quizmanager {
                 $default = \mod_quiz_admin_review_setting::all_on();
                 $quiz->{'review'.$field} = $default;
             }
+            // Set quiz name.
+            if (isset($formdata->name) && !empty($formdata->name)) {
+                $quiz->name = $formdata->name;
+            }
 
             $DB->update_record('quiz', $quiz);
 

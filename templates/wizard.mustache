@@ -66,8 +66,8 @@
                 {{#tasks}}
                     <li class="{{statusclass}}">
                         <div><span class="accesshide">{{ statusname }}</span>
-                            {{#url}}<a href="{{ url }}">{{name}}</a>{{/url}}
-                            {{^url}}{{name}}{{/url}}
+                            {{#url}}<a href="{{ url }}">{{{name}}}</a>{{/url}}
+                            {{^url}}{{{name}}}{{/url}}
                         </div>
                     </li>
                 {{/tasks}}

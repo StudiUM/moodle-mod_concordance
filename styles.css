@@ -214,6 +214,11 @@
 
 .path-mod-concordance table.managepanelists td.actions .singlebutton {
     display: inline-block;
+    margin-right: .5rem;
+    margin-bottom: .5rem;
+}
+.path-mod-concordance table.managepanelists td.actions .singlebutton+.singlebutton {
+    margin-left: 0;
 }
 .path-mod-concordance .concordance-wizard ul.tasks li.info {
     margin-left: 1rem;

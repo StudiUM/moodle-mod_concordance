@@ -80,6 +80,12 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
             \mod_concordance\quizmanager::duplicatequizforpanelists($concordancepersistent);
             $concordancepersistent->update();
         }
+        $notification = $OUTPUT->notification(get_string('shouldnotmodifyquiz', 'mod_concordance'),
+                \core\output\notification::NOTIFY_INFO);
+        $classhidden = (empty($concordancepersistent->get('cmorigin'))) ? 'hidden' : '';
+        $notificationtemplate = $OUTPUT->render_from_template('mod_concordance/selectquiznotification',
+                ['html' => $notification, 'classhidden' => $classhidden]);
+        echo $notificationtemplate;
         $form->display();
     }
     if ($cmid = $concordancepersistent->get('cmorigin')) {

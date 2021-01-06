@@ -55,7 +55,7 @@ Feature: Students quiz generation
     And I click on "Save changes" "button"
     And I follow "TestConcordance"
     When I follow "Generate the quiz for students"
-    Then I should see "No test found for panelists"
+    Then I should see "No quiz found for panelists"
     And I should not see "No panelist have been created yet."
     And "Generate" "button" should not be visible
 

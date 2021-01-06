@@ -43,12 +43,29 @@ class studentquizgeneration extends \moodleform {
      * Define the form - called by parent constructor
      */
     public function definition() {
-        global $PAGE, $OUTPUT;
+        global $PAGE, $OUTPUT, $CFG;
         $mform = $this->_form;
 
+        // General.
+        $mform->addElement('header', 'general', \html_writer::tag('h3', get_string('general', 'form')));
+
+        // Name.
+        $mform->addElement('text', 'name', get_string('generatedquizname', 'mod_concordance'), ['size' => '64']);
+        if (!empty($CFG->formatstringstriptags)) {
+            $mform->setType('name', PARAM_TEXT);
+        } else {
+            $mform->setType('name', PARAM_CLEANHTML);
+        }
+        $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->setDefault('name', $this->_customdata['structure']->get_quiz()->name);
+
         // Panelists.
+        $requiredicon = $OUTPUT->render_from_template('mod_concordance/required_field', []);
         $mform->addElement('header', 'paneliststoincludeheader',
-                \html_writer::tag('h3', get_string('paneliststoinclude', 'mod_concordance')));
+                \html_writer::tag('h3', get_string('paneliststoinclude', 'mod_concordance') . $requiredicon));
+        $mform->addElement('html', $OUTPUT->render_from_template('mod_concordance/error_field', ['id' => 'paneliststoincludeerror',
+                            'message' => get_string('errorincludepanelist', 'mod_concordance')]));
         $statelabel = get_string('quizstate', 'mod_concordance');
         $mform->addElement('html',
                 "<table id='paneliststoincludetable'><thead><tr><th></th><th>$statelabel</th></tr></thead>");
@@ -85,7 +102,9 @@ class studentquizgeneration extends \moodleform {
 
         // Questions.
         $mform->addElement('header', 'questionstoincludeheader',
-                \html_writer::tag('h3', get_string('questionstoinclude', 'mod_concordance')));
+                \html_writer::tag('h3', get_string('questionstoinclude', 'mod_concordance') . $requiredicon));
+        $mform->addElement('html', $OUTPUT->render_from_template('mod_concordance/error_field', ['id' => 'questionstoincludeerror',
+                            'message' => get_string('errorincludequestion', 'mod_concordance')]));
         $structure = $this->_customdata['structure'];
         foreach ($structure->get_sections() as $section) {
             $mform->addElement('html', \html_writer::start_div('concordancequestionsection'));
