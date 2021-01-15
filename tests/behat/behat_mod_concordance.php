@@ -171,4 +171,16 @@ class behat_mod_concordance extends behat_base {
         $strswitch = get_string('switchphase', 'mod_concordance');
         $this->execute('behat_general::i_click_on_in_the', [$strswitch, 'link', $xpathparent, 'xpath_element']);
     }
+
+    /**
+     * Switch to the popup window that was opened last, whatever is its name.
+     *
+     * @Given I switch to the last window
+     */
+    public function i_switch_to_the_last_window() {
+        $windownames = $this->getSession()->getWindowNames();
+        if (count($windownames) > 1) {
+            $this->getSession()->switchToWindow(end($windownames));
+        }
+    }
 }

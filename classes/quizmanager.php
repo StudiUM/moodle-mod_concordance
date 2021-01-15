@@ -51,6 +51,27 @@ use \context_course;
  */
 class quizmanager {
     /**
+     * Value for formative quiz types.
+     *
+     * @var int
+     */
+    const CONCORDANCE_QUIZTYPE_FORMATIVE = 1;
+
+    /**
+     * Value for summative with feedback quiz types.
+     *
+     * @var int
+     */
+    const CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK = 2;
+
+    /**
+     * Value for summative without feedback quiz types.
+     *
+     * @var int
+     */
+    const CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK = 3;
+
+    /**
      * Duplicate the origin quiz so it can be used by the panelists.
      *
      * @param concordance $concordance Concordance persistence object.
@@ -134,6 +155,15 @@ class quizmanager {
             $concordancem = get_coursemodule_from_instance('concordance',
                     $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
             $context = \context_module::instance($concordancem->id);
+
+            $issummative = false;
+            if (isset($formdata->quiztype) &&
+                    ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK
+                    || $formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK)
+                ) {
+                $issummative = true;
+            }
+
             // Before duplicate, update stamp and version fields for questions.
             $quizpanelist = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
             $coursepanelist = $DB->get_record('course', array('id' => $concordance->get('coursegenerated')), '*', MUST_EXIST);
@@ -156,12 +186,31 @@ class quizmanager {
             $quiz->intro = $concordance->get('descriptionstudent');
             $quiz->browsersecurity = '-';
 
-            // The students should see the feedbacks immediatly.
-            $quiz->preferredbehaviour = 'immediatefeedback';
-            foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
-                $default = \mod_quiz_admin_review_setting::all_on();
-                $quiz->{'review'.$field} = $default;
+            // Feedback options, depending on the type of quiz.
+            if ($issummative) {
+                // Show deferred feedback.
+                $quiz->preferredbehaviour = 'deferredfeedback';
+                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                    if ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK) {
+                        // Not during the attempt, but all other options ON.
+                        $default = \mod_quiz_admin_review_setting::IMMEDIATELY_AFTER
+                            | \mod_quiz_admin_review_setting::LATER_WHILE_OPEN
+                            | \mod_quiz_admin_review_setting::AFTER_CLOSE;
+                    } else {
+                        // No feedback at all.
+                        $default = 0;
+                    }
+                    $quiz->{'review'.$field} = $default;
+                }
+            } else {
+                // Show immediate feedback during the attempt.
+                $quiz->preferredbehaviour = 'immediatefeedback';
+                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                    $default = \mod_quiz_admin_review_setting::all_on();
+                    $quiz->{'review'.$field} = $default;
+                }
             }
+
             // Set quiz name.
             if (isset($formdata->name) && !empty($formdata->name)) {
                 $quiz->name = $formdata->name;
@@ -169,10 +218,14 @@ class quizmanager {
 
             $DB->update_record('quiz', $quiz);
 
-            // By default, add the student quiz to the gradebook.
+            // Gradebook : if summative quiz, add the student quiz to the gradebook ; otherwise (formative quiz) remove it.
             $quizconfig = get_config('quiz');
             $quiz->instance = $quiz->id;
-            quiz_set_grade($quizconfig->maximumgrade, $quiz);
+            if ($issummative) {
+                quiz_set_grade($quizconfig->maximumgrade, $quiz);
+            } else {
+                quiz_set_grade(0, $quiz);
+            }
             quiz_update_all_final_grades($quiz);
             quiz_update_grades($quiz, 0, true);
 

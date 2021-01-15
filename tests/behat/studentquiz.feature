@@ -104,7 +104,10 @@ Feature: Students quiz generation
     And I log in as concordance panelist "rebeccaa@example.com"
     And I wait until the page is ready
     And I should see "The description for the panelists"
+    # Two screens with Attempt quiz now buttons.
     And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz now" "button"
+    And I switch to the last window
     And I should see "First question"
     And I click on "Weakened" "radio" in the "First question" "question"
     And I set the field with xpath "(//div[@class='answerfeedback'])[1]/textarea" to "Comments from Rebecca for Q1"
@@ -127,6 +130,8 @@ Feature: Students quiz generation
     And I log in as concordance panelist "donaldf@example.com"
     And I click on "Continue" "button"
     And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz now" "button"
+    And I switch to the last window
     And I should see "First question"
     And I click on "Unchanged" "radio" in the "First question" "question"
     And I set the field with xpath "(//div[@class='answerfeedback'])[1]/textarea" to "Comments from Donald for Q1"
@@ -140,6 +145,8 @@ Feature: Students quiz generation
     And I log in as concordance panelist "pablom@example.com"
     And I click on "Continue" "button"
     And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz now" "button"
+    And I switch to the last window
     And I should see "First question"
     And I set the field "Unchanged" to "1"
     And I set the field "Comments" to "Comments from Pablo"
@@ -164,6 +171,7 @@ Feature: Students quiz generation
     And the "Stepanie Grant" "checkbox" should be disabled
     # Generate the quiz for students (Quiz 1).
     And I click on "Rebecca Armenta" "checkbox"
+    And I set the field "quiztype" to "Formative"
     And the "Generate" "button" should be enabled
     And I click on "Generate" "button"
     And I should see "A new quiz has been generated"
@@ -177,6 +185,7 @@ Feature: Students quiz generation
     And I follow "TestConcordance"
     And I follow "Generate the quiz for students"
     And I click on "Donald Fletcher" "checkbox"
+    And I set the field "quiztype" to "Formative"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
     And I navigate to "Edit settings" in current page administration
@@ -189,6 +198,7 @@ Feature: Students quiz generation
     And I follow "Generate the quiz for students"
     And I click on "Rebecca Armenta" "checkbox"
     And I click on "Donald Fletcher" "checkbox"
+    And I set the field "quiztype" to "Formative"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
     And I navigate to "Edit settings" in current page administration
@@ -198,9 +208,9 @@ Feature: Students quiz generation
     And I click on "Save and return to course" "button"
     # Check the gradebook.
     And I navigate to "Gradebook setup" in current page administration
-    And I should see "Student quiz 1"
-    And I should see "Student quiz 2"
-    And I should see "Student quiz 3"
+    And I should not see "Student quiz 1"
+    And I should not see "Student quiz 2"
+    And I should not see "Student quiz 3"
     And I should not see "Test quiz name"
     And I log out
 

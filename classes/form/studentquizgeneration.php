@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
+use mod_concordance\quizmanager;
+
 /**
  * Student quiz generation form.
  *
@@ -59,6 +61,17 @@ class studentquizgeneration extends \moodleform {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->setDefault('name', $this->_customdata['structure']->get_quiz()->name);
+
+        // Type.
+        $types = array();
+        $types[quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE] = get_string('quiztypeformative', 'mod_concordance');
+        $types[quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK] =
+            get_string('quiztypesummativewithfeedback', 'mod_concordance');
+        $types[quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK] =
+            get_string('quiztypesummativewithoutfeedback', 'mod_concordance');
+        $mform->addElement('select', 'quiztype', get_string('quiztype', 'mod_concordance'), $types);
+        $mform->setType('quiztype', PARAM_INT);
+        $mform->addHelpButton('quiztype', 'quiztype', 'mod_concordance');
 
         // Panelists.
         $requiredicon = $OUTPUT->render_from_template('mod_concordance/required_field', []);

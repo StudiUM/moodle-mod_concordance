@@ -102,6 +102,15 @@ $string['quizcontainsotherquestion'] = 'The quiz contains certain questions of a
 $string['quizdoesnotcontainconcordancequestion'] = 'The quiz does not contain Concordance questions';
 $string['quizselection'] = 'Selection of the quiz for panelists';
 $string['quizstate'] = 'Quiz state';
+$string['quiztype'] = 'Quiz type';
+$string['quiztypeformative'] = 'Formative';
+$string['quiztypesummativewithfeedback'] = 'Summative with feedback';
+$string['quiztypesummativewithoutfeedback'] = 'Summative without feedback';
+$string['quiztype_help'] = 'A formative quiz will not appear in the gradebook and will show students immediate feedback for each question.
+
+A summative quiz will appear in the gradebook. Deferred feedback  will be shown to students immediately after the attempt ("summative with feedback") or not at all ("summative without feedback").
+
+In all cases, it will always be possible to modify the behavior of the quiz by modifying its parameters.';
 $string['quizvisibletostudent'] = 'The selected quiz is currently visible to students of the course';
 $string['search:activity'] = 'Learning by concordance management';
 $string['sendemailnote'] = 'Note: A personalized link will be added automatically at the end of each email to allow the panelist to connect automatically to the quiz to answer.';

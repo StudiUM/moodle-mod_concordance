@@ -211,8 +211,9 @@ class quizmanager_testcase extends advanced_testcase {
         $slot1 = $questions[0]->slot;
         $slot2 = $questions[1]->slot;
 
-        // Duplicate quiz for students and 2 questions.
+        // Duplicate quiz for students and 2 questions - summative quiz.
         $formdata->questionstoinclude = ["$slot1" => 1, "$slot2" => 1];
+        $formdata->quiztype = quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK;
         $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
         $this->assertNotNull($cmid);
 
@@ -237,6 +238,7 @@ class quizmanager_testcase extends advanced_testcase {
         }
         $quizconfig = get_config('quiz');
         $this->assertEquals(quiz_format_grade($quiz, $quizconfig->maximumgrade), quiz_format_grade($quiz, $quiz->grade));
+        $this->assertEquals('deferredfeedback', $quiz->preferredbehaviour);
         // Check that file was copied.
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_quiz', 'intro', 0, "itemid, filepath, filename", false);
@@ -244,7 +246,7 @@ class quizmanager_testcase extends advanced_testcase {
         $file = array_values($files)[0];
         $this->assertEquals('fakeimage2.png', $file->get_filename());
 
-        // Duplicate quiz for students and 1 question.
+        // Duplicate quiz for students and 1 question - formative test.
         $quizobj = new \quiz($quizpanelist, $cmpanelist, $coursepanelist);
         $quizobj->preload_questions();
         $quizobj->load_questions();
@@ -252,6 +254,7 @@ class quizmanager_testcase extends advanced_testcase {
         $this->assertCount(2, $questions);
         $slot1 = $questions[0]->slot;
         $formdata->questionstoinclude = ["$slot1" => 1];
+        $formdata->quiztype = quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE;
         $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
         $this->assertNotNull($cmid);
         $courseinfo = get_fast_modinfo($this->course);
@@ -264,6 +267,8 @@ class quizmanager_testcase extends advanced_testcase {
         $question = current($questions);
         $this->assertCount(1, $questions);
         $this->assertEquals($question1->name, $question->name);
+        $this->assertEquals(quiz_format_grade($quiz, 0), quiz_format_grade($quiz, $quiz->grade));
+        $this->assertEquals('immediatefeedback', $quiz->preferredbehaviour);
         // Check that the question is in a new category, that is a child of the category we created
         // (and not the same as the other quiz we generated).
         $this->assertNotEquals($quizcat->id, $question->category);
