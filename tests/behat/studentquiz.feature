@@ -71,16 +71,18 @@ Feature: Students quiz generation
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
-      | First name     | Rebecca              |
-      | Surname        | Armenta              |
-      | Email address  | rebeccaa@example.com |
+      | First name     | Rebecca                  |
+      | Surname        | Armenta                  |
+      | Email address  | rebeccaa@example.com     |
+      | Biography      | <p>Armenta biography</p> |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
-      | First name     | Donald              |
-      | Surname        | Fletcher            |
-      | Email address  | donaldf@example.com |
+      | First name     | Donald                    |
+      | Surname        | Fletcher                  |
+      | Email address  | donaldf@example.com       |
+      | Biography      | <p>Fletcher biography</p> |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
@@ -172,10 +174,12 @@ Feature: Students quiz generation
     # Generate the quiz for students (Quiz 1).
     And I click on "Rebecca Armenta" "checkbox"
     And I set the field "quiztype" to "Formative"
+    And I set the field "Include panelists' biographies in the introduction" to "Yes"
     And the "Generate" "button" should be enabled
     And I click on "Generate" "button"
     And I should see "A new quiz has been generated"
     And I click on "Go to the generated quiz" "link"
+    And I should see "Armenta biography"
     And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 1      |
@@ -186,8 +190,10 @@ Feature: Students quiz generation
     And I follow "Generate the quiz for students"
     And I click on "Donald Fletcher" "checkbox"
     And I set the field "quiztype" to "Formative"
+    And I set the field "Include panelists' biographies in the introduction" to "Yes"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
+    And I should see "Fletcher biography"
     And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 2      |
@@ -199,8 +205,11 @@ Feature: Students quiz generation
     And I click on "Rebecca Armenta" "checkbox"
     And I click on "Donald Fletcher" "checkbox"
     And I set the field "quiztype" to "Formative"
+    And I set the field "Include panelists' biographies in the introduction" to "No"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
+    And I should not see "Fletcher biograph"
+    And I should not see "Armenta biograph"
     And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:
       | Name          | Student quiz 3      |

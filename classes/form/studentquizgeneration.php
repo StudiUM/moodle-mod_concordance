@@ -62,6 +62,10 @@ class studentquizgeneration extends \moodleform {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->setDefault('name', $this->_customdata['structure']->get_quiz()->name);
 
+        // Include bibliography.
+        $mform->addElement('selectyesno', 'includebibliography', get_string('includebibliography', 'mod_concordance'));
+        $mform->setDefault('includebibliography', false);
+
         // Type.
         $types = array();
         $types[quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE] = get_string('quiztypeformative', 'mod_concordance');

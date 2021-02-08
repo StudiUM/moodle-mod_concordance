@@ -25,6 +25,7 @@
 
 $string['addnewpanelist'] = 'Add new panelist';
 $string['atleastpanelistnotcontacted'] = 'At least one panelist was not contacted';
+$string['bibliographiespanelists'] = 'Biographies of panelists';
 $string['bibliography'] = 'Biography';
 $string['cannotremoveallsectionslots'] = 'It is not allowed to remove all questions under a section heading.';
 $string['categorypanelcourses'] = 'Category for courses for panels of experts';
@@ -46,6 +47,7 @@ $string['eventemailsent'] = 'Email sent to panelist';
 $string['generate'] = 'Generate';
 $string['generatedquizname'] = 'Generated quiz name';
 $string['gotogeneratedquiz'] = 'Go to the generated quiz';
+$string['includebibliography'] = 'Include panelists\' biographies in the introduction';
 $string['indicator:cognitivedepth'] = 'Concordance cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Concordance activity.';
 $string['indicator:socialbreadth'] = 'Concordance social';

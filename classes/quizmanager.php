@@ -210,6 +210,30 @@ class quizmanager {
                     $quiz->{'review'.$field} = $default;
                 }
             }
+            // Include bibliographies in introduction.
+            if (!empty($formdata->includebibliography) && !empty($formdata->paneliststoinclude)) {
+                $biographies = '';
+                $panelists = array_filter($formdata->paneliststoinclude, function($v, $k) {
+                        return $v == 1;
+                }, ARRAY_FILTER_USE_BOTH);
+                foreach (array_keys($panelists) as $id) {
+                    $panelist = panelist::get_record(array('id' => $id));
+                    if ($panelist && $panelist->get('bibliography')) {
+                        $biographies .= \html_writer::empty_tag('br');
+                        $biographies .= \html_writer::tag('h4', $panelist->get('firstname').' '.$panelist->get('lastname'));
+                        $biographies .= $panelist->get('bibliography');;
+                        if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'bibliography', $id)) {
+                            foreach ($files as $file) {
+                                $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                            }
+                        }
+                    }
+                }
+                if (!empty($biographies)) {
+                    $bibhtml = \html_writer::tag('h3', get_string('bibliographiespanelists', 'mod_concordance')) . $biographies;
+                    $quiz->intro .= $bibhtml;
+                }
+            }
 
             // Set quiz name.
             if (isset($formdata->name) && !empty($formdata->name)) {
