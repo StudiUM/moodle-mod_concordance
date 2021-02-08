@@ -485,10 +485,15 @@ class quizmanager {
                             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
 
                             $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
-                            $namebl = \html_writer::tag('strong', $panelistname.'&nbsp;:');
+                            if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
+                                $panelistname .= '&nbsp;:';
+                            }
+                            $namebl = \html_writer::tag('strong', $panelistname);
                             $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
-                            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
-                                $qtdata['answerfeedback']);
+                            if (!empty($qtdata['answerfeedback'])) {
+                                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
+                                    $qtdata['answerfeedback']);
+                            }
                         }
                     }
                 }
@@ -502,21 +507,24 @@ class quizmanager {
             if (!key_exists($question->slot, $formdata->questionstoinclude)) {
                 continue;
             }
-            $answerorder = 0; // Order of answers begin at 0.
-            foreach ($question->options->answers as $answer) {
-                if (isset($combinedanswers[$question->slot][$answerorder])) {
-                    $answer->fraction = $combinedanswers[$question->slot][$answerorder]['nbexperts'];
-                    $answer->feedback = $combinedanswers[$question->slot][$answerorder]['feedback'];
-                } else {
-                    // Empty this answer.
-                    $answer->fraction = 0;
-                    $answer->feedback = '';
+
+            if (isset($question->options->answers)) {
+                $answerorder = 0; // Order of answers begin at 0.
+                foreach ($question->options->answers as $answer) {
+                    if (isset($combinedanswers[$question->slot][$answerorder])) {
+                        $answer->fraction = $combinedanswers[$question->slot][$answerorder]['nbexperts'];
+                        $answer->feedback = $combinedanswers[$question->slot][$answerorder]['feedback'];
+                    } else {
+                        // Empty this answer.
+                        $answer->fraction = 0;
+                        $answer->feedback = '';
+                    }
+                    $DB->update_record('question_answers', $answer);
+                    $answerorder++;
                 }
-                $DB->update_record('question_answers', $answer);
-                $answerorder++;
+                // Important to notify that the question was edited or the changes will not be visible.
+                \question_bank::notify_question_edited($question->id);
             }
-            // Important to notify that the question was edited or the changes will not be visible.
-            \question_bank::notify_question_edited($question->id);
         }
     }
 
