@@ -266,6 +266,7 @@ class quizmanager {
             $structure = $quizobj->get_structure();
             $removed = false;
             $questionsids = array();
+            $questionsidstoremove = [];
             foreach ($questions as $question) {
                 if (!key_exists($question->slot, $formdata->questionstoinclude)) {
                     // Remove question.
@@ -274,9 +275,19 @@ class quizmanager {
                     }
                     $structure->remove_slot($slot->slot);
                     $removed = true;
+                    $questionsidstoremove[] = $question->id;
                 } else {
                     $questionsids[] = $question->id;
                 }
+            }
+
+            if ($removed) {
+                // Remove slot is not enough.
+                foreach ($questionsidstoremove as $id) {
+                    question_delete_question($id);
+                }
+                quiz_delete_previews($quiz);
+                quiz_update_sumgrades($quiz);
             }
 
             // Move the questions in a new category.
@@ -293,11 +304,6 @@ class quizmanager {
             $newcategory->stamp = make_unique_id_code();
             $newcategory->id = $DB->insert_record('question_categories', $newcategory);
             question_move_questions_to_category($questionsids, $newcategory->id);
-
-            if ($removed) {
-                quiz_delete_previews($quiz);
-                quiz_update_sumgrades($quiz);
-            }
 
             // Compile the answers for panelists and questions included.
             self::compileanswers($cm, $quizpanelist, $coursepanelist, $quizobj, $formdata);
