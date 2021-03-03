@@ -33,6 +33,7 @@ require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->dirroot . '/mod/quiz/accessmanager.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 use \stdClass;
 use \moodle_exception;
@@ -478,6 +479,9 @@ class quizmanager {
                     $question = $questionattempt->get_question();
                     if ($question instanceof \qtype_tcs_question) {
                         $qtdata = $questionattempt->get_last_qt_data();
+                        if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
+                            continue;
+                        }
                         if (isset($qtdata['answer'])) {
                             $qtchoiceorder = $qtdata['answer'];
 
@@ -513,7 +517,13 @@ class quizmanager {
             if (!key_exists($question->slot, $formdata->questionstoinclude)) {
                 continue;
             }
-
+            if (isset($question->options->showoutsidefieldcompetence)) {
+                $tcstype = $question->qtype;
+                $tablequestionoption = 'qtype_' . $tcstype .'_options';
+                $qorecord = $DB->get_record($tablequestionoption, array('id' => $question->options->id), '*', MUST_EXIST);
+                $qorecord->showoutsidefieldcompetence = 0;
+                $DB->update_record($tablequestionoption, $qorecord);
+            }
             if (isset($question->options->answers)) {
                 $answerorder = 0; // Order of answers begin at 0.
                 foreach ($question->options->answers as $answer) {
