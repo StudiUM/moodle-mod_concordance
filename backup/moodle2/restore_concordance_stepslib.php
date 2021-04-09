@@ -87,7 +87,7 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
     }
 
     /**
-     * Process syllabus concordance panelist.
+     * Process concordance panelist.
      *
      * @param stdClass $data
      */
@@ -112,7 +112,7 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
      * After execute function.
      */
     protected function after_execute() {
-        // Add syllabus related files, no need to match by itemname (just internally handled context).
+        // Add concordance related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_concordance', 'descriptionpanelist', null);
         $this->add_related_files('mod_concordance', 'descriptionstudent', null);
         $this->add_related_files('mod_concordance', 'bibliography', 'concordance_panelist');

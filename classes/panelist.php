@@ -82,7 +82,7 @@ class panelist extends persistent {
     /**
      * Count the number of panelists for a concordance.
      *
-     * @param  int $concordanceid The syllabus ID
+     * @param  int $concordanceid The concordance ID
      * @return int
      */
     public static function count_records_for_concordance($concordanceid) {
@@ -93,7 +93,7 @@ class panelist extends persistent {
     /**
      * Count the number of panelists contacted for a concordance.
      *
-     * @param  int $concordanceid The syllabus ID
+     * @param  int $concordanceid The concordance ID
      * @return int
      */
     public static function count_panelistscontacted_for_concordance($concordanceid) {

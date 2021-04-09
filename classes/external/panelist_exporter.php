@@ -78,7 +78,7 @@ class panelist_exporter extends \core\external\persistent_exporter {
     }
 
     /**
-     * Returns the definition of other syllabus properties.
+     * Returns the definition of other concordance properties.
      *
      * @return array
      */
