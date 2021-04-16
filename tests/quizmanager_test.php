@@ -52,7 +52,7 @@ class quizmanager_testcase extends advanced_testcase {
     /**
      * Setup.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $DB;
 
         $this->resetAfterTest();

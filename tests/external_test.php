@@ -106,7 +106,7 @@ class mod_concordance_external_testcase extends externallib_advanced_testcase {
         $panleist2fullname = trim($panelist2->get('firstname') . ' ' . $panelist2->get('lastname'));
         $eventdescpan2 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
                "to the panelist '$panleist2fullname' with id '" . $panelist2->get('id') . "'";
-        $this->assertContains($eventdescpan2, $eventpan2->get_description());
+        $this->assertStringContainsString($eventdescpan2, $eventpan2->get_description());
 
         $this->assertInstanceOf('\mod_concordance\event\email_sent', $eventpan1);
         $this->assertNull($eventpan1->relateduserid);
@@ -115,17 +115,17 @@ class mod_concordance_external_testcase extends externallib_advanced_testcase {
         $panleist1fullname = trim($panelist1->get('firstname') . ' ' . $panelist1->get('lastname'));
         $eventdescpan1 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
                "to the panelist '$panleist1fullname' with id '" . $panelist1->get('id') . "'";
-        $this->assertContains($eventdescpan1, $eventpan1->get_description());
+        $this->assertStringContainsString($eventdescpan1, $eventpan1->get_description());
 
         $this->assertSame($panelist2->get('email'), $result[0]->to);
         $this->assertSame($subject, $result[0]->subject);
-        $this->assertContains($message, trim($result[0]->body));
-        $this->assertContains($panelist2->get_quizaccess_url()->out(true), quoted_printable_decode($result[0]->body));
+        $this->assertStringContainsString($message, trim($result[0]->body));
+        $this->assertStringContainsString($panelist2->get_quizaccess_url()->out(true), quoted_printable_decode($result[0]->body));
 
         $this->assertSame($panelist1->get('email'), $result[1]->to);
         $this->assertSame($subject, $result[1]->subject);
-        $this->assertContains($message, trim($result[1]->body));
-        $this->assertContains($panelist1->get_quizaccess_url()->out(true), quoted_printable_decode($result[1]->body));
+        $this->assertStringContainsString($message, trim($result[1]->body));
+        $this->assertStringContainsString($panelist1->get_quizaccess_url()->out(true), quoted_printable_decode($result[1]->body));
         // Load panelists.
         $panelist1->read();
         $panelist2->read();
