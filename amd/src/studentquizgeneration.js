@@ -38,7 +38,7 @@ define(['jquery', 'core/yui'],
             PANELISTSINCLUDEERROR: "#paneliststoincludeerror"
         };
 
-        var validateform = function () {
+        var validateform = function() {
             if ($(SELECTORS.PANELISTSSELECTEDCHECKBOXES).length > 0 &&
                     $(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length > 0 &&
                     $(SELECTORS.QUIZNAME).val() !== '') {
@@ -58,7 +58,7 @@ define(['jquery', 'core/yui'],
             }
         };
 
-        var checkquestionremove = function () {
+        var checkquestionremove = function() {
             var valid = true;
             $(SELECTORS.SECTIONSELECTOR).each(function() {
                 if ($(this).find(SELECTORS.QUESTIONSSELECTEDCHECKBOXES).length === 0) {
@@ -101,7 +101,7 @@ define(['jquery', 'core/yui'],
                 });
                 validateform();
                 // Check questions removal on submit.
-                $(SELECTORS.FORMSELECTOR).on("submit", function(){
+                $(SELECTORS.FORMSELECTOR).on("submit", function() {
                     return checkquestionremove();
                 });
             }

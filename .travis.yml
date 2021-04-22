@@ -1,11 +1,7 @@
 language: php
 
-addons:
-  postgresql: "9.6"
-
 services:
   - mysql
-  - postgresql
   - docker
 
 cache:
@@ -14,18 +10,11 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.2
- - 7.3
  - 7.4
 
 env:
- global:
-  - MOODLE_BRANCH=MOODLE_38_STABLE
-  - MOODLE_BRANCH=MOODLE_39_STABLE
-
  matrix:
-  - DB=pgsql
-  - DB=mysqli
+  - DB=mysqli MOODLE_BRANCH=MOODLE_310_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
