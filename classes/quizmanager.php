@@ -476,7 +476,7 @@ class quizmanager {
                         continue;
                     }
                     $questionattempt = $quizattempt->get_question_attempt($slot);
-                    $question = $questionattempt->get_question();
+                    $question = $questionattempt->get_question(false);
                     if ($question instanceof \qtype_tcs_question) {
                         $qtdata = $questionattempt->get_last_qt_data();
                         if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
