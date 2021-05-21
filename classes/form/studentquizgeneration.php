@@ -92,16 +92,16 @@ class studentquizgeneration extends \moodleform {
             $mform->addElement('html', '<tr><td>');
             $mform->addElement('checkbox', 'paneliststoinclude['. $panelist->get("id").']', '', $label);
             $quizstate = '';
-            $quizstateclass = '';
+            $quizstateclass = 'badge-info';
             if (key_exists($panelist->get("userid"), $this->_customdata['attempts'])) {
                 $state = $this->_customdata['attempts'][$panelist->get('userid')]->state;
                 if (!empty($state)) {
                     $quizstate = get_string('state' . $state, 'mod_quiz');
                     if ($state == \quiz_attempt::FINISHED) {
-                        $quizstateclass = 'label-success';
+                        $quizstateclass = 'badge-success';
                     }
                     if ($state == \quiz_attempt::IN_PROGRESS) {
-                        $quizstateclass = 'label-warning';
+                        $quizstateclass = 'badge-warning';
                     }
                 } else {
                     $quizstate = get_string('notcompleted', 'mod_concordance');
@@ -113,7 +113,7 @@ class studentquizgeneration extends \moodleform {
             }
 
             $mform->addElement('html', '</td>');
-            $mform->addElement('html', "<td><span class='mt-1 label $quizstateclass'>$quizstate</span></td></tr>");
+            $mform->addElement('html', "<td><span class='mt-1 badge $quizstateclass'>$quizstate</span></td></tr>");
         }
         $mform->addElement('html', '</tbody></table>');
 
