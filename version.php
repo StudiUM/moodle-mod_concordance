@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2021030100;
-$plugin->requires = 2018112800;
+$plugin->version  = 2021110900;
+$plugin->requires = 2021051704;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0.2 (Build 2020090200)';
+$plugin->release   = '1.0.3 (Build 2021110900)';
 $plugin->component = 'mod_concordance';
 $plugin->dependencies = array(
-    'qtype_tcs' => 2021030100
+    'qtype_tcs' => 2021110900
 );

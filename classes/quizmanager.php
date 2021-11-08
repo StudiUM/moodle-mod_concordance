@@ -607,5 +607,4 @@ class quizmanager {
             $DB->update_record('question', $q);
         }
     }
-
 }

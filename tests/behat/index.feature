@@ -27,7 +27,7 @@ Feature: Index page
     And the following "activities" exist:
       | activity    | course | section   | idnumber     | name                             | visible |
       | quiz        | c1     | 0         | quiz1        | Quiz                             | 1       |
-
+@sectionconcordance
   Scenario: Check the list of concordance instances
     Given I log in as "teacher1"
     When I am on "Course1" course homepage with editing mode on
@@ -38,7 +38,7 @@ Feature: Index page
     And I should see "Concordance in section 2"
     And I should not see "Concordance in course 2"
     And I should not see "Quiz"
-    And I follow "First concordance in section 1"
+    And I am on the "First concordance in section 1" "concordance activity" page
     And I should see "First concordance in section 1" in the "//h2" "xpath_element"
     And I log out
     And I log in as "student1"

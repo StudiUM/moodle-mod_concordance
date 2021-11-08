@@ -63,14 +63,14 @@ Feature: Wizard
     And I press "Save and display"
     And the status of concordance task "Edit settings" should be "done"
     # Select the quiz.
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Select the quiz for panelists"
     And I should not see "You should not change the content of the currently selected quiz since these changes will not be reflected in the quiz for panelists."
     And I set the field "cmorigin" to "Test quiz (hidden)"
     And I should see "You should not change the content of the currently selected quiz since these changes will not be reflected in the quiz for panelists."
     And I press "Save changes"
     And I should see "You should not change the content of the currently selected quiz since these changes will not be reflected in the quiz for panelists."
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And the status of concordance task "Select the quiz for panelists" should be "done"
     And I should not see "No test found"
     # More advanced tests for status and info are made in selectquiz.feature.
@@ -83,7 +83,7 @@ Feature: Wizard
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And the status of concordance task "Manage panelists" should be "done"
     And I should not see "No panelist have been created"
     And the status of concordance task "Generate the quiz for students" should be "info"
@@ -94,7 +94,7 @@ Feature: Wizard
     And I click on "Send message to 1 person" "button"
     And I wait until the page is ready
     And I should see "Message sent to 1 person"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And the status of concordance task "Contact panelists" should be "done"
 
   Scenario: Test the wizard navigation.
@@ -102,7 +102,7 @@ Feature: Wizard
     Given I am on "Course1" course homepage
     When I add a "Learning by concordance management" to section "1" and I fill the form with:
       | Name                          | TestConcordance                   |
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     Then the concordance wizard active phase should be "Setup"
     And I click on "Switch to the next phase" "link"
     And the concordance wizard active phase should be "Answers by panelists"

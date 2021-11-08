@@ -41,13 +41,13 @@ Feature: Students quiz generation
       | Option                                                              | The option is GHI           |
 
   Scenario: There is no panelist and no quiz selected yet
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     When I follow "Generate the quiz for students"
     Then I should see "No panelist have been created yet."
     And "Generate" "button" should not be visible
 
   Scenario: There is no quiz selected yet, but at least a panelist is created
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
@@ -55,7 +55,7 @@ Feature: Students quiz generation
       | Surname        | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     When I follow "Generate the quiz for students"
     Then I should see "No quiz found for panelists"
     And I should not see "No panelist have been created yet."
@@ -70,7 +70,7 @@ Feature: Students quiz generation
     And I upload "mod/concordance/tests/fixtures/moodle_logo2.jpg" file to "Files" filemanager
     And I click on "Save changes" "button"
     And I am on "Course1" course homepage
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I click on "Edit settings" "link" in the ".concordance-wizard" "css_element"
     And I click on "Insert or edit image" "button" in the "//*[contains(.,'Description for the panelists')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
     And I click on "Browse repositories..." "button"
@@ -91,12 +91,12 @@ Feature: Students quiz generation
     And I click on "Save image" "button"
     And I click on "Save and display" "button"
     # Select the quiz for panelists.
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Select the quiz for panelists"
     And I set the field "Quiz" to "Test quiz name"
     And I click on "Save changes" "button"
     # Add panelists.
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
@@ -225,7 +225,7 @@ Feature: Students quiz generation
     And I force log out
     And I log in as "teacher1"
     And I am on "Course1" course homepage
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     When I follow "Generate the quiz for students"
     # Checks for the Generate button and javascript validation.
     Then the "Generate" "button" should be disabled
@@ -275,7 +275,7 @@ Feature: Students quiz generation
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
     # Generate the quiz for students (Quiz 2).
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Generate the quiz for students"
     And I click on "Donald Fletcher" "checkbox"
     And I click on "Second question" "checkbox"
@@ -290,7 +290,7 @@ Feature: Students quiz generation
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
     # Generate the quiz for students (Quiz 3).
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Generate the quiz for students"
     And I click on "Rebecca Armenta" "checkbox"
     And I click on "Donald Fletcher" "checkbox"
@@ -307,7 +307,7 @@ Feature: Students quiz generation
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
     # Generate the quiz for students (Quiz 4).
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Generate the quiz for students"
     And I click on "Rebecca Armenta" "checkbox"
     And I click on "Donald Fletcher" "checkbox"
@@ -348,7 +348,7 @@ Feature: Students quiz generation
     And I should not see "Test quiz name"
     # Student answer the quiz and see feedbacks correctly.
     # Quiz 1 (formative) answered by Rebecca only.
-    And I follow "Student quiz 1"
+    And I am on the "Student quiz 1" "quiz activity" page 
     And I should see "The description for the students"
     And "//img[contains(@src, 'moodle_logo2.jpg') and @alt='Image for students']" "xpath_element" should exist
     And I should not see "Fletcher biography"
@@ -372,7 +372,7 @@ Feature: Students quiz generation
     And I should see that "1" panelists have answered "Weakened" for question "2"
     # Quiz 2 (summative with feedback) answered by Donald only and with only one question checked.
     And I am on "Course1" course homepage
-    And I follow "Student quiz 2"
+    And I am on the "Student quiz 2" "quiz activity" page 
     And I should see "Fletcher biography"
     And "//img[contains(@src, 'moodle_logo1.jpg') and @alt='Image for Donald']" "xpath_element" should exist
     And I should not see "Armenta biography"
@@ -392,7 +392,7 @@ Feature: Students quiz generation
     And I should see that "0" panelists have answered "Weakened" for question "1"
     # Quiz 3 (formative) answered by Rebecca, Donald and Pablo.
     And I am on "Course1" course homepage
-    And I follow "Student quiz 3"
+    And I am on the "Student quiz 3" "quiz activity" page 
     And I should not see "Fletcher biography"
     And I should not see "Armenta biography"
     And I click on "Attempt quiz now" "button"
@@ -417,7 +417,7 @@ Feature: Students quiz generation
     And I should see that "2" panelists have answered "Weakened" for question "2"
     # Quiz 4 (summative without feedback) answered by Rebecca, Donald and Pablo.
     And I am on "Course1" course homepage
-    And I follow "Student quiz 4"
+    And I am on the "Student quiz 4" "quiz activity" page 
     And I click on "Attempt quiz now" "button"
     And I click on "Unchanged" "radio" in the "First question" "question"
     And I set the field "Comments" to "Comment 1 for quiz 4"

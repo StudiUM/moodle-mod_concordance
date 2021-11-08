@@ -23,7 +23,7 @@ Feature: Manage panelists page
       | Description for the students  | The description for the students        |
 
   Scenario: Manage the panelists
-    Given I follow "Test Concordance for Manage Panelists"
+    Given I am on the "Test Concordance for Manage Panelists" "concordance activity" page logged in as teacher1
     When I follow "Manage panelists"
     Then I should see "No panelist have been created yet."
     # Add panelists.
@@ -76,12 +76,8 @@ Feature: Manage panelists page
     And I log out
     And I log in as "admin"
     And there should be "2" panelists in the panelists course for concordance "Test Concordance for Manage Panelists"
-
     # Delete a panelist.
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course1" course homepage
-    And I follow "Test Concordance for Manage Panelists"
+    And I am on the "Test Concordance for Manage Panelists" "concordance activity" page logged in as teacher1
     And I follow "Manage panelists"
     And I click on "//table/tbody/tr[contains(.,'Rebecca')]//button[.='Delete']" "xpath_element"
     And I click on "Yes" "button" in the "Confirmation" "dialogue"

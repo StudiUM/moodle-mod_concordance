@@ -27,25 +27,25 @@ Feature: Contact panelists page
       | Availability  | Hide from students    |
 
   Scenario: There is no panelist and no quiz selected yet
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     When I follow "Contact panelists"
     Then I should see "It is not possible to contact the panelists because the quiz for panelists is not selected."
     And I should see "No panelist have been created yet."
     And "Send a message" "button" should not be visible
 
   Scenario: There is no panelist yet, but a quiz is selected
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     And I follow "Select the quiz for panelists"
     And I set the field "Quiz" to "Test quiz name"
     And I click on "Save changes" "button"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     When I follow "Contact panelists"
     Then I should see "No panelist have been created yet."
     And I should not see "It is not possible to contact the panelists because the quiz for panelists is not selected."
     And "Send a message" "button" should not be visible
 
   Scenario: There is no quiz selected yet, but at least a panelist is created
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
@@ -53,7 +53,7 @@ Feature: Contact panelists page
       | Surname        | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     When I follow "Contact panelists"
     Then I should see "It is not possible to contact the panelists because the quiz for panelists is not selected."
     And I should not see "No panelist have been created yet."
@@ -61,11 +61,11 @@ Feature: Contact panelists page
     And I should see "Armenta" in the "Rebecca" "table_row"
 
   Scenario: Contact the panelists
-    Given I follow "TestConcordance"
+    Given I am on the "TestConcordance" "concordance activity" page
     And I follow "Select the quiz for panelists"
     And I set the field "Quiz" to "Test quiz name"
     And I click on "Save changes" "button"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
@@ -79,7 +79,7 @@ Feature: Contact panelists page
       | Surname        | Fletcher            |
       | Email address  | donaldf@example.com |
     And I click on "Save changes" "button"
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     When I follow "Contact panelists"
     Then I should not see "It is not possible to contact the panelists because the quiz for panelists is not selected."
     And I should not see "No panelist have been created yet."
