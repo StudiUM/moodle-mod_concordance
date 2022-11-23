@@ -24,7 +24,6 @@
  */
 
 namespace mod_concordance\form;
-defined('MOODLE_INTERNAL') || die();
 
 use core\form\persistent;
 

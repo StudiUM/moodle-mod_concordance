@@ -43,7 +43,7 @@ if (!$panelist) {
     throw new moodle_exception('Can not find panelist');
 }
 $concordance = \mod_concordance\concordance::get_record(['id' => $panelist->get('concordance')]);
-if (isloggedin() and !$confirm) {
+if (isloggedin() && !$confirm) {
     if ($USER->id === $user->id) {
         $cm = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'));
         $context = context_module::instance($cm->id);
@@ -51,7 +51,10 @@ if (isloggedin() and !$confirm) {
         $quiz = $quizobj->get_quiz();
         $quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated'), 'sesskey' => sesskey()]);
         $button = new single_button($quizurl, get_string('attemptquiznow', 'quiz'));
-        $info = $output->view_information($quiz, $cm, $context, []);
+
+        $info = $output->heading(format_string($quiz->name));
+        $info .= $output->quiz_intro($quiz, $cm);
+
         echo $OUTPUT->header();
         echo $output->render_from_template('mod_concordance/accesspanelistquiz',
                 ['body' => $info, 'footer' => $output->render($button)]);

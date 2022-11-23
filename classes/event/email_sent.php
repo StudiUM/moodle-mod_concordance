@@ -27,8 +27,6 @@ namespace mod_concordance\event;
 
 use core\event\base;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Email sent class.
  *

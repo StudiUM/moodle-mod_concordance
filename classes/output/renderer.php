@@ -25,8 +25,6 @@
 
 namespace mod_concordance\output;
 
-defined('MOODLE_INTERNAL') || die;
-
 use plugin_renderer_base;
 use mod_concordance\concordance;
 

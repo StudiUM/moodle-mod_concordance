@@ -23,15 +23,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_concordance;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 
-use \mod_concordance\quizmanager;
-use \mod_concordance\concordance;
-
+use \question_engine;
+use \quiz;
+use \quiz_attempt;
 
 /**
  * Unit tests for mod_concordance quizmanager
@@ -40,8 +42,9 @@ use \mod_concordance\concordance;
  * @copyright  2020 Université de Montréal
  * @author     Marie-Eve Lévesque <marie-eve.levesque.8@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_concordance\quiz_manager;
  */
-class quizmanager_testcase extends advanced_testcase {
+class quizmanager_test extends \advanced_testcase {
 
     /** @var concordance Concordance persistent object. */
     protected $concordancepersistent = null;
@@ -353,11 +356,11 @@ class quizmanager_testcase extends advanced_testcase {
         $attemptobj->process_abandon($timenow, true);
 
         // Check for users in quiz1.
-        $concordance = new \mod_concordance\concordance();
+        $concordance = new concordance();
         $concordance->set('coursegenerated', $course->id);
         $cm = get_coursemodule_from_instance('quiz', $quiz1->id, $course->id, false, MUST_EXIST);
         $concordance->set('cmgenerated', $cm->id);
-        $users = \mod_concordance\quizmanager::getusersattemptedquiz($concordance);
+        $users = quizmanager::getusersattemptedquiz($concordance);
         // User5 did not start quiz.
         $this->assertCount(4, $users);
 
@@ -384,27 +387,27 @@ class quizmanager_testcase extends advanced_testcase {
         // Also check the has_attempted_quiz function, for each panelist.
         $panelistinfo = new \stdClass();
         $panelistinfo->userid = $u1->id;
-        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $panelist = new panelist(0, $panelistinfo);
         $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
 
         $panelistinfo = new \stdClass();
         $panelistinfo->userid = $u2->id;
-        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $panelist = new panelist(0, $panelistinfo);
         $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
 
         $panelistinfo = new \stdClass();
         $panelistinfo->userid = $u3->id;
-        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $panelist = new panelist(0, $panelistinfo);
         $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
 
         $panelistinfo = new \stdClass();
         $panelistinfo->userid = $u4->id;
-        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $panelist = new panelist(0, $panelistinfo);
         $this->assertTrue($panelist->has_attempted_quiz($quiz1->id));
 
         $panelistinfo = new \stdClass();
         $panelistinfo->userid = $u5->id;
-        $panelist = new \mod_concordance\panelist(0, $panelistinfo);
+        $panelist = new panelist(0, $panelistinfo);
         $this->assertFalse($panelist->has_attempted_quiz($quiz1->id));
     }
 }

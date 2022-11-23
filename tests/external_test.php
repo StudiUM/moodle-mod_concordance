@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_concordance;
+
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
@@ -37,8 +39,9 @@ use mod_concordance\external;
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @copyright  2020 Université de Montréal
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_concordance\external
  */
-class mod_concordance_external_testcase extends externallib_advanced_testcase {
+class external_test extends \externallib_advanced_testcase {
 
     /**
      * Test send message external.
@@ -84,7 +87,7 @@ class mod_concordance_external_testcase extends externallib_advanced_testcase {
         $sinkevents = $this->redirectEvents();
         $result = external::send_message([$panelist1->get('id'), $panelist2->get('id')],
                 $message, $subject, $concordance->cmid, false);
-        $result = (object) external_api::clean_returnvalue(external::send_message_returns(), $result);
+        $result = (object) \external_api::clean_returnvalue(external::send_message_returns(), $result);
         $this->assertTrue($result->scalar);
 
         // Get our messages.

@@ -64,8 +64,7 @@ Feature: Students quiz generation
   @_switch_window @_file_upload
   Scenario: Test the options on the "Generate the quiz for students" page
     # Add images in the descriptions.
-    Given I follow "Dashboard" in the user menu
-    And I follow "Manage private files"
+    Given I follow "Private files" in the user menu
     And I upload "mod/concordance/tests/fixtures/moodle_logo1.jpg" file to "Files" filemanager
     And I upload "mod/concordance/tests/fixtures/moodle_logo2.jpg" file to "Files" filemanager
     And I click on "Save changes" "button"
@@ -152,7 +151,7 @@ Feature: Students quiz generation
     And "//img[contains(@src, 'moodle_logo1.jpg') and @alt='Image for panelists']" "xpath_element" should exist
     # Two screens with Attempt quiz now buttons.
     And I click on "Attempt quiz now" "button"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I switch to the last window
     And I should see "First question"
     And I click on "Weakened" "radio" in the "First question" "question"
@@ -176,7 +175,7 @@ Feature: Students quiz generation
     And I log in as concordance panelist "donaldf@example.com"
     And I click on "Continue" "button"
     And I click on "Attempt quiz now" "button"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I switch to the last window
     And I should see "First question"
     And I click on "Unchanged" "radio" in the "First question" "question"
@@ -191,7 +190,7 @@ Feature: Students quiz generation
     And I log in as concordance panelist "pablom@example.com"
     And I click on "Continue" "button"
     And I click on "Attempt quiz now" "button"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I switch to the last window
     And I should see "First question"
     And I click on "Unchanged" "radio" in the "First question" "question"
@@ -208,7 +207,7 @@ Feature: Students quiz generation
     And I log in as concordance panelist "cynthiar@example.com"
     And I click on "Continue" "button"
     And I click on "Attempt quiz now" "button"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I switch to the last window
     And I should see "First question"
     And I click on "Unchanged" "radio" in the "First question" "question"
@@ -270,7 +269,7 @@ Feature: Students quiz generation
     And I should see "A new quiz has been generated"
     And I click on "Go to the generated quiz" "link"
     And I should see "Armenta biography"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
@@ -285,7 +284,7 @@ Feature: Students quiz generation
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
     And I should see "Fletcher biography"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
@@ -302,7 +301,7 @@ Feature: Students quiz generation
     And I click on "Go to the generated quiz" "link"
     And I should not see "Fletcher biography"
     And I should not see "Armenta biography"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
@@ -317,20 +316,19 @@ Feature: Students quiz generation
     And I set the field "Include panelists' biographies in the introduction" to "No"
     And I click on "Generate" "button"
     And I click on "Go to the generated quiz" "link"
-    And I navigate to "Edit settings" in current page administration
+    And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
       | Availability  | Show on course page |
     And I click on "Save and return to course" "button"
     # Check the gradebook.
-    And I navigate to "Gradebook setup" in current page administration
+    And I navigate to "Grades" in current page administration
     And I should not see "Student quiz 1"
     And I should see "Student quiz 2"
     And I should not see "Student quiz 3"
     And I should see "Student quiz 4"
     And I should not see "Test quiz name"
     # Check the question bank.
-    And I am on "Course1" course homepage
-    And I navigate to "Question bank > Questions" in current page administration
+    And I am on the "Course1" "core_question > course question bank" page
     And the "Select a category" select box should contain "Default for c1 (2)"
     And the "Select a category" select box should contain "Concordance - Quiz \"Student quiz 1\" (2)"
     And the "Select a category" select box should contain "Concordance - Quiz \"Student quiz 2\" (1)"
@@ -348,12 +346,12 @@ Feature: Students quiz generation
     And I should not see "Test quiz name"
     # Student answer the quiz and see feedbacks correctly.
     # Quiz 1 (formative) answered by Rebecca only.
-    And I am on the "Student quiz 1" "quiz activity" page 
+    And I am on the "Student quiz 1" "quiz activity" page
     And I should see "The description for the students"
     And "//img[contains(@src, 'moodle_logo2.jpg') and @alt='Image for students']" "xpath_element" should exist
     And I should not see "Fletcher biography"
     And I should see "Armenta biography"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I click on "Weakened" "radio" in the "First question" "question"
     And I set the field "Comments" to "Comment 1 for quiz 1"
     And I click on "Check" "button" in the "First question" "question"
@@ -372,11 +370,11 @@ Feature: Students quiz generation
     And I should see that "1" panelists have answered "Weakened" for question "2"
     # Quiz 2 (summative with feedback) answered by Donald only and with only one question checked.
     And I am on "Course1" course homepage
-    And I am on the "Student quiz 2" "quiz activity" page 
+    And I am on the "Student quiz 2" "quiz activity" page
     And I should see "Fletcher biography"
     And "//img[contains(@src, 'moodle_logo1.jpg') and @alt='Image for Donald']" "xpath_element" should exist
     And I should not see "Armenta biography"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I should see "First question"
     And I should not see "Second question"
     And I click on "Weakened" "radio" in the "First question" "question"
@@ -392,10 +390,10 @@ Feature: Students quiz generation
     And I should see that "0" panelists have answered "Weakened" for question "1"
     # Quiz 3 (formative) answered by Rebecca, Donald and Pablo.
     And I am on "Course1" course homepage
-    And I am on the "Student quiz 3" "quiz activity" page 
+    And I am on the "Student quiz 3" "quiz activity" page
     And I should not see "Fletcher biography"
     And I should not see "Armenta biography"
-    And I click on "Attempt quiz now" "button"
+    And I click on "Attempt quiz" "button"
     And I click on "Weakened" "radio" in the "First question" "question"
     And I set the field "Comments" to "Comment 1 for quiz 3"
     And I click on "Check" "button" in the "First question" "question"
@@ -417,8 +415,8 @@ Feature: Students quiz generation
     And I should see that "2" panelists have answered "Weakened" for question "2"
     # Quiz 4 (summative without feedback) answered by Rebecca, Donald and Pablo.
     And I am on "Course1" course homepage
-    And I am on the "Student quiz 4" "quiz activity" page 
-    And I click on "Attempt quiz now" "button"
+    And I am on the "Student quiz 4" "quiz activity" page
+    And I click on "Attempt quiz" "button"
     And I click on "Unchanged" "radio" in the "First question" "question"
     And I set the field "Comments" to "Comment 1 for quiz 4"
     And I click on "Unchanged" "radio" in the "Second question" "question"

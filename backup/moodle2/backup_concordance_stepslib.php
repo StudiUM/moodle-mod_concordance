@@ -23,18 +23,6 @@
  * @author    Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Define all the backup steps that will be used by the backup_concordance_activity_task
- *
- * @package   mod_concordance
- * @category  backup
- * @copyright 2020 Université de Montréal
- * @author    Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class backup_concordance_activity_structure_step extends backup_activity_structure_step {
     /**
      * Function that will return the structure to be processed by this restore_step.

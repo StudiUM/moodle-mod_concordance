@@ -27,7 +27,8 @@ Feature: Index page
     And the following "activities" exist:
       | activity    | course | section   | idnumber     | name                             | visible |
       | quiz        | c1     | 0         | quiz1        | Quiz                             | 1       |
-@sectionconcordance
+
+  @sectionconcordance
   Scenario: Check the list of concordance instances
     Given I log in as "teacher1"
     When I am on "Course1" course homepage with editing mode on

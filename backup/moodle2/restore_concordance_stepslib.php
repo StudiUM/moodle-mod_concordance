@@ -14,20 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Structure step to restore one concordance activity.
- *
- * @package   mod_concordance
- * @category  backup
- * @copyright 2020 Université de Montréal
- * @author    Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 use mod_concordance\panelist;
 use mod_concordance\panelistmanager;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Structure step to restore one concordance activity.

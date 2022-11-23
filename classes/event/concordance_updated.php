@@ -25,8 +25,6 @@
 
 namespace mod_concordance\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_concordance updated event class.
  *

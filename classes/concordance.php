@@ -25,8 +25,6 @@
 
 namespace mod_concordance;
 
-defined('MOODLE_INTERNAL') || die();
-
 use \core\persistent;
 use \moodle_url;
 
