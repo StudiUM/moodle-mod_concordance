@@ -168,6 +168,47 @@ class quizmanager_testcase extends advanced_testcase {
     }
 
     /**
+     * Test id panelist duplicate course has only manual enrolments activated.
+     * @return void
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    public function test_panelist_course_enrolments() {
+        global $DB;
+        // Add an enrolment instance to course.
+        $self = enrol_get_plugin('self');
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
+        $self->add_instance($this->course,
+            ['status' => ENROL_INSTANCE_ENABLED, 'name' => 'Self', 'customint6' => 1, 'roleid' => $studentrole->id]);
+        // Check that course has this instance
+        $enrolinstances = enrol_get_instances($this->course->id, true);
+        $hasmanualinstance = false;
+        $hasselfinstance = false;
+        foreach ($enrolinstances as $inst) {
+            if ($inst->enrol == 'self') {
+                $hasselfinstance = true;
+            }
+            if ($inst->enrol == 'manual') {
+                $hasmanualinstance = true;
+            }
+        }
+        $this->assertTrue($hasselfinstance);
+        $this->assertTrue($hasmanualinstance);
+        // Create a quiz in the course
+        $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
+        $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'A quiz', 'visible' => false));
+        // Select a quiz for the Concordance activity and duplicate it for panelists.
+        $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
+        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $courseinfo = get_fast_modinfo($this->concordancepersistent->get('coursegenerated'));
+        // Get enrolment instances
+        $enrolinstances = enrol_get_instances($courseinfo->courseid, true);
+        $this->assertCount(1, $enrolinstances);
+        $this->assertEquals('manual', array_shift($enrolinstances)->enrol);
+    }
+
+    /**
      * Test duplicatequizforstudents.
      * @return void
      */

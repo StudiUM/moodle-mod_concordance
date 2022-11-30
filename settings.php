@@ -44,4 +44,13 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configselect('mod_concordance/panelistsrole', get_string('panelistsrole', 'mod_concordance'),
         get_string('configpanelistsrole', 'mod_concordance'), $defaultstudentroleid, $studentroles));
+    $systemroles = array();
+    $allowedsystemroleids = get_roles_for_contextlevels(CONTEXT_SYSTEM);
+    $systemroles[0] = get_string('nosystemrole', 'mod_concordance');
+    foreach ($allowedsystemroleids as $allowedsystemroleid) {
+        $systemroles[$allowedsystemroleid] = $roles[$allowedsystemroleid]->localname;
+    }
+    $settings->add(new admin_setting_configselect('mod_concordance/panelistssystemrole',
+        get_string('panelistssystemrole', 'mod_concordance'),
+        get_string('configpanelistssystemrole', 'mod_concordance'), 0, $systemroles));
 }

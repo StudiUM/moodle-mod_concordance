@@ -80,6 +80,42 @@ class mod_concordance_panelistmanager_testcase extends advanced_testcase {
     }
 
     /**
+     * Test that panelist has no system role if choosed in settings
+     * @return void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function test_panelist_having_no_system_role() {
+        set_config('panelistssystemrole', 0, 'mod_concordance');
+        $course = $this->getDataGenerator()->create_course();
+        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $panelistid = $this->createpanelist($concordance->id);
+        $panelist = new \mod_concordance\panelist($panelistid);
+        \mod_concordance\panelistmanager::panelistcreated($panelist);
+        $this->assertCount(0, get_user_roles(context_system::instance(), $panelist->get_user()->id));
+    }
+
+    /**
+     * Test that panelist has a system role if choosed in settings
+     * @return void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function test_panelist_having_system_role() {
+        global $DB;
+        $role = $DB->get_record('role', array('shortname' => 'coursecreator'));
+        set_config('panelistssystemrole', $role->id, 'mod_concordance');
+        $course = $this->getDataGenerator()->create_course();
+        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $panelistid = $this->createpanelist($concordance->id);
+        $panelist = new \mod_concordance\panelist($panelistid);
+        \mod_concordance\panelistmanager::panelistcreated($panelist);
+        $userroles = get_user_roles(context_system::instance(), $panelist->get_user()->id);
+        $this->assertCount(1, $userroles);
+        $this->assertEquals('coursecreator', array_shift($userroles)->shortname);
+    }
+
+    /**
      * Create panelist.
      * @param int $concordanceid
      * @return int panelistid
