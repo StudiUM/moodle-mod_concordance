@@ -33,6 +33,7 @@ $string['concordance:addinstance'] = 'Add a new learning by concordance manageme
 $string['concordance:view'] = 'View learning by concordance management';
 $string['configcategorypanelcourses'] = 'Courses used by the panels of experts in the Concordance activity will be placed in this category';
 $string['configpanelistsrole'] = 'The panelists in the Concordance activity will be given this role in the course generated for them';
+$string['configpanelistssystemrole'] = 'The panelists will be given this role on system context. You can choose to not assign role in system for Panelist';
 $string['defaultemailbody'] = 'As a panelist, you are invited to answer a questionnaire. A link is provided to you at the bottom of this email to access it.
 Your answers will then be collated with those of other panelists, to allow students to carry out a training activity by concordance.';
 $string['defaultemailsubject'] = 'Online quiz - Learning by concordance';
