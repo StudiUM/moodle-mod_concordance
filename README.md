@@ -8,7 +8,7 @@ You can secure concordance module by creating a system role for panelists.
 ### Create a system role
 moosh commands
 ```shell
-moosh role-create -d "Panelist systel role" -n "Panelist" -c system panelist
+moosh role-create -d "Panelist system role" -n "Panelist" -c system panelist
 # this return id of newly created role <roleid> 
 moosh role-update-capability -i <roleid> mod/forumng:grade prohibit 1
 moosh role-update-capability -i <roleid> moodle/my:manageblocks prohibit 1
@@ -31,13 +31,13 @@ You can change other capabilities depending of your additional Moodle plugin ins
 ```shell
 moosh role-update-capability -i <roleid> mod/customcert:viewallcertificates prohibit 1
 ```
-## set the newly role in Concocordance module settings
+## Set the newly created role in Concocordance module settings
 Site administration -> Plugins -> Activity modules -> Concordance
-* set System role for panelist to your newly panelist role.
-* mossh command 
+* set System role for panelist to your newly created panelist role.
+* moosh command 
 ```shell
 moosh config-set panelistssystemrole <roleid> mod_concordance
 ```
 ## Protect courses category dedicated to panel experts
 * this category is the one set in Concordance module settings as "Category for courses for panels of experts"
-* change permissions by prohibit moodle/category:viewcourselist to the newly panelist role.
+* change permissions by prohibit moodle/category:viewcourselist to the newly created panelist role.

@@ -80,7 +80,7 @@ Feature:
     And I wait until the page is ready
     And I should see "The description for the panelists"
     And I click on "Attempt quiz now" "button"
-    When I follow "preferences" in the user menu
+    When I follow "Preferences" in the user menu
     # moodle/user:editownprofile
     Then I should not see "Edit profile"
     # moodle/user:changeownpassword
@@ -95,7 +95,7 @@ Feature:
     When I follow "Profile" in the user menu
     # moodle/user:manageownfiles
     And I should not see "Private files"
-        # tool/dataprivacy:requestdelete
+    # tool/dataprivacy:requestdelete
     And I should not see "Delete my account"
     # moodle/site:sendmessage
     When I open messaging
@@ -106,7 +106,4 @@ Feature:
     # moodle/my:manageblocks
     When I follow "Dashboard" in the user menu
     Then I should not see "Customise this page"
-
-
-
 

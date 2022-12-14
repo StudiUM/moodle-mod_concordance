@@ -181,7 +181,7 @@ class quizmanager_testcase extends advanced_testcase {
         $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $self->add_instance($this->course,
             ['status' => ENROL_INSTANCE_ENABLED, 'name' => 'Self', 'customint6' => 1, 'roleid' => $studentrole->id]);
-        // Check that course has this instance
+        // Check that course has this instance.
         $enrolinstances = enrol_get_instances($this->course->id, true);
         $hasmanualinstance = false;
         $hasselfinstance = false;
@@ -195,14 +195,14 @@ class quizmanager_testcase extends advanced_testcase {
         }
         $this->assertTrue($hasselfinstance);
         $this->assertTrue($hasmanualinstance);
-        // Create a quiz in the course
+        // Create a quiz in the course.
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
         $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'A quiz', 'visible' => false));
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
         $courseinfo = get_fast_modinfo($this->concordancepersistent->get('coursegenerated'));
-        // Get enrolment instances
+        // Get enrolment instances.
         $enrolinstances = enrol_get_instances($courseinfo->courseid, true);
         $this->assertCount(1, $enrolinstances);
         $this->assertEquals('manual', array_shift($enrolinstances)->enrol);
