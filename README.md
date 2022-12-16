@@ -31,7 +31,7 @@ You can change other capabilities depending of your additional Moodle plugin ins
 ```shell
 moosh role-update-capability -i <roleid> mod/customcert:viewallcertificates prohibit 1
 ```
-## Set the newly created role in Concocordance module settings
+## Set the newly created role in Concordance module settings
 Site administration -> Plugins -> Activity modules -> Concordance
 * set System role for panelist to your newly created panelist role.
 * moosh command 
