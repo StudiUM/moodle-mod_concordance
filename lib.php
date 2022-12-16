@@ -132,7 +132,24 @@ function generate_course_for_panelists($data) {
     $course->fullname = $shortname;
 
     $course = create_course($course);
+    clean_enrol_instances($course);
     return intval($course->id);
+}
+
+/**
+ * Clean enrol instances of generated course for security reasons
+ * let only manual if exists
+ * @param object $course
+ * @return int
+ */
+function clean_enrol_instances($course) {
+    $enrolinstances = enrol_get_instances($course->id, true);
+    $plugins = enrol_get_plugins(true);
+    foreach ($enrolinstances as $enrolinstance) {
+        if ($enrolinstance->enrol != 'manual') {
+            $plugins[$enrolinstance->enrol]->delete_instance($enrolinstance);
+        }
+    }
 }
 
 /**

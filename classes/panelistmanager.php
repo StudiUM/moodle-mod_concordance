@@ -59,6 +59,11 @@ class panelistmanager {
                 $user->email = $user->username;
                 $user->confirmed = 1;
                 $userid = user_create_user($user, false, false);
+                // Assing system role if necessary.
+                $systemroleid = get_config('mod_concordance', 'panelistssystemrole');
+                if (!empty($systemroleid)) {
+                    role_assign($systemroleid, $userid, \context_system::instance());
+                }
                 // Enrol user in panelist course.
                 $plugin = enrol_get_plugin('manual');
                 $roleid = get_config('mod_concordance', 'panelistsrole');
