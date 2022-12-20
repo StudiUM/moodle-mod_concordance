@@ -57,12 +57,12 @@ Feature:
       | Option                                                              | The option is ABC           |
       | New information                                                     | The new information is DEF  |
     # Select the quiz for panelists.
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Select the quiz for panelists"
     And I set the field "Quiz" to "Test quiz name"
     And I click on "Save changes" "button"
     # Add panelists.
-    And I follow "TestConcordance"
+    And I am on the "TestConcordance" "concordance activity" page
     And I follow "Manage panelists"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
@@ -104,6 +104,6 @@ Feature:
     And I click on "//button[@aria-label='Send message']" "xpath_element"
     Then I should see "cannot send a message to conversation"
     # moodle/my:manageblocks
-    When I follow "Dashboard" in the user menu
-    Then I should not see "Customise this page"
+    When I follow "Dashboard"
+    Then I should not see "Edit mode"
 

@@ -93,7 +93,7 @@ class panelistmanager_test extends \advanced_testcase {
         $panelistid = $this->createpanelist($concordance->id);
         $panelist = new \mod_concordance\panelist($panelistid);
         \mod_concordance\panelistmanager::panelistcreated($panelist);
-        $this->assertCount(0, get_user_roles(context_system::instance(), $panelist->get_user()->id));
+        $this->assertCount(0, get_user_roles(\context_system::instance(), $panelist->get_user()->id));
     }
 
     /**
@@ -111,7 +111,7 @@ class panelistmanager_test extends \advanced_testcase {
         $panelistid = $this->createpanelist($concordance->id);
         $panelist = new \mod_concordance\panelist($panelistid);
         \mod_concordance\panelistmanager::panelistcreated($panelist);
-        $userroles = get_user_roles(context_system::instance(), $panelist->get_user()->id);
+        $userroles = get_user_roles(\context_system::instance(), $panelist->get_user()->id);
         $this->assertCount(1, $userroles);
         $this->assertEquals('coursecreator', array_shift($userroles)->shortname);
     }
