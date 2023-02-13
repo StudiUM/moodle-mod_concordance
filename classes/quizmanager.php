@@ -146,7 +146,7 @@ class quizmanager {
      * @return int the new cm id generated
      */
     public static function duplicatequizforstudents($concordance, $formdata) {
-        global $DB;
+        global $DB, $USER;
         $hasquestions = isset($formdata->questionstoinclude) && !empty($formdata->questionstoinclude);
         // Duplicate the panelist quiz in the students course and make it hidden.
         if (!is_null($concordance->get('cmgenerated')) && $hasquestions) {
@@ -169,7 +169,27 @@ class quizmanager {
             $quizpanelist = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
             $coursepanelist = $DB->get_record('course', array('id' => $concordance->get('coursegenerated')), '*', MUST_EXIST);
             self::updatestampandversionquestions($quizpanelist, $cm, $coursepanelist);
-            $newcm = self::duplicate_module($course, $cm, $concordance->get('coursegenerated'));
+            // Duplicate quiz in temp course.
+            $data = new \stdClass();
+            $data->id = $concordance->get('id');
+            $data->course = $course->id;
+            $coursetemp = generate_course_for_panelists($data);
+            $ocoursetemp = $DB->get_record('course', array('id' => $coursetemp), '*', MUST_EXIST);
+            // Get user enrolled in both courses.
+            $enrolplugin = enrol_get_plugin('manual');
+            $roleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'), MUST_EXIST);
+            foreach ([$coursetemp, $concordance->get('coursegenerated')] as $cid) {
+                $contextcoursecap = context_course::instance($cid);
+                $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
+                $instances = $DB->get_records('enrol',
+                        array('courseid' => $cid, 'enrol' => 'manual'));
+                $enrolinstance = reset($instances);
+                $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
+            }
+            $cmtmp = self::duplicate_module($ocoursetemp, $cm);
+
+            // Duplicate final.
+            $newcm = self::duplicate_module($course, $cmtmp, $concordance->get('coursegenerated'), $ocoursetemp->id);
             set_coursemodule_visible($newcm->id, 0);
 
             $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
@@ -321,6 +341,7 @@ class quizmanager {
      * @param object $course course object.
      * @param object $cm course module object to be duplicated.
      * @param int    $courseidavoidcap the course on which we want to avoid the capability check.
+     * @param int    $deletecoursesource the course id we want to delete before restore.
      *
      * @throws Exception
      * @throws coding_exception
@@ -329,7 +350,7 @@ class quizmanager {
      *
      * @return cm_info|null cminfo object if we sucessfully duplicated the mod and found the new cm.
      */
-    private static function duplicate_module($course, $cm, $courseidavoidcap = null) {
+    private static function duplicate_module($course, $cm, $courseidavoidcap = null, $deletecoursesource = false) {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -342,6 +363,7 @@ class quizmanager {
         $enrolplugin = enrol_get_plugin('manual');
         $roleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'), MUST_EXIST);
         $contextcoursecap = context_course::instance($courseidavoidcap);
+        $cmcontext = context_module::instance($cm->id);
         $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
         if (!$isenrolled) {
             $instances = $DB->get_records('enrol',
@@ -369,6 +391,10 @@ class quizmanager {
         $bc->execute_plan();
 
         $bc->destroy();
+        // Delete source course before restore.
+        if ($deletecoursesource) {
+            delete_course($deletecoursesource, false);
+        }
 
         // Restore the backup immediately.
         $rc = new restore_controller($backupid, $course->id,
@@ -381,7 +407,6 @@ class quizmanager {
             $groupsetting->set_value(true);
         }
 
-        $cmcontext = context_module::instance($cm->id);
         if (!$rc->execute_precheck()) {
             $precheckresults = $rc->get_precheck_results();
             if (is_array($precheckresults) && !empty($precheckresults['errors'])) {

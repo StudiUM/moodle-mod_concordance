@@ -161,7 +161,7 @@ Feature: Students quiz generation
     And I set the field with xpath "(//div[@class='answerfeedback'])[2]/textarea" to "Comments from Rebecca for Q2"
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     # Check that Rebecca can't attempt again, but can review her attempt.
     And I log in as concordance panelist "rebeccaa@example.com"
     And I wait until the page is ready
@@ -185,7 +185,7 @@ Feature: Students quiz generation
     And I set the field with xpath "(//div[@class='answerfeedback'])[2]/textarea" to "Comments from Donald for Q2"
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     # Panelist 3 begins the quiz but does not complete it.
     And I log in as concordance panelist "pablom@example.com"
     And I click on "Continue" "button"
@@ -217,7 +217,7 @@ Feature: Students quiz generation
     And I set the field with xpath "(//div[@class='answerfeedback'])[2]/textarea" to "Comments from Cynthia for Q2"
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
 
     # We generate some quizzes with different options.
     # General checks for the Generate quiz page.
@@ -382,7 +382,7 @@ Feature: Students quiz generation
     And "Check" "button" should not exist
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I should see "The most popular answer is: Unchanged" in the "First question" "question"
     And I should see "Comments from Donald for Q1" for panelist "Donald Fletcher" for answer "Unchanged" of question "1"
     And I should see no comments for answer "Weakened" of question "1"
@@ -424,6 +424,6 @@ Feature: Students quiz generation
     And "Check" "button" should not exist
     And I click on "Finish attempt ..." "button"
     And I click on "Submit all and finish" "button"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I should not see "The most popular answer is"
     And I should not see "Comments from Donald for Q1"

@@ -100,6 +100,7 @@ Feature:
     # moodle/site:sendmessage
     When I open messaging
     And I click on "//*[@id='view-overview-favourites-toggle']/following-sibling::div/div[2]/a" "xpath_element"
+    And I wait "1" seconds
     And I set the field with xpath "//textarea[@data-region='send-message-txt']" to "My message"
     And I click on "//button[@aria-label='Send message']" "xpath_element"
     Then I should see "cannot send a message to conversation"
