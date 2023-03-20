@@ -1,7 +1,8 @@
 @mod @mod_concordance
-Feature:
-  As a panelist i can access a quiz with concordance questions
-  but i can't change information of the created account and not access toother courses
+Feature: Panelist system role
+  As a panelist
+  I can access a quiz with concordance questions
+  but I can't change information of the created account and not access other courses
 
   Background:
     Given the following "roles" exist:
@@ -49,7 +50,7 @@ Feature:
     And I add a "Quiz" to section "1" and I fill the form with:
       | Name          | Test quiz name        |
       | Description   | Test quiz description |
-      | Availability  | Hide from students    |
+      | Availability  | Hide on course page    |
     And I add a "Concordance of reasoning" question to the "Test quiz name" quiz with:
       | Question name                                                       | Q1                          |
       | Display the "This question is outside my field of competence" field | No                          |
@@ -67,7 +68,7 @@ Feature:
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca                  |
-      | Surname        | Armenta                  |
+      | Last name      | Armenta                  |
       | Email address  | rebeccaa@example.com     |
       | Biography      | <p>Armenta biography</p> |
     And I click on "Save changes" "button"

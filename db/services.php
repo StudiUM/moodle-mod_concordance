@@ -28,12 +28,12 @@ defined('MOODLE_INTERNAL') || die;
 
 $functions = array(
     'mod_concordance_send_message' => array(
-        'classname'    => 'mod_concordance\external',
-        'methodname'   => 'send_message',
-        'classpath'    => '',
-        'description'  => 'Send message to panelists',
-        'type'         => 'write',
+        'classname' => 'mod_concordance\external',
+        'methodname' => 'send_message',
+        'classpath' => '',
+        'description' => 'Send message to panelists',
+        'type' => 'write',
         'capabilities' => 'mod/concordance:addinstance',
-        'ajax'         => true,
+        'ajax' => true,
     )
 );

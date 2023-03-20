@@ -372,7 +372,7 @@ class quizmanager {
             $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
         }
 
-        $a          = new stdClass();
+        $a = new stdClass();
         $a->modtype = get_string('modulename', $cm->modname);
         $a->modname = format_string($cm->name);
 
@@ -385,7 +385,7 @@ class quizmanager {
         $bc = new backup_controller(backup::TYPE_1ACTIVITY, $cm->id, backup::FORMAT_MOODLE,
                 backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
 
-        $backupid       = $bc->get_backupid();
+        $backupid = $bc->get_backupid();
         $backupbasepath = $bc->get_plan()->get_basepath();
 
         $bc->execute_plan();

@@ -40,7 +40,7 @@ Feature: Index page
     And I should not see "Concordance in course 2"
     And I should not see "Quiz"
     And I am on the "First concordance in section 1" "concordance activity" page
-    And I should see "First concordance in section 1" in the "//h2" "xpath_element"
+    And I should see "First concordance in section 1" in the "#page-content h2" "css_element"
     And I log out
     And I log in as "student1"
     And I am on "Course1" course homepage

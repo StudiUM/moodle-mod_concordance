@@ -29,7 +29,7 @@ require_once("$CFG->dirroot/repository/lib.php");
 // Course module ID.
 $id = optional_param('id', 0, PARAM_INT);
 // Concordance instance id.
-$s  = optional_param('sy', 0, PARAM_INT);
+$s = optional_param('sy', 0, PARAM_INT);
 
 // Two ways to specify the module.
 if ($s) {

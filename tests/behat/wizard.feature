@@ -19,7 +19,7 @@ Feature: Wizard
     And I add a "Quiz" to section "1" and I fill the form with:
       | Name          | Test quiz             |
       | Description   | Test quiz description |
-      | Availability  | Hide from students    |
+      | Availability  | Hide on course page   |
     And I add a "Concordance of reasoning" question to the "Test quiz" quiz with:
       | Question name     | Q1                          |
       | Question text     | First question              |
@@ -29,7 +29,7 @@ Feature: Wizard
     # Create a basic concordance activity.
     Given I am on "Course1" course homepage
     When I add a "Learning by concordance management" to section "1"
-    Then "//div[contains(text(), 'Hide from students')]/preceding-sibling::div[1][contains(.,'Availability')]" "xpath_element" should be visible
+    Then "//div[contains(text(), 'Hide on course page')]/preceding-sibling::div[1][contains(.,'Availability')]" "xpath_element" should be visible
     And I set the field "Name" to "TestConcordance"
     And I press "Save and display"
     And the status of concordance task "Edit settings" should be "todo"
@@ -79,7 +79,7 @@ Feature: Wizard
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"

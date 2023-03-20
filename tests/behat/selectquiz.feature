@@ -122,7 +122,7 @@ Feature: Quiz selection
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     # Contact the panelist.

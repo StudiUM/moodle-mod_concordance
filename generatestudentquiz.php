@@ -25,12 +25,12 @@
 
 require_once(__DIR__ . '/../../config.php');
 
-$cmid       = required_param('cmid', PARAM_INT);  // Course module.
+$cmid = required_param('cmid', PARAM_INT);  // Course module.
 
-$cm         = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
-$course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$concordance   = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
-$concordancepersistent   = new \mod_concordance\concordance($concordance->id);
+$cm = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+$concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
+$concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
 $context = context_module::instance($cm->id);
 require_login($course, false, $cm);

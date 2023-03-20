@@ -162,10 +162,10 @@ function clean_enrol_instances($course) {
 function concordance_update_instance($data, $mform) {
     global $CFG, $DB;
 
-    $cmid        = $data->coursemodule;
+    $cmid = $data->coursemodule;
 
     $data->timemodified = time();
-    $data->id           = $data->instance;
+    $data->id = $data->instance;
 
     $context = context_module::instance($cmid);
     if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {

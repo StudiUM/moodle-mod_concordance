@@ -79,18 +79,18 @@ class quizmanager_test extends \advanced_testcase {
         $filerecord1 = array(
             'contextid' => $context->id,
             'component' => 'mod_concordance',
-            'filearea'  => 'descriptionpanelist',
-            'itemid'    => 0,
-            'filepath'  => '/',
-            'filename'  => 'fakeimage1.png',
+            'filearea' => 'descriptionpanelist',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'fakeimage1.png',
         );
         $filerecord2 = array(
             'contextid' => $context->id,
             'component' => 'mod_concordance',
-            'filearea'  => 'descriptionstudent',
-            'itemid'    => 0,
-            'filepath'  => '/',
-            'filename'  => 'fakeimage2.png',
+            'filearea' => 'descriptionstudent',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'fakeimage2.png',
         );
         $fs = get_file_storage();
         $fs->create_file_from_string($filerecord1, 'img contents');
@@ -99,7 +99,7 @@ class quizmanager_test extends \advanced_testcase {
         $concordance->descriptionstudent = '<p>description student</p> <img src="@@PLUGINFILE@@/fakeimage2.png">';
         $concordance->descriptionstudentformat = FORMAT_HTML;
         $DB->update_record('concordance', $concordance);
-        $this->concordancepersistent   = new concordance($concordance->id);
+        $this->concordancepersistent = new concordance($concordance->id);
     }
 
     /**

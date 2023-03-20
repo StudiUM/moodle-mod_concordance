@@ -100,7 +100,7 @@ class external extends external_api {
             'displaynotification' => $displaynotification
         ));
 
-        $cm         = get_coursemodule_from_id('concordance', $params['cmid'], 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('concordance', $params['cmid'], 0, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
         $PAGE->set_context($context);
         require_capability('mod/concordance:addinstance', $context);

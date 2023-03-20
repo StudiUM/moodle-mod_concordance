@@ -27,7 +27,7 @@ Feature: Students quiz generation
     And I add a "Quiz" to section "1" and I fill the form with:
       | Name          | Test quiz name        |
       | Description   | Test quiz description |
-      | Availability  | Hide from students    |
+      | Availability  | Hide on course page    |
     And I add a "Concordance of reasoning" question to the "Test quiz name" quiz with:
       | Question name                                                       | Q1                          |
       | Display the "This question is outside my field of competence" field | No                          |
@@ -52,7 +52,7 @@ Feature: Students quiz generation
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I am on the "TestConcordance" "concordance activity" page
@@ -100,7 +100,7 @@ Feature: Students quiz generation
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca                  |
-      | Surname        | Armenta                  |
+      | Last name      | Armenta                  |
       | Email address  | rebeccaa@example.com     |
       | Biography      | <p>Armenta biography</p> |
     And I click on "Save changes" "button"
@@ -108,7 +108,7 @@ Feature: Students quiz generation
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Donald                    |
-      | Surname        | Fletcher                  |
+      | Last name      | Fletcher                  |
       | Email address  | donaldf@example.com       |
       | Biography      | <p>Fletcher biography</p> |
     And I click on "Insert or edit image" "button" in the "//*[contains(.,'Biography')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
@@ -123,21 +123,21 @@ Feature: Students quiz generation
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Pablo              |
-      | Surname        | Menendez           |
+      | Last name      | Menendez           |
       | Email address  | pablom@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Stepanie              |
-      | Surname        | Grant                 |
+      | Last name      | Grant                 |
       | Email address  | stepanieg@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Cynthia              |
-      | Surname        | Reyes                 |
+      | Last name      | Reyes                 |
       | Email address  | cynthiar@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"

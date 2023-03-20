@@ -35,10 +35,10 @@ require_course_login($course, true);
 $PAGE->set_pagelayout('incourse');
 
 // Get all required strings.
-$strconcordances        = get_string('modulenameplural', 'mod_concordance');
-$strconcordance         = get_string('modulename', 'mod_concordance');
-$strname         = get_string('name');
-$strphase        = get_string('phase', 'mod_concordance');
+$strconcordances = get_string('modulenameplural', 'mod_concordance');
+$strconcordance = get_string('modulename', 'mod_concordance');
+$strname = get_string('name');
+$strphase = get_string('phase', 'mod_concordance');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/concordance/index.php', array('id' => $course->id));
@@ -62,10 +62,10 @@ $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
     $strsectionname = get_string('sectionname', 'format_'.$course->format);
-    $table->head  = array ($strsectionname, $strname, $strphase);
+    $table->head = array ($strsectionname, $strname, $strphase);
     $table->align = array ('center', 'left', 'left');
 } else {
-    $table->head  = array ($strlastmodified, $strname, $strphase);
+    $table->head = array ($strlastmodified, $strname, $strphase);
     $table->align = array ('left', 'left', 'left');
 }
 

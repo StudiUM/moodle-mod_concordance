@@ -24,7 +24,7 @@ Feature: Contact panelists page
     And I add a "Quiz" to section "1" and I fill the form with:
       | Name          | Test quiz name        |
       | Description   | Test quiz description |
-      | Availability  | Hide from students    |
+      | Availability  | Hide on course page    |
 
   Scenario: There is no panelist and no quiz selected yet
     Given I am on the "TestConcordance" "concordance activity" page
@@ -50,7 +50,7 @@ Feature: Contact panelists page
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I am on the "TestConcordance" "concordance activity" page
@@ -70,13 +70,13 @@ Feature: Contact panelists page
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Donald              |
-      | Surname        | Fletcher            |
+      | Last name      | Fletcher            |
       | Email address  | donaldf@example.com |
     And I click on "Save changes" "button"
     And I am on the "TestConcordance" "concordance activity" page

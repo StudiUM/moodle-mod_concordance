@@ -30,25 +30,25 @@ Feature: Manage panelists page
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Rebecca              |
-      | Surname        | Armenta              |
+      | Last name      | Armenta              |
       | Email address  | rebeccaa@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
     And I set the following fields to these values:
       | First name     | Donald              |
-      | Surname        | Fletcher            |
+      | Last name      | Fletcher            |
       | Email address  | donaldf@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     # Edit a panelist (Donald).
     And I click on "//table/tbody/tr[contains(.,'Donald')]//button[.='Edit']" "xpath_element"
     And the field "First name" matches value "Donald"
-    And the field "Surname" matches value "Fletcher"
+    And the field "Last name" matches value "Fletcher"
     And the field "Email address" matches value "donaldf@example.com"
     And I set the following fields to these values:
       | First name     | Pablo              |
-      | Surname        | Menendez           |
+      | Last name      | Menendez           |
       | Email address  | pablom@example.com |
     And I click on "Save changes" "button"
     And I should see "Panelist updated"
@@ -58,7 +58,7 @@ Feature: Manage panelists page
     And the field "First name" matches value "Rebecca"
     And I set the following fields to these values:
       | First name     | Pablo              |
-      | Surname        | Menendez           |
+      | Last name      | Menendez           |
       | Email address  | pablom             |
     And I click on "Save changes" "button"
     And I should see "Data submitted is invalid"
@@ -66,9 +66,9 @@ Feature: Manage panelists page
     And I should see "Panelist management"
 
     # Check both panelists have the good information (modification saved for the first case only).
-    And "Pablo" row "Surname" column of "generaltable" table should contain "Menendez"
+    And "Pablo" row "Last name" column of "generaltable" table should contain "Menendez"
     And "Pablo" row "Email address" column of "generaltable" table should contain "pablom@example.com"
-    And "Rebecca" row "Surname" column of "generaltable" table should contain "Armenta"
+    And "Rebecca" row "Last name" column of "generaltable" table should contain "Armenta"
     And "Rebecca" row "Email address" column of "generaltable" table should contain "rebeccaa@example.com"
     And I should not see "Donald"
 
