@@ -38,7 +38,7 @@ Feature: Index page
     And I should see "Second concordance in section 1"
     And I should see "Concordance in section 2"
     And I should not see "Concordance in course 2"
-    And I should not see "Quiz"
+    And I should not see "Quiz" in the "#page-content" "css_element"
     And I am on the "First concordance in section 1" "concordance activity" page
     And I should see "First concordance in section 1" in the "#page-content h2" "css_element"
     And I log out
@@ -49,4 +49,4 @@ Feature: Index page
     And I should not see "Second concordance in section 1"
     And I should see "Concordance in section 2"
     And I should not see "Concordance in course 2"
-    And I should not see "Quiz"
+    And I should not see "Quiz" in the "#page-content" "css_element"

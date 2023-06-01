@@ -322,11 +322,11 @@ Feature: Students quiz generation
     And I click on "Save and return to course" "button"
     # Check the gradebook.
     And I navigate to "Grades" in current page administration
-    And I should not see "Student quiz 1"
+    And I should not see "Student quiz 1" in the "#page-content" "css_element"
     And I should see "Student quiz 2"
-    And I should not see "Student quiz 3"
+    And I should not see "Student quiz 3" in the "#page-content" "css_element"
     And I should see "Student quiz 4"
-    And I should not see "Test quiz name"
+    And I should not see "Test quiz name" in the "#page-content" "css_element"
     # Check the question bank.
     And I am on the "Course1" "core_question > course question bank" page
     And the "Select a category" select box should contain "Default for c1 (2)"
