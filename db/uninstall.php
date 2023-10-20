@@ -44,7 +44,7 @@ function xmldb_concordance_uninstall() {
     foreach ($courses as $key => $value) {
         delete_course($key, false);
     }
-    if (count($courses > 0)) {
+    if (count($courses) > 0) {
         fix_course_sortorder();
     }
     return true;

@@ -309,7 +309,8 @@ function mod_concordance_pluginfile($course, $cm, $context, $filearea, $args, $f
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/mod_concordance/$filearea/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory()) {
         return false;
     }
     send_stored_file($file, 0, 0, $forcedownload, $options);

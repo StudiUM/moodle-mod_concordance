@@ -474,7 +474,7 @@ class quizmanager {
      * @param stdClass $quizpanelist The quiz object from the DB (for the panelist).
      * @param stdClass $coursepanelist The course object from the DB (for the panelist quiz).
      * @param Quiz $newquiz The new quiz (for the students).
-     * @param array $formdata An array of data submitted by the 'Generate student quiz' form.
+     * @param object $formdata An object of data submitted by the 'Generate student quiz' form.
      */
     private static function compileanswers($quizanswered, $quizpanelist, $coursepanelist, $newquiz, $formdata) {
         global $DB;
