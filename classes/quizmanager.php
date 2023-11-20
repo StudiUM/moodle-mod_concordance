@@ -539,7 +539,8 @@ class quizmanager {
         // Save the combined feedbacks and number of experts in the new quiz questions.
         $questions = $newquiz->get_questions();
         foreach ($questions as $question) {
-            if (!key_exists($question->slot, $formdata->questionstoinclude)) {
+            $istcsquestion = \question_bank::make_question($question) instanceof \qtype_tcs_question;
+            if (!key_exists($question->slot, $formdata->questionstoinclude) || !$istcsquestion) {
                 continue;
             }
             if (isset($question->options->showoutsidefieldcompetence)) {
