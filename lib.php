@@ -64,7 +64,7 @@ function concordance_supports($feature) {
  * @return array status array
  */
 function concordance_reset_userdata($data) {
-    return array();
+    return [];
 }
 
 /**
@@ -80,9 +80,9 @@ function concordance_add_instance($data, $mform) {
     $cmid = $data->coursemodule;
     $context = context_module::instance($cmid);
     // Prevent teacher to change concordance visibility.
-    $id = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
+    $id = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
     assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
-    $id = $DB->get_field('role', 'id', array('shortname' => 'associateeditingteacher'));
+    $id = $DB->get_field('role', 'id', ['shortname' => 'associateeditingteacher']);
     assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
 
     if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
@@ -103,7 +103,7 @@ function concordance_add_instance($data, $mform) {
     $DB->update_record('concordance', $data);
 
     // We need to use context now, so we need to make sure all needed info is already in db.
-    $DB->set_field('course_modules', 'instance', $data->id, array('id' => $cmid));
+    $DB->set_field('course_modules', 'instance', $data->id, ['id' => $cmid]);
 
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
     \core_completion\api::update_completion_date_event($data->coursemodule, 'concordance', $data->id, $completiontimeexpected);
@@ -126,7 +126,7 @@ function generate_course_for_panelists($data) {
     $identifier = $data->course . '-' . $data->id;
     $i = 1;
     $shortname = $identifier;
-    while ($found = $DB->record_exists('course', array('shortname' => $shortname))) {
+    while ($found = $DB->record_exists('course', ['shortname' => $shortname])) {
         $shortname = $identifier . '(' . $i . ')';
         $i++;
     }
@@ -199,7 +199,7 @@ function concordance_update_instance($data, $mform) {
 function concordance_delete_instance($id) {
     global $DB;
 
-    if (!$concordance = $DB->get_record('concordance', array('id' => $id))) {
+    if (!$concordance = $DB->get_record('concordance', ['id' => $id])) {
         return false;
     }
 
@@ -227,7 +227,7 @@ function concordance_delete_instance($id) {
  */
 function concordance_get_coursemodule_info($cm) {
     global $DB;
-    if (!($concordance = $DB->get_record('concordance', array('id' => $cm->instance),
+    if (!($concordance = $DB->get_record('concordance', ['id' => $cm->instance],
             'id, name'))) {
         return null;
     }
@@ -263,10 +263,10 @@ function concordance_cm_info_dynamic(cm_info $cm) {
 function concordance_view($concordance, $course, $cm, $context) {
 
     // Trigger course_module_viewed event.
-    $params = array(
+    $params = [
         'context' => $context,
-        'objectid' => $concordance->id
-    );
+        'objectid' => $concordance->id,
+    ];
 
     $event = \mod_concordance\event\course_module_viewed::create($params);
     $event->add_record_snapshot('course_modules', $cm);
@@ -286,8 +286,8 @@ function concordance_view($concordance, $course, $cm, $context) {
  */
 function concordance_get_editor_options($context) {
     global $CFG;
-    return array('subdirs' => 1, 'maxbytes' => $CFG->maxbytes, 'maxfiles' => -1, 'changeformat' => 1, 'context' => $context,
-        'noclean' => 1, 'trusttext' => 0);
+    return ['subdirs' => 1, 'maxbytes' => $CFG->maxbytes, 'maxfiles' => -1, 'changeformat' => 1, 'context' => $context,
+        'noclean' => 1, 'trusttext' => 0];
 }
 
 /**
@@ -302,7 +302,7 @@ function concordance_get_editor_options($context) {
  * @param array $options additional options affecting the file serving
  * @return bool false if the file not found, just send the file otherwise and do not return anything
  */
-function mod_concordance_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function mod_concordance_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     // Only serve the file if the user can access the course and course module.
     require_login($course, false, $cm);
 

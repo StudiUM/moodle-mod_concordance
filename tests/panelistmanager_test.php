@@ -56,7 +56,7 @@ class panelistmanager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
 
         // Create the activity.
-        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $course->id]);
         $panelistid = $this->createpanelist($concordance->id);
         $panelist = new \mod_concordance\panelist($panelistid);
         $this->assertNull($panelist->get('userid'));
@@ -68,7 +68,7 @@ class panelistmanager_test extends \advanced_testcase {
         $this->assertEquals('Panelist-' . $panelist->get('id'), $user->lastname);
         $this->assertEquals(1, $user->confirmed);
         // Check if user is enrolled as student in the course.
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'));
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'student']);
         $context = \context_course::instance($concordance->coursegenerated);
         $this->assertTrue(user_has_role_assignment($panelist->get('userid'), $roleid, $context->id));
 
@@ -89,7 +89,7 @@ class panelistmanager_test extends \advanced_testcase {
     public function test_panelist_having_no_system_role() {
         set_config('panelistssystemrole', 0, 'mod_concordance');
         $course = $this->getDataGenerator()->create_course();
-        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $course->id]);
         $panelistid = $this->createpanelist($concordance->id);
         $panelist = new \mod_concordance\panelist($panelistid);
         \mod_concordance\panelistmanager::panelistcreated($panelist);
@@ -104,10 +104,10 @@ class panelistmanager_test extends \advanced_testcase {
      */
     public function test_panelist_having_system_role() {
         global $DB;
-        $role = $DB->get_record('role', array('shortname' => 'coursecreator'));
+        $role = $DB->get_record('role', ['shortname' => 'coursecreator']);
         set_config('panelistssystemrole', $role->id, 'mod_concordance');
         $course = $this->getDataGenerator()->create_course();
-        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $course->id]);
         $panelistid = $this->createpanelist($concordance->id);
         $panelist = new \mod_concordance\panelist($panelistid);
         \mod_concordance\panelistmanager::panelistcreated($panelist);

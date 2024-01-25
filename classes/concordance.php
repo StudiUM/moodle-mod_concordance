@@ -25,8 +25,8 @@
 
 namespace mod_concordance;
 
-use \core\persistent;
-use \moodle_url;
+use core\persistent;
+use moodle_url;
 
 /**
  * Class for loading/storing concordance from the DB.
@@ -70,52 +70,52 @@ class concordance extends persistent {
      * @return array
      */
     protected static function define_properties() {
-        return array(
-            'course' => array(
+        return [
+            'course' => [
                 'type' => PARAM_INT,
-            ),
-            'cmorigin' => array(
-                'type' => PARAM_INT,
-                'null' => NULL_ALLOWED,
-                'default' => null
-            ),
-            'coursegenerated' => array(
+            ],
+            'cmorigin' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
-                'default' => null
-            ),
-            'cmgenerated' => array(
+                'default' => null,
+            ],
+            'coursegenerated' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
-                'default' => null
-            ),
-            'name' => array(
-                'type' => PARAM_TEXT
-            ),
-            'descriptionpanelist' => array(
+                'default' => null,
+            ],
+            'cmgenerated' => [
+                'type' => PARAM_INT,
+                'null' => NULL_ALLOWED,
+                'default' => null,
+            ],
+            'name' => [
+                'type' => PARAM_TEXT,
+            ],
+            'descriptionpanelist' => [
                 'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED
-            ),
-            'descriptionpanelistformat' => array(
-                'type' => PARAM_INT
-            ),
-            'descriptionstudent' => array(
+                'null' => NULL_ALLOWED,
+            ],
+            'descriptionpanelistformat' => [
+                'type' => PARAM_INT,
+            ],
+            'descriptionstudent' => [
                 'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED
-            ),
-            'descriptionstudentformat' => array(
-                'type' => PARAM_INT
-            ),
-            'activephase' => array(
-                'choices' => array(
+                'null' => NULL_ALLOWED,
+            ],
+            'descriptionstudentformat' => [
+                'type' => PARAM_INT,
+            ],
+            'activephase' => [
+                'choices' => [
                     self::CONCORDANCE_PHASE_SETUP,
                     self::CONCORDANCE_PHASE_PANELISTS,
                     self::CONCORDANCE_PHASE_STUDENTS,
-                ),
+                ],
                 'type' => PARAM_INT,
                 'default' => self::CONCORDANCE_PHASE_SETUP,
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -245,7 +245,7 @@ class concordance extends persistent {
      * @return moodle_url of this concordance's view page
      */
     public function view_url() {
-        return new moodle_url('/mod/concordance/view.php', array('id' => $this->get_cm()->id));
+        return new moodle_url('/mod/concordance/view.php', ['id' => $this->get_cm()->id]);
     }
 
     /**
@@ -256,8 +256,8 @@ class concordance extends persistent {
      */
     public function switchphase_url($phase) {
         $phase = clean_param($phase, PARAM_INT);
-        return new moodle_url('/mod/concordance/switchphase.php', array('cmid' => $this->get_cm()->id, 'phase' => $phase,
-            'sesskey' => sesskey()));
+        return new moodle_url('/mod/concordance/switchphase.php', ['cmid' => $this->get_cm()->id, 'phase' => $phase,
+            'sesskey' => sesskey()]);
     }
 
     /**
@@ -266,7 +266,7 @@ class concordance extends persistent {
      * @return moodle_url of the mod_edit form
      */
     public function updatemod_url() {
-        return new moodle_url('/course/modedit.php', array('update' => $this->get_cm()->id, 'return' => 1));
+        return new moodle_url('/course/modedit.php', ['update' => $this->get_cm()->id, 'return' => 1]);
     }
 
     /**

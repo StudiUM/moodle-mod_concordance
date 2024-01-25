@@ -27,7 +27,7 @@ require(__DIR__.'/../../config.php');
 
 $id = required_param('id', PARAM_INT); // Course ID.
 
-$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 unset($id);
 
@@ -41,7 +41,7 @@ $strname = get_string('name');
 $strphase = get_string('phase', 'mod_concordance');
 $strlastmodified = get_string('lastmodified');
 
-$PAGE->set_url('/mod/concordance/index.php', array('id' => $course->id));
+$PAGE->set_url('/mod/concordance/index.php', ['id' => $course->id]);
 $PAGE->set_title($course->shortname.': '.$strconcordances);
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add($strconcordances);
@@ -62,11 +62,11 @@ $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
     $strsectionname = get_string('sectionname', 'format_'.$course->format);
-    $table->head = array ($strsectionname, $strname, $strphase);
-    $table->align = array ('center', 'left', 'left');
+    $table->head = [$strsectionname, $strname, $strphase];
+    $table->align = ['center', 'left', 'left'];
 } else {
-    $table->head = array ($strlastmodified, $strname, $strphase);
-    $table->align = array ('left', 'left', 'left');
+    $table->head = [$strlastmodified, $strname, $strphase];
+    $table->align = ['left', 'left', 'left'];
 }
 
 $modinfo = get_fast_modinfo($course);
@@ -77,10 +77,10 @@ foreach ($concordances as $concordance) {
     if ($usesections) {
         $printsection = get_section_name($course, $concordance->section);
     } else {
-        $printsection = html_writer::tag('span', userdate($concordance->timemodified), array('class' => 'smallinfo'));
+        $printsection = html_writer::tag('span', userdate($concordance->timemodified), ['class' => 'smallinfo']);
     }
 
-    $class = $concordance->visible ? null : array('class' => 'dimmed'); // Hidden modules are dimmed.
+    $class = $concordance->visible ? null : ['class' => 'dimmed']; // Hidden modules are dimmed.
 
     $concordancepersistent = new \mod_concordance\concordance($concordance->id);
     switch ($concordancepersistent->get('activephase')) {
@@ -98,10 +98,10 @@ foreach ($concordances as $concordance) {
         break;
     }
 
-    $table->data[] = array (
+    $table->data[] = [
         $printsection,
-        html_writer::link(new moodle_url('view.php', array('id' => $cm->id)), format_string($concordance->name), $class),
-        $phase);
+        html_writer::link(new moodle_url('view.php', ['id' => $cm->id]), format_string($concordance->name), $class),
+        $phase];
 }
 
 echo html_writer::table($table);

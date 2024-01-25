@@ -29,8 +29,8 @@ $id = optional_param('id', 0, PARAM_INT);
 $cmid = required_param('cmid', PARAM_INT);  // Course module.
 
 $cm = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
 $concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
 $panelist = null;
@@ -44,9 +44,9 @@ require_capability('mod/concordance:addinstance', $context);
 $title = get_string('panelistmanagement', 'mod_concordance');
 $url = new moodle_url("/mod/concordance/editpanelist.php", [
     'id' => $id,
-    'cmid' => $cmid
+    'cmid' => $cmid,
 ]);
-$panelistsurl = new moodle_url('/mod/concordance/panelists.php', array('cmid' => $cmid));
+$panelistsurl = new moodle_url('/mod/concordance/panelists.php', ['cmid' => $cmid]);
 $PAGE->navigation->override_active_url($panelistsurl);
 $PAGE->set_context($context);
 $PAGE->set_url($url);
@@ -62,7 +62,7 @@ if (empty($id)) {
     $PAGE->navbar->add($subtitle, $url);
 }
 $form = new \mod_concordance\form\panelist($url->out(false),
-        array('persistent' => $panelist, 'context' => $context, 'concordanceid' => $concordance->id, 'id' => $id));
+        ['persistent' => $panelist, 'context' => $context, 'concordanceid' => $concordance->id, 'id' => $id]);
 if ($form->is_cancelled()) {
     redirect($panelistsurl);
 }
@@ -85,7 +85,7 @@ if ($data) {
             $panelistpersistent->update();
         }
         $returnurl = new moodle_url('/mod/concordance/panelists.php', [
-            'cmid' => $cmid
+            'cmid' => $cmid,
         ]);
         $returnmsg = get_string('panelistcreated', 'mod_concordance');
     } else {

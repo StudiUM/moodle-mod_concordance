@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$logs = array(
-    array('module' => 'concordance', 'action' => 'view', 'mtable' => 'concordance', 'field' => 'name'),
-    array('module' => 'concordance', 'action' => 'view all', 'mtable' => 'concordance', 'field' => 'name'),
-    array('module' => 'concordance', 'action' => 'update', 'mtable' => 'concordance', 'field' => 'name'),
-    array('module' => 'concordance', 'action' => 'add', 'mtable' => 'concordance', 'field' => 'name'),
-);
+$logs = [
+    ['module' => 'concordance', 'action' => 'view', 'mtable' => 'concordance', 'field' => 'name'],
+    ['module' => 'concordance', 'action' => 'view all', 'mtable' => 'concordance', 'field' => 'name'],
+    ['module' => 'concordance', 'action' => 'update', 'mtable' => 'concordance', 'field' => 'name'],
+    ['module' => 'concordance', 'action' => 'add', 'mtable' => 'concordance', 'field' => 'name'],
+];

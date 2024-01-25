@@ -31,9 +31,9 @@ global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 
-use \question_engine;
-use \quiz;
-use \quiz_attempt;
+use question_engine;
+use mod_quiz\quiz_settings;
+use mod_quiz\quiz_attempt;
 
 /**
  * Unit tests for mod_concordance quizmanager
@@ -72,26 +72,26 @@ class quizmanager_test extends \advanced_testcase {
         $this->setUser($teacher);
 
         // Create the concordance activity.
-        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $this->course->id,
-            'descriptionpanelist' => '', 'descriptionstudent' => ''));
+        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $this->course->id,
+            'descriptionpanelist' => '', 'descriptionstudent' => '']);
         $concordancem = get_coursemodule_from_instance('concordance', $concordance->id, $this->course->id, true, MUST_EXIST);
         $context = \context_module::instance($concordancem->id);
-        $filerecord1 = array(
+        $filerecord1 = [
             'contextid' => $context->id,
             'component' => 'mod_concordance',
             'filearea' => 'descriptionpanelist',
             'itemid' => 0,
             'filepath' => '/',
             'filename' => 'fakeimage1.png',
-        );
-        $filerecord2 = array(
+        ];
+        $filerecord2 = [
             'contextid' => $context->id,
             'component' => 'mod_concordance',
             'filearea' => 'descriptionstudent',
             'itemid' => 0,
             'filepath' => '/',
             'filename' => 'fakeimage2.png',
-        );
+        ];
         $fs = get_file_storage();
         $fs->create_file_from_string($filerecord1, 'img contents');
         $concordance->descriptionpanelist = '<p>description panelist</p> <img src="@@PLUGINFILE@@/fakeimage1.png">';
@@ -114,15 +114,15 @@ class quizmanager_test extends \advanced_testcase {
 
         // Add 2 quizzes to the course.
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
-        $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'First quiz', 'visible' => false));
-        $quiz2 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'Second quiz', 'visible' => false));
+        $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'First quiz', 'visible' => false]);
+        $quiz2 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'Second quiz', 'visible' => false]);
 
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
         // Check the original course and quiz.
         $cm = get_coursemodule_from_id('', $this->concordancepersistent->get('cmorigin'), 0, true, MUST_EXIST);
-        $quiz1record = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $quiz1record = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
         $courseinfo = get_fast_modinfo($this->course);
         $this->assertCount(2, $courseinfo->instances['quiz']);
         $this->assertEquals($this->course->id, $this->concordancepersistent->get('course'));
@@ -137,7 +137,7 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertEquals($this->concordancepersistent->get('cmgenerated'), $quiztocheck1->id);
         $this->assertEquals('First quiz', $quiztocheck1->name);
         $this->assertEquals(1, $quiztocheck1->visible);
-        $quiztocheck1details = $DB->get_record('quiz', array('id' => $quiztocheck1->instance), '*', MUST_EXIST);
+        $quiztocheck1details = $DB->get_record('quiz', ['id' => $quiztocheck1->instance], '*', MUST_EXIST);
         $this->assertEquals('securewindow', $quiztocheck1details->browsersecurity);
         $this->assertEquals('description panelist', trim(strip_tags($quiztocheck1details->intro)));
         $this->assertEquals(1, $quiztocheck1details->attempts);
@@ -166,7 +166,7 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertEquals($this->concordancepersistent->get('cmgenerated'), $quiztocheck2->id);
         $this->assertNotEquals($quiztocheck1->id, $quiztocheck2->id);
         $this->assertEquals('Second quiz', $quiztocheck2->name);
-        $quiztocheck2details = $DB->get_record('quiz', array('id' => $quiztocheck2->instance), '*', MUST_EXIST);
+        $quiztocheck2details = $DB->get_record('quiz', ['id' => $quiztocheck2->instance], '*', MUST_EXIST);
         $this->assertEquals('securewindow', $quiztocheck2details->browsersecurity);
     }
 
@@ -200,7 +200,7 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertTrue($hasmanualinstance);
         // Create a quiz in the course.
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
-        $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'A quiz', 'visible' => false));
+        $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'A quiz', 'visible' => false]);
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
@@ -226,11 +226,11 @@ class quizmanager_test extends \advanced_testcase {
 
         // Add quiz to the course.
         $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
-        $quiz1 = $quizgenerator->create_instance(array('course' => $this->course->id, 'name' => 'First quiz', 'visible' => false));
+        $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'First quiz', 'visible' => false]);
 
         // Questions.
         $questgen = $dg->get_plugin_generator('core_question');
-        $quizcat = $questgen->create_question_category(array('contextid' => \context_course::instance($this->course->id)->id));
+        $quizcat = $questgen->create_question_category(['contextid' => \context_course::instance($this->course->id)->id]);
         $question1 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
         $questgen->update_question($question1);
         $question2 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
@@ -244,10 +244,10 @@ class quizmanager_test extends \advanced_testcase {
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
         quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
         $cmpanelist = get_coursemodule_from_id('', $this->concordancepersistent->get('cmgenerated'), 0, true, MUST_EXIST);
-        $quizpanelist = $DB->get_record('quiz', array('id' => $cmpanelist->instance), '*', MUST_EXIST);
+        $quizpanelist = $DB->get_record('quiz', ['id' => $cmpanelist->instance], '*', MUST_EXIST);
         $coursepanelist = $DB->get_record('course',
-                array('id' => $this->concordancepersistent->get('coursegenerated')), '*', MUST_EXIST);
-        $quizobj = new \quiz($quizpanelist, $cmpanelist, $coursepanelist);
+                ['id' => $this->concordancepersistent->get('coursegenerated')], '*', MUST_EXIST);
+        $quizobj = new quiz_settings($quizpanelist, $cmpanelist, $coursepanelist);
         $quizobj->preload_questions();
         $quizobj->load_questions();
         $questions = array_values($quizobj->get_questions());
@@ -265,8 +265,8 @@ class quizmanager_test extends \advanced_testcase {
         $cm = get_coursemodule_from_id('quiz', $cmid);
         $context = \context_module::instance($cm->id);
         $this->assertTrue(array_key_exists($cm->instance, $courseinfo->instances['quiz']));
-        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
-        $quizobj = new \quiz($quiz, $cm, $this->course);
+        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        $quizobj = new quiz_settings($quiz, $cm, $this->course);
         $quizobj->preload_questions();
         $quizobj->load_questions();
         $questions = $quizobj->get_questions();
@@ -291,7 +291,7 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertEquals('fakeimage2.png', $file->get_filename());
 
         // Duplicate quiz for students and 1 question - formative test.
-        $quizobj = new \quiz($quizpanelist, $cmpanelist, $coursepanelist);
+        $quizobj = new quiz_settings($quizpanelist, $cmpanelist, $coursepanelist);
         $quizobj->preload_questions();
         $quizobj->load_questions();
         $questions = array_values($quizobj->get_questions());
@@ -303,8 +303,8 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertNotNull($cmid);
         $courseinfo = get_fast_modinfo($this->course);
         $cm = get_coursemodule_from_id('quiz', $cmid);
-        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
-        $quizobj = new \quiz($quiz, $cm, $this->course);
+        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        $quizobj = new quiz_settings($quiz, $cm, $this->course);
         $quizobj->preload_questions();
         $quizobj->load_questions();
         $questions = $quizobj->get_questions();
@@ -352,10 +352,10 @@ class quizmanager_test extends \advanced_testcase {
         $question = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
         quiz_add_quiz_question($question->id, $quiz1);
 
-        $quizobj1a = quiz::create($quiz1->id, $u1->id);
-        $quizobj1b = quiz::create($quiz1->id, $u2->id);
-        $quizobj1c = quiz::create($quiz1->id, $u3->id);
-        $quizobj1d = quiz::create($quiz1->id, $u4->id);
+        $quizobj1a = quiz_settings::create($quiz1->id, $u1->id);
+        $quizobj1b = quiz_settings::create($quiz1->id, $u2->id);
+        $quizobj1c = quiz_settings::create($quiz1->id, $u3->id);
+        $quizobj1d = quiz_settings::create($quiz1->id, $u4->id);
 
         // Set attempts.
         $quba1a = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj1a->get_context());

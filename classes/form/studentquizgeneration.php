@@ -30,6 +30,7 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 use mod_concordance\quizmanager;
+use mod_quiz\quiz_attempt;
 
 /**
  * Student quiz generation form.
@@ -67,7 +68,7 @@ class studentquizgeneration extends \moodleform {
         $mform->setDefault('includebibliography', false);
 
         // Type.
-        $types = array();
+        $types = [];
         $types[quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE] = get_string('quiztypeformative', 'mod_concordance');
         $types[quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK] =
             get_string('quiztypesummativewithfeedback', 'mod_concordance');
@@ -97,10 +98,10 @@ class studentquizgeneration extends \moodleform {
                 $state = $this->_customdata['attempts'][$panelist->get('userid')]->state;
                 if (!empty($state)) {
                     $quizstate = get_string('state' . $state, 'mod_quiz');
-                    if ($state == \quiz_attempt::FINISHED) {
+                    if ($state == quiz_attempt::FINISHED) {
                         $quizstateclass = 'badge-success';
                     }
-                    if ($state == \quiz_attempt::IN_PROGRESS) {
+                    if ($state == quiz_attempt::IN_PROGRESS) {
                         $quizstateclass = 'badge-warning';
                     }
                 } else {
@@ -140,8 +141,8 @@ class studentquizgeneration extends \moodleform {
 
                 $qtype = \question_bank::get_qtype($question->qtype, false);
                 $namestr = $qtype->local_name();
-                $icon = $OUTPUT->pix_icon('icon', $namestr, $qtype->plugin_name(), array('title' => $namestr,
-                        'class' => 'activityicon', 'alt' => ' ', 'role' => 'presentation'));
+                $icon = $OUTPUT->pix_icon('icon', $namestr, $qtype->plugin_name(), ['title' => $namestr,
+                        'class' => 'activityicon', 'alt' => ' ', 'role' => 'presentation']);
                 $label = quiz_question_tostring($question);
                 $mform->addElement('checkbox', 'questionstoinclude['. $slot .']', '', $icon . $label);
                 $mform->setDefault('questionstoinclude['. $slot .']', 1);

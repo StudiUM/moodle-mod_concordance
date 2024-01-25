@@ -29,19 +29,19 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
-require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
-require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
-require_once($CFG->dirroot . '/mod/quiz/accessmanager.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
-use \stdClass;
-use \moodle_exception;
-use \backup_controller;
-use \restore_controller;
-use \backup;
-use \context_module;
-use \context_course;
+use stdClass;
+use moodle_exception;
+use backup_controller;
+use restore_controller;
+use backup;
+use context_module;
+use context_course;
+use mod_quiz\quiz_settings;
+use mod_quiz\quiz_attempt;
+use mod_quiz\admin\review_setting;
 
 /**
  * Class for quiz management.
@@ -91,7 +91,7 @@ class quizmanager {
         if (!is_null($concordance->get('cmorigin'))) {
             $cm = get_coursemodule_from_id('', $concordance->get('cmorigin'), 0, true, MUST_EXIST);
             $coursegeneratedid = $concordance->get('coursegenerated');
-            $course = $DB->get_record('course', array('id' => $coursegeneratedid), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $coursegeneratedid], '*', MUST_EXIST);
 
             $concordancem = get_coursemodule_from_instance('concordance',
                     $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
@@ -101,22 +101,24 @@ class quizmanager {
             $concordance->set('cmgenerated', $newcm->id);
 
             // Remove the selected quiz from the gradebook.
-            $originquiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $originquiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
             $originquiz->instance = $originquiz->id;
-            quiz_set_grade(0, $originquiz);
-            quiz_update_all_final_grades($originquiz);
+            $quizobject = new quiz_settings($originquiz, $cm, $course);
+            $quizcalculator = $quizobject->get_grade_calculator();
+            $quizcalculator->update_quiz_maximum_grade(0);
+            $quizcalculator->recompute_all_final_grades();
             quiz_update_grades($originquiz, 0, true);
 
             // Change some params in the quiz.
-            $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('quiz', ['id' => $newcm->instance], '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
             $quiz->attempts = 1;
 
             // The panelists should see no feedback, but can review their attempts.
             $quiz->preferredbehaviour = 'deferredfeedback';
-            foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+            foreach (review_setting::fields() as $field => $name) {
                 if ($field == 'attempt') {
-                    $quiz->{'review'.$field} = \mod_quiz_admin_review_setting::all_on();
+                    $quiz->{'review'.$field} = review_setting::all_on();
                 } else {
                     $quiz->{'review'.$field} = 0;
                 }
@@ -124,7 +126,7 @@ class quizmanager {
 
             // Move files if exists.
             $newcontext = \context_module::instance($newcm->id);
-            $newfilerecord = array('contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0);
+            $newfilerecord = ['contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0];
             $fs = get_file_storage();
             if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'descriptionpanelist', 0)) {
                 foreach ($files as $file) {
@@ -151,7 +153,7 @@ class quizmanager {
         // Duplicate the panelist quiz in the students course and make it hidden.
         if (!is_null($concordance->get('cmgenerated')) && $hasquestions) {
             $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $concordance->get('course')), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $concordance->get('course')], '*', MUST_EXIST);
 
             $concordancem = get_coursemodule_from_instance('concordance',
                     $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
@@ -166,23 +168,23 @@ class quizmanager {
             }
 
             // Before duplicate, update stamp and version fields for questions.
-            $quizpanelist = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
-            $coursepanelist = $DB->get_record('course', array('id' => $concordance->get('coursegenerated')), '*', MUST_EXIST);
+            $quizpanelist = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+            $coursepanelist = $DB->get_record('course', ['id' => $concordance->get('coursegenerated')], '*', MUST_EXIST);
             self::updatestampandversionquestions($quizpanelist, $cm, $coursepanelist);
             // Duplicate quiz in temp course.
             $data = new \stdClass();
             $data->id = $concordance->get('id');
             $data->course = $course->id;
             $coursetemp = generate_course_for_panelists($data);
-            $ocoursetemp = $DB->get_record('course', array('id' => $coursetemp), '*', MUST_EXIST);
+            $ocoursetemp = $DB->get_record('course', ['id' => $coursetemp], '*', MUST_EXIST);
             // Get user enrolled in both courses.
             $enrolplugin = enrol_get_plugin('manual');
-            $roleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'), MUST_EXIST);
+            $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher'], MUST_EXIST);
             foreach ([$coursetemp, $concordance->get('coursegenerated')] as $cid) {
                 $contextcoursecap = context_course::instance($cid);
                 $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
                 $instances = $DB->get_records('enrol',
-                        array('courseid' => $cid, 'enrol' => 'manual'));
+                        ['courseid' => $cid, 'enrol' => 'manual']);
                 $enrolinstance = reset($instances);
                 $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
             }
@@ -192,10 +194,10 @@ class quizmanager {
             $newcm = self::duplicate_module($course, $cmtmp, $concordance->get('coursegenerated'), $ocoursetemp->id);
             set_coursemodule_visible($newcm->id, 0);
 
-            $quiz = $DB->get_record('quiz', array('id' => $newcm->instance), '*', MUST_EXIST);
+            $quiz = $DB->get_record('quiz', ['id' => $newcm->instance], '*', MUST_EXIST);
             // Move files if exists.
             $newcontext = \context_module::instance($newcm->id);
-            $newfilerecord = array('contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0);
+            $newfilerecord = ['contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0];
             $fs = get_file_storage();
             // Delete any file related to intro filearea.
             $fs->delete_area_files($newcontext->id, 'mod_quiz', 'intro');
@@ -211,12 +213,12 @@ class quizmanager {
             if ($issummative) {
                 // Show deferred feedback.
                 $quiz->preferredbehaviour = 'deferredfeedback';
-                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                foreach (review_setting::fields() as $field => $name) {
                     if ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK) {
                         // Not during the attempt, but all other options ON.
-                        $default = \mod_quiz_admin_review_setting::IMMEDIATELY_AFTER
-                            | \mod_quiz_admin_review_setting::LATER_WHILE_OPEN
-                            | \mod_quiz_admin_review_setting::AFTER_CLOSE;
+                        $default = review_setting::IMMEDIATELY_AFTER
+                            | review_setting::LATER_WHILE_OPEN
+                            | review_setting::AFTER_CLOSE;
                     } else {
                         // No feedback at all.
                         $default = 0;
@@ -226,8 +228,8 @@ class quizmanager {
             } else {
                 // Show immediate feedback during the attempt.
                 $quiz->preferredbehaviour = 'immediatefeedback';
-                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
-                    $default = \mod_quiz_admin_review_setting::all_on();
+                foreach (review_setting::fields() as $field => $name) {
+                    $default = review_setting::all_on();
                     $quiz->{'review'.$field} = $default;
                 }
             }
@@ -238,7 +240,7 @@ class quizmanager {
                         return $v == 1;
                 }, ARRAY_FILTER_USE_BOTH);
                 foreach (array_keys($panelists) as $id) {
-                    $panelist = panelist::get_record(array('id' => $id));
+                    $panelist = panelist::get_record(['id' => $id]);
                     if ($panelist && $panelist->get('bibliography')) {
                         $biographies .= \html_writer::empty_tag('br');
                         $biographies .= \html_writer::tag('h4', $panelist->get('firstname').' '.$panelist->get('lastname'));
@@ -266,32 +268,34 @@ class quizmanager {
             // Gradebook : if summative quiz, add the student quiz to the gradebook ; otherwise (formative quiz) remove it.
             $quizconfig = get_config('quiz');
             $quiz->instance = $quiz->id;
+            $quizobj = new quiz_settings($quiz, $newcm, $course);
+            $quizcalculator = $quizobj->get_grade_calculator();
             if ($issummative) {
-                quiz_set_grade($quizconfig->maximumgrade, $quiz);
+                $quizcalculator->update_quiz_maximum_grade($quizconfig->maximumgrade);
             } else {
-                quiz_set_grade(0, $quiz);
+                $quizcalculator->update_quiz_maximum_grade(0);
             }
-            quiz_update_all_final_grades($quiz);
+            $quizcalculator->recompute_all_final_grades();
             quiz_update_grades($quiz, 0, true);
 
             // Move the quiz to the right section.
             $section = $DB->get_record('course_sections',
-                    array('course' => $concordance->get('course'), 'section' => $concordancem->sectionnum));
+                    ['course' => $concordance->get('course'), 'section' => $concordancem->sectionnum]);
             moveto_module($newcm, $section);
 
             // Remove the questions that were not selected.
-            $quizobj = new \quiz($quiz, $newcm, $course);
+
             $quizobj->preload_questions();
             $quizobj->load_questions();
             $questions = $quizobj->get_questions();
             $structure = $quizobj->get_structure();
             $removed = false;
-            $questionsids = array();
+            $questionsids = [];
             $questionsidstoremove = [];
             foreach ($questions as $question) {
                 if (!key_exists($question->slot, $formdata->questionstoinclude)) {
                     // Remove question.
-                    if (!$slot = $DB->get_record('quiz_slots', array('quizid' => $quiz->id, 'id' => $question->slotid))) {
+                    if (!$slot = $DB->get_record('quiz_slots', ['quizid' => $quiz->id, 'id' => $question->slotid])) {
                         throw new moodle_exception('Bad slot ID '.$question->slotid);
                     }
                     $structure->remove_slot($slot->slot);
@@ -308,7 +312,7 @@ class quizmanager {
                     question_delete_question($id);
                 }
                 quiz_delete_previews($quiz);
-                quiz_update_sumgrades($quiz);
+                $quizcalculator->recompute_quiz_sumgrades();
             }
 
             // Move the questions in a new category.
@@ -361,13 +365,13 @@ class quizmanager {
             $courseidavoidcap = $course->id;
         }
         $enrolplugin = enrol_get_plugin('manual');
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'), MUST_EXIST);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher'], MUST_EXIST);
         $contextcoursecap = context_course::instance($courseidavoidcap);
         $cmcontext = context_module::instance($cm->id);
         $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
         if (!$isenrolled) {
             $instances = $DB->get_records('enrol',
-                    array('courseid' => $courseidavoidcap, 'enrol' => 'manual'));
+                    ['courseid' => $courseidavoidcap, 'enrol' => 'manual']);
             $enrolinstance = reset($instances);
             $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
         }
@@ -479,22 +483,22 @@ class quizmanager {
     private static function compileanswers($quizanswered, $quizpanelist, $coursepanelist, $newquiz, $formdata) {
         global $DB;
 
-        $params = array();
+        $params = [];
         $params['quizid'] = $quizanswered->instance;
 
         $attempts = $DB->get_records_select('quiz_attempts',
             "quiz = :quizid ",
             $params, 'quiz, userid, timestart DESC');
 
-        $combinedanswers = array();
+        $combinedanswers = [];
         $previoususerid = -1;
         foreach ($attempts as $attempt) {
-            $panelist = panelist::get_record(array('userid' => $attempt->userid));
+            $panelist = panelist::get_record(['userid' => $attempt->userid]);
             // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
             if ($attempt->userid != $previoususerid && !empty($panelist)
                     && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
                 $previoususerid = $attempt->userid;
-                $quizattempt = new \quiz_attempt($attempt, $quizpanelist, $quizanswered, $coursepanelist);
+                $quizattempt = new quiz_attempt($attempt, $quizpanelist, $quizanswered, $coursepanelist);
                 $slots = $quizattempt->get_slots();
                 foreach ($slots as $slot) {
                     if (!key_exists($slot, $formdata->questionstoinclude)) {
@@ -511,10 +515,10 @@ class quizmanager {
                             $qtchoiceorder = $qtdata['answer'];
 
                             if (!isset($combinedanswers[$slot])) {
-                                $combinedanswers[$slot] = array();
+                                $combinedanswers[$slot] = [];
                             }
                             if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
-                                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+                                $combinedanswers[$slot][$qtchoiceorder] = ['nbexperts' => 0, 'feedback' => ''];
                             }
 
                             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
@@ -546,7 +550,7 @@ class quizmanager {
             if (isset($question->options->showoutsidefieldcompetence)) {
                 $tcstype = $question->qtype;
                 $tablequestionoption = 'qtype_' . $tcstype .'_options';
-                $qorecord = $DB->get_record($tablequestionoption, array('id' => $question->options->id), '*', MUST_EXIST);
+                $qorecord = $DB->get_record($tablequestionoption, ['id' => $question->options->id], '*', MUST_EXIST);
                 $qorecord->showoutsidefieldcompetence = 0;
                 $DB->update_record($tablequestionoption, $qorecord);
             }
@@ -579,10 +583,10 @@ class quizmanager {
     public static function getusersattemptedquiz($concordance) {
         global $DB;
         if (empty($concordance->get('cmgenerated'))) {
-            return array();
+            return [];
         }
         $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
-        $quiz = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
+        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
         $params['quizid'] = $quiz->id;
         $query = "SELECT t1.userid AS userid, t1.state as state
                     FROM {quiz_attempts} t1
@@ -602,13 +606,13 @@ class quizmanager {
     public static function getquizstructure($concordance) {
         global $DB;
         if (empty($concordance->get('cmgenerated'))) {
-            return array();
+            return [];
         }
         $coursegeneratedid = $concordance->get('coursegenerated');
-        $course = $DB->get_record('course', array('id' => $coursegeneratedid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $coursegeneratedid], '*', MUST_EXIST);
         $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
-        $quizobjet = $DB->get_record('quiz', array('id' => $cm->instance), '*', MUST_EXIST);
-        $quiz = new \quiz($quizobjet, $cm, $course);
+        $quizobjet = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        $quiz = new quiz_settings($quizobjet, $cm, $course);
         return $quiz->get_structure();
     }
 
@@ -621,12 +625,12 @@ class quizmanager {
      */
     private static function updatestampandversionquestions($quizobjet, $cm, $course) {
         global $DB;
-        $quiz = new \quiz($quizobjet, $cm, $course);
+        $quiz = new quiz_settings($quizobjet, $cm, $course);
         $quiz->preload_questions();
         $quiz->load_questions();
         $questions = $quiz->get_questions();
         foreach ($questions as $question) {
-            $q = $DB->get_record('question', array('id' => $question->id), '*', MUST_EXIST);
+            $q = $DB->get_record('question', ['id' => $question->id], '*', MUST_EXIST);
             $q->stamp = make_unique_id_code();
             $q->version = make_unique_id_code();
             $q->timemodified = time();

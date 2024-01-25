@@ -26,6 +26,8 @@ require('../../config.php');
 require_once("$CFG->libdir/externallib.php");
 require_once($CFG->dirroot.'/mod/quiz/locallib.php');
 
+use mod_quiz\quiz_settings;
+
 $keytoken = required_param('key', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 
@@ -47,7 +49,7 @@ if (isloggedin() && !$confirm) {
     if ($USER->id === $user->id) {
         $cm = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'));
         $context = context_module::instance($cm->id);
-        $quizobj = quiz::create($cm->instance, $USER->id);
+        $quizobj = quiz_settings::create($cm->instance, $USER->id);
         $quiz = $quizobj->get_quiz();
         $quizurl = new moodle_url('/mod/quiz/view.php', ['id' => $concordance->get('cmgenerated'), 'sesskey' => sesskey()]);
         $button = new single_button($quizurl, get_string('attemptquiznow', 'quiz'));

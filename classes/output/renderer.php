@@ -47,17 +47,17 @@ class renderer extends plugin_renderer_base {
     public function render_wizard($concordance) {
         $data = new \stdClass();
 
-        $phasesetup = array();
+        $phasesetup = [];
         $phasesetup['name'] = get_string('phase_setup', 'mod_concordance');
         $phasesetup['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_SETUP)->out(false);
         $phasesetup['switchnext'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_PANELISTS)->out(false);
         $phasesetup['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_SETUP) ? true : false;
         $phasesetup['islast'] = false;
-        $phasesetup['tasks'] = array();
+        $phasesetup['tasks'] = [];
         $status = $concordance->get_status_settings();
-        $phasesetup['tasks'][] = array('name' => get_string('task_editsettings', 'mod_concordance'),
+        $phasesetup['tasks'][] = ['name' => get_string('task_editsettings', 'mod_concordance'),
             'url' => $concordance->updatemod_url()->out(false),
-            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status];
         if ($status === concordance::CONCORDANCE_TASKSTATUS_FAILED) {
             $statusname = get_string('task' . concordance::CONCORDANCE_TASKSTATUS_INFO, 'mod_concordance');
             $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
@@ -81,9 +81,9 @@ class renderer extends plugin_renderer_base {
             $dataquiz = $page->export_for_template($this);
         }
         $status = $concordance->get_status_selectionquiz($dataquiz);
-        $phasesetup['tasks'][] = array('name' => get_string('task_quizselection', 'mod_concordance'),
+        $phasesetup['tasks'][] = ['name' => get_string('task_quizselection', 'mod_concordance'),
             'url' => $concordance->selectquiz_url()->out(false),
-            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status];
         if ($dataquiz) {
             $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
             $statusname = get_string('task' . $statusinfo, 'mod_concordance');
@@ -107,20 +107,20 @@ class renderer extends plugin_renderer_base {
             }
         }
         $status = $concordance->get_status_panelists();
-        $phasesetup['tasks'][] = array('name' => get_string('task_panelistsmanagement', 'mod_concordance'),
-            'url' => $concordance->panelists_url()->out(false), 'statusname' => 'tasktodo', 'statusclass' => $status);
+        $phasesetup['tasks'][] = ['name' => get_string('task_panelistsmanagement', 'mod_concordance'),
+            'url' => $concordance->panelists_url()->out(false), 'statusname' => 'tasktodo', 'statusclass' => $status];
 
-        $phasepanelists = array();
+        $phasepanelists = [];
         $phasepanelists['name'] = get_string('phase_panelists', 'mod_concordance');
         $phasepanelists['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_PANELISTS)->out(false);
         $phasepanelists['switchnext'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_STUDENTS)->out(false);
         $phasepanelists['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_PANELISTS) ? true : false;
         $phasepanelists['islast'] = false;
-        $phasepanelists['tasks'] = array();
+        $phasepanelists['tasks'] = [];
         $status = $concordance->get_status_contactpanelists();
-        $phasepanelists['tasks'][] = array('name' => get_string('task_contactpanelists', 'mod_concordance'),
+        $phasepanelists['tasks'][] = ['name' => get_string('task_contactpanelists', 'mod_concordance'),
             'url' => $concordance->contact_panelists_url()->out(false),
-            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status];
         $nbcontacted = \mod_concordance\panelist::count_panelistscontacted_for_concordance($concordance->get('id'));
         $nbtotal = \mod_concordance\panelist::count_records_for_concordance($concordance->get('id'));
         if ($nbcontacted > 0 && ($nbtotal > $nbcontacted) ) {
@@ -132,18 +132,18 @@ class renderer extends plugin_renderer_base {
                 'statusname' => $statusname, 'statusclass' => $statusinfo];
         }
 
-        $phasestudents = array();
+        $phasestudents = [];
         $phasestudents['name'] = get_string('phase_students', 'mod_concordance');
         $phasestudents['switchphase'] = $concordance->switchphase_url(concordance::CONCORDANCE_PHASE_STUDENTS)->out(false);
         $phasestudents['switchnext'] = null;
         $phasestudents['isactive'] = ($concordance->get('activephase') == concordance::CONCORDANCE_PHASE_STUDENTS) ? true : false;
         $phasestudents['islast'] = true;
-        $phasestudents['tasks'] = array();
+        $phasestudents['tasks'] = [];
         $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
         $status = $concordance->get_status_generatestudentquiz();
-        $phasestudents['tasks'][] = array('name' => get_string('task_generatequiz', 'mod_concordance'),
+        $phasestudents['tasks'][] = ['name' => get_string('task_generatequiz', 'mod_concordance'),
             'url' => $concordance->generate_studentquiz_url()->out(false),
-            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status);
+            'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status];
         if ($status == concordance::CONCORDANCE_TASKSTATUS_FAILED) {
             $nbpanelists = \mod_concordance\panelist::count_records_for_concordance($concordance->get('id'));
             $cmpanelistgenerated = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'));
@@ -163,7 +163,7 @@ class renderer extends plugin_renderer_base {
             }
         }
 
-        $data->phases = array($phasesetup, $phasepanelists, $phasestudents);
+        $data->phases = [$phasesetup, $phasepanelists, $phasestudents];
 
         return parent::render_from_template('mod_concordance/wizard', $data);
     }

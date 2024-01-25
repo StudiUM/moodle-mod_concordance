@@ -51,7 +51,7 @@ class behat_mod_concordance extends behat_base {
         $panelist = panelist::get_record(['email' => $email]);
         $key = $panelist->get_user_key();
 
-        $url = new moodle_url('/mod/concordance/quizaccess.php', array('key' => $key));
+        $url = new moodle_url('/mod/concordance/quizaccess.php', ['key' => $key]);
         $this->getSession()->visit($this->locate_path($url->out_as_local_url()));
     }
 
@@ -82,7 +82,7 @@ class behat_mod_concordance extends behat_base {
         $xpath = "(//div[contains(@class,'que tcs')])[$questionnb]//div[contains(@class,'specificfeedback')]"
             . "/p[contains(.,'$answer')]/following::div[1]/p[contains(.,'$panelist')]/following::p[1]";
         $this->execute("behat_general::assert_element_contains_text",
-            array($comment, $xpath, "xpath_element")
+            [$comment, $xpath, "xpath_element"]
         );
     }
 
@@ -97,9 +97,9 @@ class behat_mod_concordance extends behat_base {
         $concordance = concordance::get_record(['name' => $concordance]);
         $course = get_course($concordance->get('coursegenerated'));
 
-        $this->execute("behat_navigation::i_am_on_course_homepage", array($course->fullname));
-        $this->execute("behat_general::click_link", array('Participants'));
-        $this->execute("behat_general::i_should_see_occurrences_of_in_element", array($nb, "Student", "generaltable", "table"));
+        $this->execute("behat_navigation::i_am_on_course_homepage", [$course->fullname]);
+        $this->execute("behat_general::click_link", ['Participants']);
+        $this->execute("behat_general::i_should_see_occurrences_of_in_element", [$nb, "Student", "generaltable", "table"]);
     }
 
     /**
@@ -111,7 +111,7 @@ class behat_mod_concordance extends behat_base {
      */
     public function the_status_of_concordance_task_should_be($task, $status) {
         $xpath = "//div[contains(@class,'concordance-wizard')]//ul/li[contains(.,'$task') and contains(@class,'$status')]";
-        $this->execute("behat_general::should_exist", array($xpath, "xpath_element"));
+        $this->execute("behat_general::should_exist", [$xpath, "xpath_element"]);
     }
 
     /**
@@ -125,7 +125,7 @@ class behat_mod_concordance extends behat_base {
         $xpath = "//div[contains(@class,'concordance-wizard')]//ul/li[contains(@class,'info') and contains(.,'$text')]"
             . "/preceding-sibling::li[not(contains(@class,'info'))][1]";
         $this->execute("behat_general::assert_element_contains_text",
-            array($task, $xpath, "xpath_element")
+            [$task, $xpath, "xpath_element"]
         );
     }
 
@@ -142,7 +142,7 @@ class behat_mod_concordance extends behat_base {
         global $CFG;
         require_once(__DIR__ . '/../../../../mod/quiz/locallib.php');
         $this->execute("behat_mod_quiz::quiz_contains_the_following_questions",
-            array($quizname, $data)
+            [$quizname, $data]
         );
     }
 
@@ -155,7 +155,7 @@ class behat_mod_concordance extends behat_base {
     public function the_concordance_wizard_active_phase_should_be($phase) {
         $xpath = "//div[contains(@class,'concordance-wizard')]/dl[contains(@class,'phase active')]";
         $this->execute("behat_general::assert_element_contains_text",
-            array($phase, $xpath, "xpath_element")
+            [$phase, $xpath, "xpath_element"]
         );
     }
 

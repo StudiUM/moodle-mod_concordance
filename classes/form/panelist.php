@@ -125,10 +125,10 @@ class panelist extends persistent {
         if (empty($this->_customdata['id'])) {
             // If there are other user(s) that already have the same email, show an error.
             $select = $DB->sql_equal('email', ':email', false) . ' AND concordance = :concordance';
-            $params = array(
+            $params = [
                 'email' => $data->email,
-                'concordance' => $data->concordance
-            );
+                'concordance' => $data->concordance,
+            ];
             if ($DB->record_exists_select('concordance_panelist', $select, $params)) {
                 $errors["email"] = get_string('emailexists');
             }

@@ -30,24 +30,24 @@ class backup_concordance_activity_structure_step extends backup_activity_structu
      */
     protected function define_structure() {
         // Define each element separated.
-        $concordance = new backup_nested_element('concordance', array('id'), array(
+        $concordance = new backup_nested_element('concordance', ['id'], [
             'name', 'course', 'timemodified', 'descriptionpanelist', 'descriptionpanelistformat', 'descriptionstudent',
-            'descriptionstudentformat', 'activephase'));
+            'descriptionstudentformat', 'activephase']);
 
         // TODO EVOSTDM-2175 : traiter 'cmorigin' et 'cmgenerated'.
 
         $panelists = new backup_nested_element('panelists');
 
-        $panelist = new backup_nested_element('panelist', array('id'), array(
-            'firstname', 'lastname', 'email', 'nbemailsent', 'bibliography', 'bibliographyformat', 'timemodified'));
+        $panelist = new backup_nested_element('panelist', ['id'], [
+            'firstname', 'lastname', 'email', 'nbemailsent', 'bibliography', 'bibliographyformat', 'timemodified']);
 
         // Build the tree.
         $concordance->add_child($panelists);
         $panelists->add_child($panelist);
 
         // Define sources.
-        $concordance->set_source_table('concordance', array('id' => backup::VAR_ACTIVITYID));
-        $panelist->set_source_table('concordance_panelist', array('concordance' => backup::VAR_PARENTID));
+        $concordance->set_source_table('concordance', ['id' => backup::VAR_ACTIVITYID]);
+        $panelist->set_source_table('concordance_panelist', ['concordance' => backup::VAR_PARENTID]);
 
         // Define file annotations.
         $panelist->annotate_files('mod_concordance', 'descriptionpanelist', null); // This file area does not have an itemid.

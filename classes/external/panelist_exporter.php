@@ -40,7 +40,7 @@ class panelist_exporter extends \core\external\persistent_exporter {
      * @param \core\persistent $persistent
      * @param array $related
      */
-    public function __construct($persistent, $related = array()) {
+    public function __construct($persistent, $related = []) {
         parent::__construct($persistent, $related);
 
         $this->data->bibliography = file_rewrite_pluginfile_urls(
@@ -72,7 +72,7 @@ class panelist_exporter extends \core\external\persistent_exporter {
     protected static function define_related() {
         return [
             'context' => 'context',
-            'buttons' => '\\stdClass'
+            'buttons' => '\\stdClass',
         ];
     }
 
@@ -82,14 +82,14 @@ class panelist_exporter extends \core\external\persistent_exporter {
      * @return array
      */
     public static function define_other_properties() {
-        return array(
-            'editbutton' => array(
+        return [
+            'editbutton' => [
                 'type' => PARAM_RAW,
-            ),
-            'deletebutton' => array(
-                'type' => PARAM_RAW
-            ),
-        );
+            ],
+            'deletebutton' => [
+                'type' => PARAM_RAW,
+            ],
+        ];
     }
 
     /**

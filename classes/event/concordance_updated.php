@@ -69,17 +69,7 @@ class concordance_updated extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/concordance/view.php', array('id' => $this->contextinstanceid));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'concordance', 'edit', 'edit.php?id=' . $this->contextinstanceid, $this->objectid,
-            $this->contextinstanceid);
+        return new \moodle_url('/mod/concordance/view.php', ['id' => $this->contextinstanceid]);
     }
 
     /**
@@ -88,6 +78,6 @@ class concordance_updated extends \core\event\base {
      * @return array Informations for mapping object
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'concordance', 'restore' => 'concordance');
+        return ['db' => 'concordance', 'restore' => 'concordance'];
     }
 }

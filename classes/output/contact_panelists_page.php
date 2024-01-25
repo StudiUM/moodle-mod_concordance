@@ -29,6 +29,7 @@ use renderable;
 use templatable;
 use renderer_base;
 use stdClass;
+use mod_quiz\quiz_attempt;
 
 /**
  * Class containing data for contactpanelists page
@@ -67,12 +68,11 @@ class contact_panelists_page implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
         $data = new stdClass();
         $data->cmid = $this->cmid;
         $relateds = [
             'context' => \context_module::instance($this->cmid),
-            'buttons' => new stdClass()
+            'buttons' => new stdClass(),
         ];
         $data->panelists = [];
         $data->haspanelists = (count($this->panelists) > 0) ? true : false;
@@ -87,10 +87,10 @@ class contact_panelists_page implements renderable, templatable {
                 $state = $usersattemptedquiz[$panelist->get('userid')]->state;
                 if (!empty($state)) {
                     $exporteddata->quizstate = get_string('state' . $state, 'mod_quiz');
-                    if ($state == \quiz_attempt::FINISHED) {
+                    if ($state == quiz_attempt::FINISHED) {
                         $exporteddata->quizstateclass = 'badge-success';
                     }
-                    if ($state == \quiz_attempt::IN_PROGRESS) {
+                    if ($state == quiz_attempt::IN_PROGRESS) {
                         $exporteddata->quizstateclass = 'badge-warning';
                     }
                 } else {
@@ -102,10 +102,10 @@ class contact_panelists_page implements renderable, templatable {
             $data->panelists[] = $exporteddata;
         }
         $data->isquizselected = !empty($this->concordance->get('cmorigin'));
-        $data->noquizselectedwarning = (object)array(
+        $data->noquizselectedwarning = (object)[
             'message' => get_string('noquizselected_cantcontact', 'mod_concordance'),
-            'closebutton' => false
-        );
+            'closebutton' => false,
+        ];
         return $data;
     }
 }

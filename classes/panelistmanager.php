@@ -68,7 +68,7 @@ class panelistmanager {
                 $plugin = enrol_get_plugin('manual');
                 $roleid = get_config('mod_concordance', 'panelistsrole');
                 $instances = $DB->get_records('enrol',
-                        array('courseid' => $panelistcourse, 'enrol' => 'manual'));
+                        ['courseid' => $panelistcourse, 'enrol' => 'manual']);
                 $instance = reset($instances);
                 $plugin->enrol_user($instance, $userid, $roleid);
                 // Set userid in panelist.
@@ -87,7 +87,7 @@ class panelistmanager {
         global $DB;
 
         if ($moodleuserid) {
-            $user = $DB->get_record('user', array('id' => $moodleuserid));
+            $user = $DB->get_record('user', ['id' => $moodleuserid]);
             user_delete_user($user);
         }
     }

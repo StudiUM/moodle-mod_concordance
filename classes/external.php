@@ -76,7 +76,7 @@ class external extends external_api {
                 'True if we want to display notification',
                 VALUE_DEFAULT,
                 false
-            )
+            ),
         ]);
     }
 
@@ -92,13 +92,13 @@ class external extends external_api {
      */
     public static function send_message($users, $message, $subject, $cmid, $displaynotification = false) {
         global $USER, $PAGE;
-        $params = self::validate_parameters(self::send_message_parameters(), array(
+        $params = self::validate_parameters(self::send_message_parameters(), [
             'users' => $users,
             'message' => $message,
             'subject' => $subject,
             'cmid' => $cmid,
-            'displaynotification' => $displaynotification
-        ));
+            'displaynotification' => $displaynotification,
+        ]);
 
         $cm = get_coursemodule_from_id('concordance', $params['cmid'], 0, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
@@ -121,11 +121,11 @@ class external extends external_api {
             $messagetext = html_to_text($messagehtml);
             if (email_to_user($recipient, $sender, $subject, $messagetext, $messagehtml, '', '', true, $replyto, $replytoname)) {
                 // Trigger event for email sent.
-                $event = \mod_concordance\event\email_sent::create(array(
+                $event = \mod_concordance\event\email_sent::create([
                     'context' => $context,
                     'userid' => $USER->id,
-                    'other' => ['panelistid' => $panelist->get('id'), 'fullname' => fullname($recipient)]
-                ));
+                    'other' => ['panelistid' => $panelist->get('id'), 'fullname' => fullname($recipient)],
+                ]);
                 $event->trigger();
                 $nbsent = $panelist->get('nbemailsent') + 1;
                 $panelist->set('nbemailsent', $nbsent);

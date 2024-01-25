@@ -50,6 +50,6 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return array Informations for mapping object
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'concordance', 'restore' => 'concordance');
+        return ['db' => 'concordance', 'restore' => 'concordance'];
     }
 }

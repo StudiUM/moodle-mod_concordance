@@ -28,6 +28,7 @@ use renderable;
 use templatable;
 use renderer_base;
 use stdClass;
+use mod_quiz\quiz_settings;
 
 /**
  * Class containing data for select quiz page.
@@ -64,7 +65,7 @@ class select_quiz_page implements renderable, templatable {
         $data->hasothertype = false;
 
         $cmorigin = get_coursemodule_from_id('quiz', $this->cmid);
-        $quizobj = \quiz::create($cmorigin->instance, $USER->id);
+        $quizobj = quiz_settings::create($cmorigin->instance, $USER->id);
         // Fully load all the questions in this quiz.
         $quizobj->preload_questions();
         $quizobj->load_questions();

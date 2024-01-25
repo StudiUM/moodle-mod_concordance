@@ -29,12 +29,12 @@ $id = required_param('cmid', PARAM_INT);
 
 $cm = get_coursemodule_from_id('concordance', $id, 0, true, MUST_EXIST);
 $context = context_module::instance($cm->id, MUST_EXIST);
-$concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+$concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 
 require_login($course, false, $cm);
 
-$PAGE->set_url('/mod/concordance/edit.php', array('cmid' => $cm->id));
+$PAGE->set_url('/mod/concordance/edit.php', ['cmid' => $cm->id]);
 $PAGE->set_title($course->shortname . ': ' . $concordance->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($concordance);
@@ -42,7 +42,7 @@ $PAGE->set_activity_record($concordance);
 $data = new stdClass();
 $data->id = $cm->id;
 
-$mform = new \mod_concordance\form\edit_form(null, array('data' => $data));
+$mform = new \mod_concordance\form\edit_form(null, ['data' => $data]);
 
 if ($mform->is_cancelled()) {
     redirect($redirecturl);
@@ -50,10 +50,10 @@ if ($mform->is_cancelled()) {
 } else if ($formdata = $mform->get_data()) {
     // Ici traiter le formulaire.
 
-    $params = array(
+    $params = [
         'context' => $context,
-        'objectid' => $concordance->id
-    );
+        'objectid' => $concordance->id,
+    ];
     $event = \mod_concordance\event\concordance_updated::create($params);
     $event->add_record_snapshot('concordance', $concordance);
     $event->trigger();

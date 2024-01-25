@@ -30,11 +30,11 @@ $phase = required_param('phase', PARAM_INT);           // The code of the new ph
 require_sesskey();
 
 $cm = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
 $concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
-$PAGE->set_url($concordancepersistent->switchphase_url($phase), array('cmid' => $cmid, 'phase' => $phase));
+$PAGE->set_url($concordancepersistent->switchphase_url($phase), ['cmid' => $cmid, 'phase' => $phase]);
 
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
@@ -42,10 +42,10 @@ require_capability('mod/concordance:view', $context);
 
 $concordancepersistent->set('activephase', $phase);
 
-$params = array(
+$params = [
     'context' => $context,
-    'objectid' => $concordancepersistent->get('id')
-);
+    'objectid' => $concordancepersistent->get('id'),
+];
 $event = \mod_concordance\event\concordance_updated::create($params);
 $event->add_record_snapshot('concordance', $concordance);
 $event->trigger();

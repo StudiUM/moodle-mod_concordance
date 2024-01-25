@@ -66,7 +66,7 @@ class manage_panelists_page implements renderable, templatable {
         $data = new stdClass();
         $data->cmid = $this->cmid;
         $relateds = [
-            'context' => \context_module::instance($this->cmid)
+            'context' => \context_module::instance($this->cmid),
         ];
         $data->panelists = [];
         foreach ($this->panelists as $panelist) {
@@ -91,7 +91,7 @@ class manage_panelists_page implements renderable, templatable {
             $data->panelists[] = $exporter->export($output);
         }
         $button = new single_button(
-           new moodle_url('/mod/concordance/editpanelist.php', array('cmid' => $this->cmid)),
+           new moodle_url('/mod/concordance/editpanelist.php', ['cmid' => $this->cmid]),
            get_string('addnewpanelist', 'mod_concordance'),
            'get'
         );

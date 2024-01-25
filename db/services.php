@@ -26,8 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$functions = array(
-    'mod_concordance_send_message' => array(
+$functions = [
+    'mod_concordance_send_message' => [
         'classname' => 'mod_concordance\external',
         'methodname' => 'send_message',
         'classpath' => '',
@@ -35,5 +35,5 @@ $functions = array(
         'type' => 'write',
         'capabilities' => 'mod/concordance:addinstance',
         'ajax' => true,
-    )
-);
+    ],
+];

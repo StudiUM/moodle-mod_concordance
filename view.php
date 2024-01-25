@@ -33,32 +33,32 @@ $s = optional_param('sy', 0, PARAM_INT);
 
 // Two ways to specify the module.
 if ($s) {
-    $concordance = $DB->get_record('concordance', array('id' => $s), '*', MUST_EXIST);
+    $concordance = $DB->get_record('concordance', ['id' => $s], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('concordance', $concordance->id, $concordance->course, true, MUST_EXIST);
 
 } else {
     $cm = get_coursemodule_from_id('concordance', $id, 0, true, MUST_EXIST);
-    $concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
+    $concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
 }
 $concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/concordance:view', $context);
 
-$params = array(
+$params = [
     'context' => $context,
-    'objectid' => $concordance->id
-);
+    'objectid' => $concordance->id,
+];
 $event = \mod_concordance\event\course_module_viewed::create($params);
 $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('concordance', $concordance);
 $event->trigger();
 
-$PAGE->set_url('/mod/concordance/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/concordance/view.php', ['id' => $cm->id]);
 
 $PAGE->set_title($course->shortname . ': '. $concordance->name);
 $PAGE->set_heading($course->fullname);

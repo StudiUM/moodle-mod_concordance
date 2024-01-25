@@ -17,7 +17,6 @@
  * Send emails for panelist page.
  *
  * @module     mod_concordance/panelists
- * @package    mod_concordance
  * @copyright  2020 Université de Montréal
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

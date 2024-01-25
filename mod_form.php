@@ -45,7 +45,7 @@ class mod_concordance_mod_form extends moodleform_mod {
         $mform = $this->_form;
 
         // Name.
-        $mform->addElement('text', 'name', get_string('name'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('name'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {

@@ -33,7 +33,7 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
      * Must return one array of @restore_path_element elements
      */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
         $paths[] = new restore_path_element('concordance', '/activity/concordance');
         $paths[] = new restore_path_element('concordance_panelist', '/activity/concordance/panelists/panelist');
 
@@ -66,9 +66,9 @@ class restore_concordance_activity_structure_step extends restore_activity_struc
 
         // Prevent teacher to change concordance visibility.
         $context = context_module::instance($this->task->get_moduleid());
-        $id = $DB->get_field('role', 'id', array('shortname' => 'editingteacher'));
+        $id = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
         assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
-        $id = $DB->get_field('role', 'id', array('shortname' => 'associateeditingteacher'));
+        $id = $DB->get_field('role', 'id', ['shortname' => 'associateeditingteacher']);
         assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
 
         // TODO EVOSTDM-2175 : traiter 'cmorigin' et 'cmgenerated'.

@@ -45,6 +45,8 @@ class external_test extends \externallib_advanced_testcase {
 
     /**
      * Test send message external.
+     * @runInSeparateProcess
+     * @runTestsInSeparateProcesses
      */
     public function test_send_message() {
         $this->resetAfterTest(true);
@@ -54,7 +56,7 @@ class external_test extends \externallib_advanced_testcase {
         $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
 
         // Create the activity.
-        $concordance = $this->getDataGenerator()->create_module('concordance', array('course' => $course->id));
+        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $course->id]);
         $context = \context_module::instance($concordance->cmid);
         // Create 2 panelists.
         $record = new \stdClass();

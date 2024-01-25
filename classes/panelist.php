@@ -25,7 +25,7 @@
 
 namespace mod_concordance;
 
-use \core\persistent;
+use core\persistent;
 
 /**
  * Class for loading/storing panelist from the DB.
@@ -45,36 +45,36 @@ class panelist extends persistent {
      * @return array
      */
     protected static function define_properties() {
-        return array(
-            'concordance' => array(
-                'type' => PARAM_INT
-            ),
-            'userid' => array(
+        return [
+            'concordance' => [
+                'type' => PARAM_INT,
+            ],
+            'userid' => [
                 'type' => PARAM_INT,
                 'default' => null,
                 'null' => NULL_ALLOWED,
-            ),
-            'firstname' => array(
-                'type' => PARAM_TEXT
-            ),
-            'lastname' => array(
-                'type' => PARAM_TEXT
-            ),
-            'email' => array(
-                'type' => PARAM_EMAIL
-            ),
-            'nbemailsent' => array(
+            ],
+            'firstname' => [
+                'type' => PARAM_TEXT,
+            ],
+            'lastname' => [
+                'type' => PARAM_TEXT,
+            ],
+            'email' => [
+                'type' => PARAM_EMAIL,
+            ],
+            'nbemailsent' => [
                 'type' => PARAM_INT,
                 'default' => null,
                 'null' => NULL_ALLOWED,
-            ),
-            'bibliography' => array(
-                'type' => PARAM_RAW
-            ),
-            'bibliographyformat' => array(
-                'type' => PARAM_INT
-            ),
-        );
+            ],
+            'bibliography' => [
+                'type' => PARAM_RAW,
+            ],
+            'bibliographyformat' => [
+                'type' => PARAM_INT,
+            ],
+        ];
     }
 
     /**
@@ -84,7 +84,7 @@ class panelist extends persistent {
      * @return int
      */
     public static function count_records_for_concordance($concordanceid) {
-        $filters = array('concordance' => $concordanceid);
+        $filters = ['concordance' => $concordanceid];
         return self::count_records($filters);
     }
 
@@ -140,7 +140,7 @@ class panelist extends persistent {
     public function get_user() {
         global $DB;
         if ($this->get('userid')) {
-            return $DB->get_record('user', array('id' => $this->get('userid')));
+            return $DB->get_record('user', ['id' => $this->get('userid')]);
         }
         return null;
     }
@@ -151,7 +151,7 @@ class panelist extends persistent {
      * @return moodle_url The quiz access page.
      */
     public function get_quizaccess_url() {
-        return new \moodle_url('/mod/concordance/quizaccess.php', array('key' => $this->get_user_key()));
+        return new \moodle_url('/mod/concordance/quizaccess.php', ['key' => $this->get_user_key()]);
     }
 
     /**
@@ -162,7 +162,7 @@ class panelist extends persistent {
      */
     public function has_attempted_quiz($quizid) {
         global $DB;
-        return $DB->record_exists('quiz_attempts', array('quiz' => $quizid, 'userid' => $this->get('userid')));
+        return $DB->record_exists('quiz_attempts', ['quiz' => $quizid, 'userid' => $this->get('userid')]);
     }
 
     /**

@@ -28,8 +28,8 @@ require_once(__DIR__ . '/../../config.php');
 $cmid = required_param('cmid', PARAM_INT);  // Course module.
 
 $cm = get_coursemodule_from_id('concordance', $cmid, 0, false, MUST_EXIST);
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$concordance = $DB->get_record('concordance', array('id' => $cm->instance), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
 $concordancepersistent = new \mod_concordance\concordance($concordance->id);
 
 $context = context_module::instance($cm->id);
@@ -38,7 +38,7 @@ require_capability('mod/concordance:addinstance', $context);
 
 $title = get_string('quizselection', 'mod_concordance');
 $url = new moodle_url("/mod/concordance/selectquiz.php", [
-    'cmid' => $cmid
+    'cmid' => $cmid,
 ]);
 $PAGE->navigation->override_active_url($url);
 $PAGE->set_context($context);
@@ -65,7 +65,7 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
     } else {
         $quizlist = \mod_concordance\concordance::quizlist($course);
         $form = new \mod_concordance\form\quizselection($url->out(false),
-                array('quizlist' => $quizlist, 'context' => $context));
+                ['quizlist' => $quizlist, 'context' => $context]);
 
         $form->set_data(['cmorigin' => $concordancepersistent->get('cmorigin')]);
         $data = $form->get_submitted_data();
