@@ -73,7 +73,8 @@ class select_quiz_page implements renderable, templatable {
         $concordancetypefound = false;
         $othertypefound = false;
         foreach ($questions as $question) {
-            if (\question_bank::make_question($question) instanceof \qtype_tcs_question) {
+            if (\question_bank::make_question($question) instanceof \qtype_tcs_question
+                || \question_bank::make_question($question) instanceof \qtype_tcsperception_question) {
                 $data->hasconcordancetype = true;
                 $concordancetypefound = true;
             } else {

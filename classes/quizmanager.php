@@ -492,6 +492,8 @@ class quizmanager {
 
         $combinedanswers = [];
         $previoususerid = -1;
+        $drawings = [];
+        $generalfeedbacks = [];
         foreach ($attempts as $attempt) {
             $panelist = panelist::get_record(['userid' => $attempt->userid]);
             // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
@@ -506,44 +508,49 @@ class quizmanager {
                     }
                     $questionattempt = $quizattempt->get_question_attempt($slot);
                     $question = $questionattempt->get_question(false);
-                    if ($question instanceof \qtype_tcs_question) {
+                    $istcsquestion = $question instanceof \qtype_tcs_question;
+                    $isperceptionquestion = $question instanceof \qtype_tcsperception_question;
+                    if ($istcsquestion || $isperceptionquestion) {
                         $qtdata = $questionattempt->get_last_qt_data();
-                        if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
-                            continue;
+                        
+                        if ($istcsquestion) {
+                            $answer = self::gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
                         }
-                        if (isset($qtdata['answer'])) {
-                            $qtchoiceorder = $qtdata['answer'];
-
-                            if (!isset($combinedanswers[$slot])) {
-                                $combinedanswers[$slot] = [];
+                        if ($isperceptionquestion) {
+                            $answer = self::getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
+                            // Get drawing panelist.
+                            $nbfiles = $question->getnbdrawingfiles();
+                            $drawings = self::getperceptioncombineddrawings($qtdata, $slot, $panelist, $drawings, $nbfiles);
+                            // Get general feedbacks.
+                            if(isset($qtdata['generalcomment'])) {
+                                if (!isset($combinedanswers[$slot])) {
+                                    $generalfeedbacks[$slot] = [];
+                                }
+                                $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+                                if (!empty($panelistname) && !empty($qtdata['generalcomment'])) {
+                                    $panelistname .= '&nbsp;:';
+                                }
+                                $namebl = \html_writer::tag('strong', $panelistname);
+                                $generalfeedbacks[$slot]['generalcomment'] .= $namebl;
+                                $generalfeedbacks[$slot]['generalcomment'] .= $qtdata['generalcomment'];
+                                $generalfeedbacks[$slot]['generalcomment'] .= '<hr>';
                             }
-                            if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
-                                $combinedanswers[$slot][$qtchoiceorder] = ['nbexperts' => 0, 'feedback' => ''];
-                            }
-
-                            $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
-
-                            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
-                            if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
-                                $panelistname .= '&nbsp;:';
-                            }
-                            $namebl = \html_writer::tag('strong', $panelistname);
-                            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
-                            if (!empty($qtdata['answerfeedback'])) {
-                                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
-                                    $qtdata['answerfeedback']);
-                            }
+                        }
+                        if (!empty($answer)) {
+                            $combinedanswers = $answer;
                         }
                     }
                 }
 
             }
         }
-
+        
         // Save the combined feedbacks and number of experts in the new quiz questions.
         $questions = $newquiz->get_questions();
         foreach ($questions as $question) {
-            $istcsquestion = \question_bank::make_question($question) instanceof \qtype_tcs_question;
+            $q = \question_bank::make_question($question); 
+            $istcsquestion = $q instanceof \qtype_tcs_question
+                || $q instanceof \qtype_tcsperception_question;
             if (!key_exists($question->slot, $formdata->questionstoinclude) || !$istcsquestion) {
                 continue;
             }
@@ -571,7 +578,169 @@ class quizmanager {
                 // Important to notify that the question was edited or the changes will not be visible.
                 \question_bank::notify_question_edited($question->id);
             }
+            if ($q instanceof \qtype_tcsperception_question) {
+                foreach ($drawings[$question->slot] as $key => $drawing) {
+                    $drawingobject = new \stdClass;
+                    $drawingobject->questionid = $question->id;
+                    // Here add width and height in svg.
+                    $fullsvg = '<svg xmlns="http://www.w3.org/2000/svg"> <g id="paths"> <title>Panelist answer</title>';
+                    $fullsvg .= $drawing['answer'];
+                    $fullsvg .= '</g> </svg>';
+                    $drawingobject->answer = $fullsvg;
+                    $drawingobject->image = $key;
+                    $drawingobject->othervalues = json_encode($drawing['othervalues']);
+                    $DB->insert_record('qtype_tcsperception_answers', $drawingobject);
+                }
+                 // Update general feedback.
+                if (isset($generalfeedbacks[$question->slot]['generalcomment'])) {
+                    $data = (object) [
+                        'id' => $question->id,
+                        'generalfeedback' => $generalfeedbacks[$question->slot]['generalcomment'],
+                    ];
+                    $DB->update_record('question', $data, true);
+                }
+            }
+           
         }
+
+    }
+    /**
+     * Get combined answers for tcs and tcsjudgment questions
+     *
+     * @param array $qtdata
+     * @param number $slot
+     * @param object $panelist
+     * @param array $combinedanswers
+     * @return array
+     */
+    protected static function gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers):array {
+        if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
+            return [];
+        }
+        if (isset($qtdata['answer'])) {
+            $qtchoiceorder = $qtdata['answer'];
+
+            if (!isset($combinedanswers[$slot])) {
+                $combinedanswers[$slot] = array();
+            }
+            if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
+                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+            }
+
+            $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
+
+            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+            if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
+                $panelistname .= '&nbsp;:';
+            }
+            $namebl = \html_writer::tag('strong', $panelistname);
+            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
+            if (!empty($qtdata['answerfeedback'])) {
+                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
+                    $qtdata['answerfeedback']);
+            }
+            return $combinedanswers;
+        }
+        return [];
+    }
+
+    /**
+     * Get combined answers for tcs perception questions
+     *
+     * @param array $qtdata
+     * @param number $slot
+     * @param object $panelist
+     * @param array $combinedanswers
+     * @return array
+     */
+    protected static function getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers):array {
+        if (isset($qtdata['answermultiplechoice'])) {
+            $qtchoiceorder = $qtdata['answermultiplechoice'];
+
+            if (!isset($combinedanswers[$slot])) {
+                $combinedanswers[$slot] = array();
+            }
+            if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
+                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+            }
+
+            $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
+
+            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+            if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
+                $panelistname .= '&nbsp;:';
+            }
+            $namebl = \html_writer::tag('strong', $panelistname);
+            $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
+            if (!empty($qtdata['answerfeedback'])) {
+                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
+                    $qtdata['answerfeedback']);
+            }
+            return $combinedanswers;
+        }
+        return [];
+    }
+
+    /**
+     * Get combined drawings for tcs perception questions
+     *
+     * @param array $qtdata
+     * @param number $slot
+     * @param object $panelist
+     * @param array $combineddrawings
+     * @param number $nbfiles
+     * @return array
+     */
+    protected static function getperceptioncombineddrawings($qtdata, $slot, $panelist, $combineddrawings, $nbfiles):array {
+        if ($nbfiles !== 0) {
+            for ($i = 0; $i < $nbfiles; $i++) {
+                if (!isset($combineddrawings[$slot])) {
+                    $combineddrawings[$slot] = [];
+                }
+                if (!isset($combineddrawings[$slot][$i])) {
+                    $combineddrawings[$slot][$i] = [
+                        'answer' => '',
+                        'imagefeedback' => '',
+                        'othervalues' => [],
+                        'image' => $i,
+                        'width' => 0,
+                        'height' => 0,
+                    ];
+                }
+                $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
+                $uniqid = md5($panelist->get('firstname') . $panelist->get('lastname') . $panelist->get('id'));
+                $pattern = '/<svg(.*?)>(.*?)<\/svg>/s';
+                // Here should find the right height and width and set it in the array.
+                if (preg_match($pattern, $qtdata['answer' . $i], $matches)) {
+                    $svgcontent = $matches[2];
+                }
+                $patterng = '/<g(.*?)>(.*?)<\/g>/s';
+                if (preg_match($patterng, $svgcontent, $matches)) {
+                    $svgcontent = $matches[2];
+                }
+                // Add class to identify panelist in line.
+                $svgcontent = preg_replace('/<line/', '<line class="' . $uniqid . '"', $svgcontent);
+                
+                // Add class to identify panelist in text.
+                $svgcontent = preg_replace('/<text/', '<text class="' . $uniqid . '"', $svgcontent);
+                
+                // Add class to identify panelist in path.
+                $svgcontent = preg_replace('/<path/', '<path class="' . $uniqid . '"', $svgcontent);
+                if(isset($qtdata['answer' . $i])) {
+                    $combineddrawings[$slot][$i]['answer'] .= $svgcontent;
+                }
+                $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
+                $uniqid = md5($panelist->get('firstname') . $panelist->get('lastname') . $panelist->get('id'));
+                $combineddrawings[$slot][$i]['othervalues'][] = 
+                    [
+                        'panelist' => $panelistname,
+                        'id' => $uniqid,
+                        'imagefeedback' => isset($qtdata['imagefeedback' . $i]) ? $qtdata['imagefeedback' . $i] : '',
+                    ];
+            }
+            return $combineddrawings;
+        }
+        return [];
     }
 
     /**

@@ -30,6 +30,7 @@ $plugin->requires = 2023100400;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '1.0.7 (Build 2024012500)';
 $plugin->component = 'mod_concordance';
-$plugin->dependencies = [
+$plugin->dependencies = array(
     'qtype_tcs' => 2024012500,
-];
+    'qtype_tcsperception' => 2023121901,
+);
