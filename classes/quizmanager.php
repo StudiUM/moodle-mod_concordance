@@ -27,7 +27,7 @@ namespace mod_concordance;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
@@ -93,8 +93,13 @@ class quizmanager {
             $coursegeneratedid = $concordance->get('coursegenerated');
             $course = $DB->get_record('course', ['id' => $coursegeneratedid], '*', MUST_EXIST);
 
-            $concordancem = get_coursemodule_from_instance('concordance',
-                    $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
+            $concordancem = get_coursemodule_from_instance(
+                'concordance',
+                $concordance->get('id'),
+                $concordance->get('course'),
+                true,
+                MUST_EXIST
+            );
             $context = \context_module::instance($concordancem->id);
             $newcm = self::duplicate_module($course, $cm);
             set_coursemodule_visible($newcm->id, 1);
@@ -118,9 +123,9 @@ class quizmanager {
             $quiz->preferredbehaviour = 'deferredfeedback';
             foreach (review_setting::fields() as $field => $name) {
                 if ($field == 'attempt') {
-                    $quiz->{'review'.$field} = review_setting::all_on();
+                    $quiz->{'review' . $field} = \mod_quiz_admin_review_setting::all_on();
                 } else {
-                    $quiz->{'review'.$field} = 0;
+                    $quiz->{'review' . $field} = 0;
                 }
             }
 
@@ -155,15 +160,21 @@ class quizmanager {
             $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
             $course = $DB->get_record('course', ['id' => $concordance->get('course')], '*', MUST_EXIST);
 
-            $concordancem = get_coursemodule_from_instance('concordance',
-                    $concordance->get('id'), $concordance->get('course'), true, MUST_EXIST);
+            $concordancem = get_coursemodule_from_instance(
+                'concordance',
+                $concordance->get('id'),
+                $concordance->get('course'),
+                true,
+                MUST_EXIST
+            );
             $context = \context_module::instance($concordancem->id);
 
             $issummative = false;
-            if (isset($formdata->quiztype) &&
-                    ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK
+            if (
+                isset($formdata->quiztype) &&
+                ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK
                     || $formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK)
-                ) {
+            ) {
                 $issummative = true;
             }
 
@@ -223,27 +234,27 @@ class quizmanager {
                         // No feedback at all.
                         $default = 0;
                     }
-                    $quiz->{'review'.$field} = $default;
+                    $quiz->{'review' . $field} = $default;
                 }
             } else {
                 // Show immediate feedback during the attempt.
                 $quiz->preferredbehaviour = 'immediatefeedback';
-                foreach (review_setting::fields() as $field => $name) {
-                    $default = review_setting::all_on();
-                    $quiz->{'review'.$field} = $default;
+                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
+                    $default = \mod_quiz_admin_review_setting::all_on();
+                    $quiz->{'review' . $field} = $default;
                 }
             }
             // Include bibliographies in introduction.
             if (!empty($formdata->includebibliography) && !empty($formdata->paneliststoinclude)) {
                 $biographies = '';
-                $panelists = array_filter($formdata->paneliststoinclude, function($v, $k) {
-                        return $v == 1;
+                $panelists = array_filter($formdata->paneliststoinclude, function ($v, $k) {
+                    return $v == 1;
                 }, ARRAY_FILTER_USE_BOTH);
                 foreach (array_keys($panelists) as $id) {
                     $panelist = panelist::get_record(['id' => $id]);
                     if ($panelist && $panelist->get('bibliography')) {
                         $biographies .= \html_writer::empty_tag('br');
-                        $biographies .= \html_writer::tag('h4', $panelist->get('firstname').' '.$panelist->get('lastname'));
+                        $biographies .= \html_writer::tag('h4', $panelist->get('firstname') . ' ' . $panelist->get('lastname'));
                         $biographies .= $panelist->get('bibliography');;
                         if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'bibliography', $id)) {
                             foreach ($files as $file) {
@@ -386,8 +397,14 @@ class quizmanager {
 
         // Backup the activity.
 
-        $bc = new backup_controller(backup::TYPE_1ACTIVITY, $cm->id, backup::FORMAT_MOODLE,
-                backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $bc = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $cm->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id
+        );
 
         $backupid = $bc->get_backupid();
         $backupbasepath = $bc->get_plan()->get_basepath();
@@ -401,8 +418,14 @@ class quizmanager {
         }
 
         // Restore the backup immediately.
-        $rc = new restore_controller($backupid, $course->id,
-                backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+        $rc = new restore_controller(
+            $backupid,
+            $course->id,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id,
+            backup::TARGET_CURRENT_ADDING
+        );
 
         // Make sure that the restore_general_groups setting is always enabled when duplicating an activity.
         $plan = $rc->get_plan();
@@ -486,9 +509,12 @@ class quizmanager {
         $params = [];
         $params['quizid'] = $quizanswered->instance;
 
-        $attempts = $DB->get_records_select('quiz_attempts',
+        $attempts = $DB->get_records_select(
+            'quiz_attempts',
             "quiz = :quizid ",
-            $params, 'quiz, userid, timestart DESC');
+            $params,
+            'quiz, userid, timestart DESC'
+        );
 
         $combinedanswers = [];
         $previoususerid = -1;
@@ -497,8 +523,10 @@ class quizmanager {
         foreach ($attempts as $attempt) {
             $panelist = panelist::get_record(['userid' => $attempt->userid]);
             // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
-            if ($attempt->userid != $previoususerid && !empty($panelist)
-                    && isset($formdata->paneliststoinclude[$panelist->get('id')])) {
+            if (
+                $attempt->userid != $previoususerid && !empty($panelist)
+                && isset($formdata->paneliststoinclude[$panelist->get('id')])
+            ) {
                 $previoususerid = $attempt->userid;
                 $quizattempt = new quiz_attempt($attempt, $quizpanelist, $quizanswered, $coursepanelist);
                 $slots = $quizattempt->get_slots();
@@ -512,25 +540,28 @@ class quizmanager {
                     $isperceptionquestion = $question instanceof \qtype_tcsperception_question;
                     if ($istcsquestion || $isperceptionquestion) {
                         $qtdata = $questionattempt->get_last_qt_data();
-                        
+
                         if ($istcsquestion) {
                             $answer = self::gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
                         }
                         if ($isperceptionquestion) {
                             $answer = self::getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
                             // Get drawing panelist.
-                            $nbfiles = $question->getnbdrawingfiles();
-                            $drawings = self::getperceptioncombineddrawings($qtdata, $slot, $panelist, $drawings, $nbfiles);
+                            $files = $question->get_image_for_files();
+                            $drawings = self::getperceptioncombineddrawings($qtdata, $slot, $panelist, $drawings, $files);
                             // Get general feedbacks.
-                            if(isset($qtdata['generalcomment'])) {
+                            if (isset($qtdata['generalcomment'])) {
                                 if (!isset($combinedanswers[$slot])) {
                                     $generalfeedbacks[$slot] = [];
                                 }
-                                $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+                                $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
                                 if (!empty($panelistname) && !empty($qtdata['generalcomment'])) {
                                     $panelistname .= '&nbsp;:';
                                 }
                                 $namebl = \html_writer::tag('strong', $panelistname);
+                                if (!isset($generalfeedbacks[$slot]['generalcomment'])) {
+                                    $generalfeedbacks[$slot]['generalcomment'] = '';
+                                }
                                 $generalfeedbacks[$slot]['generalcomment'] .= $namebl;
                                 $generalfeedbacks[$slot]['generalcomment'] .= $qtdata['generalcomment'];
                                 $generalfeedbacks[$slot]['generalcomment'] .= '<hr>';
@@ -541,14 +572,13 @@ class quizmanager {
                         }
                     }
                 }
-
             }
         }
-        
+
         // Save the combined feedbacks and number of experts in the new quiz questions.
         $questions = $newquiz->get_questions();
         foreach ($questions as $question) {
-            $q = \question_bank::make_question($question); 
+            $q = \question_bank::make_question($question);
             $istcsquestion = $q instanceof \qtype_tcs_question
                 || $q instanceof \qtype_tcsperception_question;
             if (!key_exists($question->slot, $formdata->questionstoinclude) || !$istcsquestion) {
@@ -583,7 +613,10 @@ class quizmanager {
                     $drawingobject = new \stdClass;
                     $drawingobject->questionid = $question->id;
                     // Here add width and height in svg.
-                    $fullsvg = '<svg xmlns="http://www.w3.org/2000/svg"> <g id="paths"> <title>Panelist answer</title>';
+                    $fullsvg = '<svg xmlns="http://www.w3.org/2000/svg"
+                                                width="' . $drawing['width'] . '"
+                                                height="' . $drawing['height'] . '">
+                                                    <g id="paths">';
                     $fullsvg .= $drawing['answer'];
                     $fullsvg .= '</g> </svg>';
                     $drawingobject->answer = $fullsvg;
@@ -591,7 +624,7 @@ class quizmanager {
                     $drawingobject->othervalues = json_encode($drawing['othervalues']);
                     $DB->insert_record('qtype_tcsperception_answers', $drawingobject);
                 }
-                 // Update general feedback.
+                // Update general feedback.
                 if (isset($generalfeedbacks[$question->slot]['generalcomment'])) {
                     $data = (object) [
                         'id' => $question->id,
@@ -600,9 +633,7 @@ class quizmanager {
                     $DB->update_record('question', $data, true);
                 }
             }
-           
         }
-
     }
     /**
      * Get combined answers for tcs and tcsjudgment questions
@@ -613,7 +644,7 @@ class quizmanager {
      * @param array $combinedanswers
      * @return array
      */
-    protected static function gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers):array {
+    protected static function gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers): array {
         if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
             return [];
         }
@@ -629,15 +660,17 @@ class quizmanager {
 
             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
 
-            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+            $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
             if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
                 $panelistname .= '&nbsp;:';
             }
             $namebl = \html_writer::tag('strong', $panelistname);
             $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
             if (!empty($qtdata['answerfeedback'])) {
-                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
-                    $qtdata['answerfeedback']);
+                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag(
+                    'p',
+                    $qtdata['answerfeedback']
+                );
             }
             return $combinedanswers;
         }
@@ -653,7 +686,7 @@ class quizmanager {
      * @param array $combinedanswers
      * @return array
      */
-    protected static function getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers):array {
+    protected static function getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers): array {
         if (isset($qtdata['answermultiplechoice'])) {
             $qtchoiceorder = $qtdata['answermultiplechoice'];
 
@@ -666,15 +699,17 @@ class quizmanager {
 
             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
 
-            $panelistname = $panelist->get('firstname').' '.$panelist->get('lastname');
+            $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
             if (!empty($panelistname) && !empty($qtdata['answerfeedback'])) {
                 $panelistname .= '&nbsp;:';
             }
             $namebl = \html_writer::tag('strong', $panelistname);
             $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p', $namebl);
             if (!empty($qtdata['answerfeedback'])) {
-                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag('p',
-                    $qtdata['answerfeedback']);
+                $combinedanswers[$slot][$qtchoiceorder]['feedback'] .= \html_writer::tag(
+                    'p',
+                    $qtdata['answerfeedback']
+                );
             }
             return $combinedanswers;
         }
@@ -688,55 +723,77 @@ class quizmanager {
      * @param number $slot
      * @param object $panelist
      * @param array $combineddrawings
-     * @param number $nbfiles
+     * @param number $files
      * @return array
      */
-    protected static function getperceptioncombineddrawings($qtdata, $slot, $panelist, $combineddrawings, $nbfiles):array {
+    protected static function getperceptioncombineddrawings($qtdata, $slot, $panelist, $combineddrawings, $files): array {
+        $nbfiles = count($files);
+
         if ($nbfiles !== 0) {
-            for ($i = 0; $i < $nbfiles; $i++) {
+            $i = 0;
+            foreach ($files as $file) {
                 if (!isset($combineddrawings[$slot])) {
                     $combineddrawings[$slot] = [];
                 }
+
+                // Get image width and height.
+                $imageparts = explode(";base64,", $file[1]);
+                $imagebase64 = $imageparts[1];
+                $image = base64_decode($imagebase64);
+                $source = imagecreatefromstring($image);
+                $width = imagesx($source);
+                $height = imagesy($source);
+                imagedestroy($source);
+
                 if (!isset($combineddrawings[$slot][$i])) {
                     $combineddrawings[$slot][$i] = [
                         'answer' => '',
                         'imagefeedback' => '',
                         'othervalues' => [],
                         'image' => $i,
-                        'width' => 0,
-                        'height' => 0,
+                        'width' => $width,
+                        'height' => $height,
                     ];
                 }
                 $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
                 $uniqid = md5($panelist->get('firstname') . $panelist->get('lastname') . $panelist->get('id'));
-                $pattern = '/<svg(.*?)>(.*?)<\/svg>/s';
-                // Here should find the right height and width and set it in the array.
-                if (preg_match($pattern, $qtdata['answer' . $i], $matches)) {
-                    $svgcontent = $matches[2];
+
+                if (isset($qtdata['answer' . $i])) {
+                    $svgcontent = $qtdata['answer' . $i];
+                } else {
+                    $svgcontent = '';
                 }
-                $patterng = '/<g(.*?)>(.*?)<\/g>/s';
-                if (preg_match($patterng, $svgcontent, $matches)) {
-                    $svgcontent = $matches[2];
-                }
+                $svgcontent = preg_replace('/<svg[^>]*>/', '', $svgcontent);
+                $svgcontent = str_replace('</svg>', '', $svgcontent);
+                $svgcontent = str_replace(
+                                            'id="paths"', 'id="' . $uniqid . '" class="panelistdrawing ' . $uniqid . '"',
+                                            $svgcontent
+                                        );
+                $svgcontent = preg_replace(
+                                            '/<title class="grouptitle">([^<]+)<\/title>/',
+                                            '<title class="grouptitle">' . $panelistname . '</title>', $svgcontent
+                                        );
+
                 // Add class to identify panelist in line.
                 $svgcontent = preg_replace('/<line/', '<line class="' . $uniqid . '"', $svgcontent);
-                
+
                 // Add class to identify panelist in text.
                 $svgcontent = preg_replace('/<text/', '<text class="' . $uniqid . '"', $svgcontent);
-                
+
                 // Add class to identify panelist in path.
                 $svgcontent = preg_replace('/<path/', '<path class="' . $uniqid . '"', $svgcontent);
-                if(isset($qtdata['answer' . $i])) {
+                if (isset($qtdata['answer' . $i])) {
                     $combineddrawings[$slot][$i]['answer'] .= $svgcontent;
                 }
                 $panelistname = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
                 $uniqid = md5($panelist->get('firstname') . $panelist->get('lastname') . $panelist->get('id'));
-                $combineddrawings[$slot][$i]['othervalues'][] = 
+                $combineddrawings[$slot][$i]['othervalues'][] =
                     [
                         'panelist' => $panelistname,
                         'id' => $uniqid,
                         'imagefeedback' => isset($qtdata['imagefeedback' . $i]) ? $qtdata['imagefeedback' . $i] : '',
                     ];
+                $i++;
             }
             return $combineddrawings;
         }
