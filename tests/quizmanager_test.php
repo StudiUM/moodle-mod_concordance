@@ -232,7 +232,7 @@ class quizmanager_test extends \advanced_testcase {
         $questgen = $dg->get_plugin_generator('core_question');
         $quizcat = $questgen->create_question_category(['contextid' => \context_course::instance($this->course->id)->id]);
         $question1 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
-        $questgen->update_question($question1);
+        $question1 = $questgen->update_question($question1);
         $question2 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
         quiz_add_quiz_question($question1->id, $quiz1);
         quiz_add_quiz_question($question2->id, $quiz1);
