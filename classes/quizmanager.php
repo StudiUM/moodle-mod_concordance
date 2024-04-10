@@ -652,10 +652,10 @@ class quizmanager {
             $qtchoiceorder = $qtdata['answer'];
 
             if (!isset($combinedanswers[$slot])) {
-                $combinedanswers[$slot] = array();
+                $combinedanswers[$slot] = [];
             }
             if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
-                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+                $combinedanswers[$slot][$qtchoiceorder] = ['nbexperts' => 0, 'feedback' => ''];
             }
 
             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
@@ -691,10 +691,10 @@ class quizmanager {
             $qtchoiceorder = $qtdata['answermultiplechoice'];
 
             if (!isset($combinedanswers[$slot])) {
-                $combinedanswers[$slot] = array();
+                $combinedanswers[$slot] = [];
             }
             if (!isset($combinedanswers[$slot][$qtchoiceorder])) {
-                $combinedanswers[$slot][$qtchoiceorder] = array('nbexperts' => 0, 'feedback' => '');
+                $combinedanswers[$slot][$qtchoiceorder] = ['nbexperts' => 0, 'feedback' => ''];
             }
 
             $combinedanswers[$slot][$qtchoiceorder]['nbexperts']++;
