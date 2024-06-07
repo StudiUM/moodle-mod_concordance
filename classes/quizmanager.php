@@ -123,7 +123,7 @@ class quizmanager {
             $quiz->preferredbehaviour = 'deferredfeedback';
             foreach (review_setting::fields() as $field => $name) {
                 if ($field == 'attempt') {
-                    $quiz->{'review' . $field} = \mod_quiz_admin_review_setting::all_on();
+                    $quiz->{'review' . $field} = review_setting::all_on();
                 } else {
                     $quiz->{'review' . $field} = 0;
                 }
@@ -239,8 +239,8 @@ class quizmanager {
             } else {
                 // Show immediate feedback during the attempt.
                 $quiz->preferredbehaviour = 'immediatefeedback';
-                foreach (\mod_quiz_admin_review_setting::fields() as $field => $name) {
-                    $default = \mod_quiz_admin_review_setting::all_on();
+                foreach (review_setting::fields() as $field => $name) {
+                    $default = review_setting::all_on();
                     $quiz->{'review' . $field} = $default;
                 }
             }
@@ -782,6 +782,8 @@ class quizmanager {
 
                 // Add class to identify panelist in path.
                 $svgcontent = preg_replace('/<path/', '<path class="' . $uniqid . '"', $svgcontent);
+                // Add class to identify panelist in ellipse.
+                $svgcontent = preg_replace('/<ellipse/', '<ellipse class="' . $uniqid . '"', $svgcontent);
                 if (isset($qtdata['answer' . $i])) {
                     $combineddrawings[$slot][$i]['answer'] .= $svgcontent;
                 }
