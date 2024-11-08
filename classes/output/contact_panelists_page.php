@@ -30,6 +30,7 @@ use templatable;
 use renderer_base;
 use stdClass;
 use mod_quiz\quiz_attempt;
+use mod_concordance\quiz_manager;
 
 /**
  * Class containing data for contactpanelists page
@@ -76,7 +77,8 @@ class contact_panelists_page implements renderable, templatable {
         ];
         $data->panelists = [];
         $data->haspanelists = (count($this->panelists) > 0) ? true : false;
-        $usersattemptedquiz = \mod_concordance\quizmanager::getusersattemptedquiz($this->concordance);
+        $quizmanager = new quiz_manager($this->concordance);
+        $usersattemptedquiz = $quizmanager->get_users_attempted_quiz();
         foreach ($this->panelists as $panelist) {
             $exporter = new \mod_concordance\external\panelist_exporter($panelist, $relateds);
             $exporteddata = $exporter->export($output);

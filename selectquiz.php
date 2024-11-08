@@ -22,7 +22,7 @@
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+define('NO_OUTPUT_BUFFERING', true);
 require_once(__DIR__ . '/../../config.php');
 
 $cmid = required_param('cmid', PARAM_INT);  // Course module.
@@ -77,7 +77,8 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
             } else {
                 $concordancepersistent->set('cmorigin', null);
             }
-            \mod_concordance\quizmanager::duplicatequizforpanelists($concordancepersistent);
+            $quizmanager = new \mod_concordance\quiz_manager($concordancepersistent);
+            $quizmanager->duplicate_quiz_for_panelists();
             $concordancepersistent->update();
         }
         $notification = $OUTPUT->notification(get_string('shouldnotmodifyquiz', 'mod_concordance'),

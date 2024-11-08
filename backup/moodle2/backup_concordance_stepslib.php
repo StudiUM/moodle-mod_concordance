@@ -34,8 +34,6 @@ class backup_concordance_activity_structure_step extends backup_activity_structu
             'name', 'course', 'timemodified', 'descriptionpanelist', 'descriptionpanelistformat', 'descriptionstudent',
             'descriptionstudentformat', 'activephase']);
 
-        // TODO EVOSTDM-2175 : traiter 'cmorigin' et 'cmgenerated'.
-
         $panelists = new backup_nested_element('panelists');
 
         $panelist = new backup_nested_element('panelist', ['id'], [

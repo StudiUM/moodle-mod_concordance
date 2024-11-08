@@ -135,3 +135,4 @@ $string['task_contactpanelists'] = 'Contact panelists';
 $string['task_generatequiz'] = 'Generate the quiz for students';
 $string['unfilledfield'] = 'The field \'{$a}\' is not filled';
 $string['nosystemrole'] = 'No system role.';
+$string['progress_bar_message'] = 'Generate the quiz';

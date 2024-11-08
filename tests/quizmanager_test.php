@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Unit tests for mod_concordance quizmanager.
- *
- * @package    mod_concordance
- * @copyright  2020 Université de Montréal
- * @author     Marie-Eve Lévesque <marie-eve.levesque.8@umontreal.ca>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_concordance;
 
 defined('MOODLE_INTERNAL') || die();
@@ -34,9 +25,10 @@ require_once($CFG->dirroot . '/mod/quiz/lib.php');
 use question_engine;
 use mod_quiz\quiz_settings;
 use mod_quiz\quiz_attempt;
+use mod_concordance\quiz_manager;
 
 /**
- * Unit tests for mod_concordance quizmanager
+ * Unit tests for mod_concordance quiz_manager
  *
  * @package    mod_concordance
  * @copyright  2020 Université de Montréal
@@ -72,8 +64,11 @@ class quizmanager_test extends \advanced_testcase {
         $this->setUser($teacher);
 
         // Create the concordance activity.
-        $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $this->course->id,
-            'descriptionpanelist' => '', 'descriptionstudent' => '']);
+        $concordance = $this->getDataGenerator()->create_module('concordance', [
+            'course' => $this->course->id,
+            'descriptionpanelist' => '',
+            'descriptionstudent' => '',
+        ]);
         $concordancem = get_coursemodule_from_instance('concordance', $concordance->id, $this->course->id, true, MUST_EXIST);
         $context = \context_module::instance($concordancem->id);
         $filerecord1 = [
@@ -103,13 +98,14 @@ class quizmanager_test extends \advanced_testcase {
     }
 
     /**
-     * Test duplicatequizforpanelists.
+     * Test duplicate_quiz_for_panelists.
      * @return void
      */
-    public function test_duplicatequizforpanelists() {
+    public function test_duplicate_quiz_for_panelists() {
         global $DB;
         // Duplicate the quiz, when there are no quiz yet.
-        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $quizmanager = new quiz_manager($this->concordancepersistent);
+        $quizmanager->duplicate_quiz_for_panelists(false);
         $this->assertNull($this->concordancepersistent->get('cmgenerated'));
 
         // Add 2 quizzes to the course.
@@ -119,7 +115,7 @@ class quizmanager_test extends \advanced_testcase {
 
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
-        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $quizmanager->duplicate_quiz_for_panelists(false);
         // Check the original course and quiz.
         $cm = get_coursemodule_from_id('', $this->concordancepersistent->get('cmorigin'), 0, true, MUST_EXIST);
         $quiz1record = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -151,7 +147,7 @@ class quizmanager_test extends \advanced_testcase {
 
         // Change the quiz of the Concordance activity.
         $this->concordancepersistent->set('cmorigin', $quiz2->cmid);
-        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $quizmanager->duplicate_quiz_for_panelists(false);
         // Check the original course and quiz.
         $courseinfo = get_fast_modinfo($this->course);
         $this->assertCount(2, $courseinfo->instances['quiz']);
@@ -182,8 +178,10 @@ class quizmanager_test extends \advanced_testcase {
         // Add an enrolment instance to course.
         $self = enrol_get_plugin('self');
         $studentrole = $DB->get_record('role', ['shortname' => 'student']);
-        $self->add_instance($this->course,
-            ['status' => ENROL_INSTANCE_ENABLED, 'name' => 'Self', 'customint6' => 1, 'roleid' => $studentrole->id]);
+        $self->add_instance(
+            $this->course,
+            ['status' => ENROL_INSTANCE_ENABLED, 'name' => 'Self', 'customint6' => 1, 'roleid' => $studentrole->id]
+        );
         // Check that course has this instance.
         $enrolinstances = enrol_get_instances($this->course->id, true);
         $hasmanualinstance = false;
@@ -203,7 +201,8 @@ class quizmanager_test extends \advanced_testcase {
         $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'A quiz', 'visible' => false]);
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
-        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $quizmanager = new quiz_manager($this->concordancepersistent);
+        $quizmanager->duplicate_quiz_for_panelists(false);
         $courseinfo = get_fast_modinfo($this->concordancepersistent->get('coursegenerated'));
         // Get enrolment instances.
         $enrolinstances = enrol_get_instances($courseinfo->courseid, true);
@@ -212,15 +211,16 @@ class quizmanager_test extends \advanced_testcase {
     }
 
     /**
-     * Test duplicatequizforstudents.
+     * Test duplicate_quiz_for_students.
      * @return void
      */
-    public function test_duplicatequizforstudents() {
+    public function test_duplicate_quiz_for_students() {
         global $DB;
 
         // Duplicate the quiz for students, when there are no panelist quiz yet.
         $formdata = new \stdClass();
-        $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
+        $quizmanager = new quiz_manager($this->concordancepersistent);
+        $cmid = $quizmanager->duplicate_quiz_for_students($formdata);
         $this->assertNull($cmid);
         $dg = $this->getDataGenerator();
 
@@ -242,11 +242,15 @@ class quizmanager_test extends \advanced_testcase {
 
         // Select a quiz for the Concordance activity and duplicate it for panelists.
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
-        quizmanager::duplicatequizforpanelists($this->concordancepersistent, false);
+        $quizmanager->duplicate_quiz_for_panelists(false);
         $cmpanelist = get_coursemodule_from_id('', $this->concordancepersistent->get('cmgenerated'), 0, true, MUST_EXIST);
         $quizpanelist = $DB->get_record('quiz', ['id' => $cmpanelist->instance], '*', MUST_EXIST);
-        $coursepanelist = $DB->get_record('course',
-                ['id' => $this->concordancepersistent->get('coursegenerated')], '*', MUST_EXIST);
+        $coursepanelist = $DB->get_record(
+            'course',
+            ['id' => $this->concordancepersistent->get('coursegenerated')],
+            '*',
+            MUST_EXIST
+        );
         $quizobj = new quiz_settings($quizpanelist, $cmpanelist, $coursepanelist);
         $quizobj->preload_questions();
         $quizobj->load_questions();
@@ -257,8 +261,8 @@ class quizmanager_test extends \advanced_testcase {
 
         // Duplicate quiz for students and 2 questions - summative quiz.
         $formdata->questionstoinclude = ["$slot1" => 1, "$slot2" => 1];
-        $formdata->quiztype = quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK;
-        $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
+        $formdata->quiztype = quiz_manager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK;
+        $cmid = $quizmanager->duplicate_quiz_for_students($formdata);
         $this->assertNotNull($cmid);
 
         $courseinfo = get_fast_modinfo($this->course);
@@ -298,8 +302,8 @@ class quizmanager_test extends \advanced_testcase {
         $this->assertCount(2, $questions);
         $slot1 = $questions[0]->slot;
         $formdata->questionstoinclude = ["$slot1" => 1];
-        $formdata->quiztype = quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE;
-        $cmid = quizmanager::duplicatequizforstudents($this->concordancepersistent, $formdata);
+        $formdata->quiztype = quiz_manager::CONCORDANCE_QUIZTYPE_FORMATIVE;
+        $cmid = $quizmanager->duplicate_quiz_for_students($formdata);
         $this->assertNotNull($cmid);
         $courseinfo = get_fast_modinfo($this->course);
         $cm = get_coursemodule_from_id('quiz', $cmid);
@@ -321,10 +325,10 @@ class quizmanager_test extends \advanced_testcase {
     }
 
     /**
-     * Test getusersattemptedquiz.
+     * Test get_users_attempted_quiz.
      * @return void
      */
-    public function test_getusersattemptedquiz() {
+    public function test_get_users_attempted_quiz() {
         global $DB;
         $this->resetAfterTest();
 
@@ -401,7 +405,8 @@ class quizmanager_test extends \advanced_testcase {
         $concordance->set('coursegenerated', $course->id);
         $cm = get_coursemodule_from_instance('quiz', $quiz1->id, $course->id, false, MUST_EXIST);
         $concordance->set('cmgenerated', $cm->id);
-        $users = quizmanager::getusersattemptedquiz($concordance);
+        $quizmanager = new quiz_manager($concordance);
+        $users = $quizmanager->get_users_attempted_quiz();
         // User5 did not start quiz.
         $this->assertCount(4, $users);
 

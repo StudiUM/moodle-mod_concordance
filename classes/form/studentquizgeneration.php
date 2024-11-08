@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
-use mod_concordance\quizmanager;
+use mod_concordance\quiz_manager;
 use mod_quiz\quiz_attempt;
 
 /**
@@ -69,10 +69,10 @@ class studentquizgeneration extends \moodleform {
 
         // Type.
         $types = [];
-        $types[quizmanager::CONCORDANCE_QUIZTYPE_FORMATIVE] = get_string('quiztypeformative', 'mod_concordance');
-        $types[quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK] =
+        $types[quiz_manager::CONCORDANCE_QUIZTYPE_FORMATIVE] = get_string('quiztypeformative', 'mod_concordance');
+        $types[quiz_manager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK] =
             get_string('quiztypesummativewithfeedback', 'mod_concordance');
-        $types[quizmanager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK] =
+        $types[quiz_manager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK] =
             get_string('quiztypesummativewithoutfeedback', 'mod_concordance');
         $mform->addElement('select', 'quiztype', get_string('quiztype', 'mod_concordance'), $types);
         $mform->setType('quiztype', PARAM_INT);

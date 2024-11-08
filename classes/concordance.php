@@ -362,4 +362,14 @@ class concordance extends persistent {
             $DB->execute($updatesql, ['cmid' => $cmid]);
         }
     }
+
+    /**
+     * Check if the key provided is null
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function is_not_null(string $key): bool {
+        return !is_null($this->get($key));
+    }
 }

@@ -22,7 +22,7 @@
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+define('NO_OUTPUT_BUFFERING', true);
 require_once(__DIR__ . '/../../config.php');
 
 $cmid = required_param('cmid', PARAM_INT);  // Course module.
@@ -58,15 +58,16 @@ if (count($panelists) == 0) {
 } else if (!$cm = get_coursemodule_from_id('quiz', $cmgenerated, $coursegenerated)) {
     echo $OUTPUT->notification(get_string('panelistsquiznotfound', 'mod_concordance'));
 } else {
-    $attempts = \mod_concordance\quizmanager::getusersattemptedquiz($concordancepersistent);
-    $structure = \mod_concordance\quizmanager::getquizstructure($concordancepersistent);
+    $quizmanager = new \mod_concordance\quiz_manager($concordancepersistent);
+    $attempts = $quizmanager->get_users_attempted_quiz();
+    $structure = $quizmanager->get_quiz_structure();
     $form = new \mod_concordance\form\studentquizgeneration($url->out(false),
             ['panelists' => $panelists, 'context' => $context, 'attempts' => $attempts, 'structure' => $structure],
             'post', '', ['id' => 'generatestudentquizform']);
 
     $data = $form->get_submitted_data();
     if ($data) {
-        $cmgenerated = \mod_concordance\quizmanager::duplicatequizforstudents($concordancepersistent, $data);
+        $cmgenerated = $quizmanager->duplicate_quiz_for_students($data);
         if ($cmgenerated) {
             $message = get_string('studentquizgenerated', 'mod_concordance');
             $newcmurl = new moodle_url("/mod/quiz/view.php", ['id' => $cmgenerated]);

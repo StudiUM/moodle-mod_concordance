@@ -22,6 +22,7 @@
  * @author     Marie-Eve Levesque <marie-eve.levesque.8@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_concordance\privacy;
 
 use core_privacy\local\metadata\collection;
@@ -43,7 +44,7 @@ class provider implements
      * @param  collection $collection An object for storing metadata.
      * @return collection The metadata.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
         $collection->add_database_table('concordance_panelist', [
             'userid' => 'privacy:metadata:panelist:userid',
             'firstname' => 'privacy:metadata:panelist:firstname',
@@ -62,7 +63,7 @@ class provider implements
      *
      * @return  string
      */
-    public static function get_reason() : string {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

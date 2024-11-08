@@ -37,11 +37,17 @@ use moodle_exception;
 use backup_controller;
 use restore_controller;
 use backup;
+use cm_info;
 use context_module;
 use context_course;
 use mod_quiz\quiz_settings;
 use mod_quiz\quiz_attempt;
 use mod_quiz\admin\review_setting;
+use question_definition;
+use mod_quiz\structure;
+use progress_bar;
+
+require_once($CFG->dirroot . '/question/format/xml/format.php');
 
 /**
  * Class for quiz management.
@@ -50,7 +56,7 @@ use mod_quiz\admin\review_setting;
  * @author     Marie-Eve Lévesque <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class quizmanager {
+class quiz_manager {
     /**
      * Value for formative quiz types.
      *
@@ -73,37 +79,56 @@ class quizmanager {
     const CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK = 3;
 
     /**
+     * Form data provided when duplicating a quiz for the students
+     *
+     * @var stdClass
+     */
+    private ?stdClass $formdata = null;
+
+    /**
+     * Progress bar
+     *
+     * @var progress_bar
+     */
+    private $progressbar;
+
+    /**
+     * Constructor
+     *
+     * @param concordance $concordance Concordance object
+     */
+    public function __construct(
+        /** @var concordance */
+        protected concordance $concordance
+    ) {
+    }
+
+    /**
      * Duplicate the origin quiz so it can be used by the panelists.
      *
-     * @param concordance $concordance Concordance persistence object.
-     * @param boolean $async True to delete the old quiz async, false otherwise (usually false only for test purpose).
+     * @param concordance $this->concordance Concordance persistence object.
+     * @param bool $async True to delete the old quiz async, false otherwise (usually false only for test purpose).
      * @return obj The new quiz object from the DB.
      */
-    public static function duplicatequizforpanelists($concordance, $async = true) {
+    public function duplicate_quiz_for_panelists($async = true) {
         global $DB;
+
         // If a quiz for panelists was already generated, delete it.
-        if (!is_null($concordance->get('cmgenerated'))) {
-            course_delete_module($concordance->get('cmgenerated'), $async);
-            $concordance->set('cmgenerated', null);
+        if ($this->concordance->is_not_null('cmgenerated')) {
+            course_delete_module($this->concordance->get('cmgenerated'), $async);
+            $this->concordance->set('cmgenerated', null);
         }
 
         // If an origin quiz was selected, duplicate it in the panelists' course, make it visible and save it as 'cmgenerated'.
-        if (!is_null($concordance->get('cmorigin'))) {
-            $cm = get_coursemodule_from_id('', $concordance->get('cmorigin'), 0, true, MUST_EXIST);
-            $coursegeneratedid = $concordance->get('coursegenerated');
-            $course = $DB->get_record('course', ['id' => $coursegeneratedid], '*', MUST_EXIST);
+        if ($this->concordance->is_not_null('cmorigin')) {
+            $this->update_progress_bar(10);
+            $cm = get_coursemodule_from_id('', $this->concordance->get('cmorigin'), 0, true, MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $this->concordance->get('coursegenerated')], '*', MUST_EXIST);
+            $context = \context_module::instance($this->get_concordance_module()->id);
 
-            $concordancem = get_coursemodule_from_instance(
-                'concordance',
-                $concordance->get('id'),
-                $concordance->get('course'),
-                true,
-                MUST_EXIST
-            );
-            $context = \context_module::instance($concordancem->id);
-            $newcm = self::duplicate_module($course, $cm);
+            $newcm = $this->duplicate_module_for_panelists($course, $cm);
             set_coursemodule_visible($newcm->id, 1);
-            $concordance->set('cmgenerated', $newcm->id);
+            $this->concordance->set('cmgenerated', $newcm->id);
 
             // Remove the selected quiz from the gradebook.
             $originquiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -113,7 +138,6 @@ class quizmanager {
             $quizcalculator->update_quiz_maximum_grade(0);
             $quizcalculator->recompute_all_final_grades();
             quiz_update_grades($originquiz, 0, true);
-
             // Change some params in the quiz.
             $quiz = $DB->get_record('quiz', ['id' => $newcm->instance], '*', MUST_EXIST);
             $quiz->browsersecurity = 'securewindow';
@@ -128,19 +152,20 @@ class quizmanager {
                     $quiz->{'review' . $field} = 0;
                 }
             }
-
             // Move files if exists.
             $newcontext = \context_module::instance($newcm->id);
             $newfilerecord = ['contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0];
             $fs = get_file_storage();
             if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'descriptionpanelist', 0)) {
                 foreach ($files as $file) {
-                    $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                    $fs->create_file_from_storedfile($newfilerecord, $file);
                 }
             }
-            $quiz->intro = is_null($concordance->get('descriptionpanelist')) ? '' : $concordance->get('descriptionpanelist');
+            $quiz->intro = $this->concordance->is_not_null('descriptionpanelist')
+                ? $this->concordance->get('descriptionpanelist')
+                : '';
             $DB->update_record('quiz', $quiz);
-
+            $this->update_progress_bar(100);
             return $quiz;
         }
     }
@@ -148,84 +173,45 @@ class quizmanager {
     /**
      * Duplicate the panelist quiz so it can be used by the students.
      *
-     * @param concordance $concordance Concordance persistence object.
+     * @param concordance $this->concordance Concordance persistence object.
      * @param object $formdata The data submitted by the form.
      * @return int the new cm id generated
      */
-    public static function duplicatequizforstudents($concordance, $formdata) {
-        global $DB, $USER;
-        $hasquestions = isset($formdata->questionstoinclude) && !empty($formdata->questionstoinclude);
+    public function duplicate_quiz_for_students(object $formdata) {
+        global $DB;
+        $this->set_form_data($formdata);
         // Duplicate the panelist quiz in the students course and make it hidden.
-        if (!is_null($concordance->get('cmgenerated')) && $hasquestions) {
-            $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
-            $course = $DB->get_record('course', ['id' => $concordance->get('course')], '*', MUST_EXIST);
+        if ($this->concordance->is_not_null('cmgenerated') && $this->form_has_questions()) {
+            $this->update_progress_bar(25);
+            $cm = get_coursemodule_from_id('', $this->concordance->get('cmgenerated'), 0, true, MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $this->concordance->get('course')], '*', MUST_EXIST);
+            $concordancem = $this->get_concordance_module();
+            $context = context_module::instance($concordancem->id);
 
-            $concordancem = get_coursemodule_from_instance(
-                'concordance',
-                $concordance->get('id'),
-                $concordance->get('course'),
-                true,
-                MUST_EXIST
-            );
-            $context = \context_module::instance($concordancem->id);
-
-            $issummative = false;
-            if (
-                isset($formdata->quiztype) &&
-                ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK
-                    || $formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK)
-            ) {
-                $issummative = true;
-            }
-
-            // Before duplicate, update stamp and version fields for questions.
-            $quizpanelist = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
-            $coursepanelist = $DB->get_record('course', ['id' => $concordance->get('coursegenerated')], '*', MUST_EXIST);
-            self::updatestampandversionquestions($quizpanelist, $cm, $coursepanelist);
-            // Duplicate quiz in temp course.
-            $data = new \stdClass();
-            $data->id = $concordance->get('id');
-            $data->course = $course->id;
-            $coursetemp = generate_course_for_panelists($data);
-            $ocoursetemp = $DB->get_record('course', ['id' => $coursetemp], '*', MUST_EXIST);
-            // Get user enrolled in both courses.
-            $enrolplugin = enrol_get_plugin('manual');
-            $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher'], MUST_EXIST);
-            foreach ([$coursetemp, $concordance->get('coursegenerated')] as $cid) {
-                $contextcoursecap = context_course::instance($cid);
-                $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
-                $instances = $DB->get_records('enrol',
-                        ['courseid' => $cid, 'enrol' => 'manual']);
-                $enrolinstance = reset($instances);
-                $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
-            }
-            $cmtmp = self::duplicate_module($ocoursetemp, $cm);
-
-            // Duplicate final.
-            $newcm = self::duplicate_module($course, $cmtmp, $concordance->get('coursegenerated'), $ocoursetemp->id);
-            set_coursemodule_visible($newcm->id, 0);
+            $newcm = $this->duplicate_module_for_students($course);
+            $this->update_progress_bar(50);
 
             $quiz = $DB->get_record('quiz', ['id' => $newcm->instance], '*', MUST_EXIST);
             // Move files if exists.
-            $newcontext = \context_module::instance($newcm->id);
+            $newcontext = context_module::instance($newcm->id);
             $newfilerecord = ['contextid' => $newcontext->id, 'component' => 'mod_quiz', 'filearea' => 'intro', 'itemid' => 0];
             $fs = get_file_storage();
             // Delete any file related to intro filearea.
             $fs->delete_area_files($newcontext->id, 'mod_quiz', 'intro');
             if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'descriptionstudent', 0)) {
                 foreach ($files as $file) {
-                    $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                    $fs->create_file_from_storedfile($newfilerecord, $file);
                 }
             }
-            $quiz->intro = $concordance->get('descriptionstudent');
+            $quiz->intro = $this->concordance->get('descriptionstudent');
             $quiz->browsersecurity = '-';
 
             // Feedback options, depending on the type of quiz.
-            if ($issummative) {
+            if ($this->is_summative()) {
                 // Show deferred feedback.
                 $quiz->preferredbehaviour = 'deferredfeedback';
                 foreach (review_setting::fields() as $field => $name) {
-                    if ($formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK) {
+                    if ($this->formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK) {
                         // Not during the attempt, but all other options ON.
                         $default = review_setting::IMMEDIATELY_AFTER
                             | review_setting::LATER_WHILE_OPEN
@@ -244,13 +230,11 @@ class quizmanager {
                     $quiz->{'review' . $field} = $default;
                 }
             }
+
             // Include bibliographies in introduction.
-            if (!empty($formdata->includebibliography) && !empty($formdata->paneliststoinclude)) {
+            if ($this->include_biography()) {
                 $biographies = '';
-                $panelists = array_filter($formdata->paneliststoinclude, function ($v, $k) {
-                    return $v == 1;
-                }, ARRAY_FILTER_USE_BOTH);
-                foreach (array_keys($panelists) as $id) {
+                foreach ($this->formdata->paneliststoinclude as $id) {
                     $panelist = panelist::get_record(['id' => $id]);
                     if ($panelist && $panelist->get('bibliography')) {
                         $biographies .= \html_writer::empty_tag('br');
@@ -258,7 +242,7 @@ class quizmanager {
                         $biographies .= $panelist->get('bibliography');;
                         if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'bibliography', $id)) {
                             foreach ($files as $file) {
-                                $draftfile = $fs->create_file_from_storedfile($newfilerecord, $file);
+                                $fs->create_file_from_storedfile($newfilerecord, $file);
                             }
                         }
                     }
@@ -268,10 +252,11 @@ class quizmanager {
                     $quiz->intro .= $bibhtml;
                 }
             }
+            $this->update_progress_bar(75);
 
             // Set quiz name.
-            if (isset($formdata->name) && !empty($formdata->name)) {
-                $quiz->name = $formdata->name;
+            if (isset($this->formdata->name) && !empty($this->formdata->name)) {
+                $quiz->name = $this->formdata->name;
             }
 
             $DB->update_record('quiz', $quiz);
@@ -281,7 +266,7 @@ class quizmanager {
             $quiz->instance = $quiz->id;
             $quizobj = new quiz_settings($quiz, $newcm, $course);
             $quizcalculator = $quizobj->get_grade_calculator();
-            if ($issummative) {
+            if ($this->is_summative()) {
                 $quizcalculator->update_quiz_maximum_grade($quizconfig->maximumgrade);
             } else {
                 $quizcalculator->update_quiz_maximum_grade(0);
@@ -289,63 +274,77 @@ class quizmanager {
             $quizcalculator->recompute_all_final_grades();
             quiz_update_grades($quiz, 0, true);
 
-            // Move the quiz to the right section.
-            $section = $DB->get_record('course_sections',
-                    ['course' => $concordance->get('course'), 'section' => $concordancem->sectionnum]);
-            moveto_module($newcm, $section);
-
-            // Remove the questions that were not selected.
-
-            $quizobj->preload_questions();
-            $quizobj->load_questions();
-            $questions = $quizobj->get_questions();
-            $structure = $quizobj->get_structure();
-            $removed = false;
-            $questionsids = [];
-            $questionsidstoremove = [];
-            foreach ($questions as $question) {
-                if (!key_exists($question->slot, $formdata->questionstoinclude)) {
-                    // Remove question.
-                    if (!$slot = $DB->get_record('quiz_slots', ['quizid' => $quiz->id, 'id' => $question->slotid])) {
-                        throw new moodle_exception('Bad slot ID '.$question->slotid);
-                    }
-                    $structure->remove_slot($slot->slot);
-                    $removed = true;
-                    $questionsidstoremove[] = $question->id;
-                } else {
-                    $questionsids[] = $question->id;
-                }
-            }
-
-            if ($removed) {
-                // Remove slot is not enough.
-                foreach ($questionsidstoremove as $id) {
-                    question_delete_question($id);
-                }
-                quiz_delete_previews($quiz);
-                $quizcalculator->recompute_quiz_sumgrades();
-            }
-
-            // Move the questions in a new category.
-            $coursecontext = context_course::instance($course->id);
-            $newcategory = new stdClass();
-            $newcategory->parent = question_get_default_category($coursecontext->id)->id;
-            $newcategory->contextid = $coursecontext->id;
-            $maxlen = strlen(get_string('questionscategoryname', 'mod_concordance', ''));
-            $quizname = shorten_text($quizobj->get_quiz_name(), 255 - $maxlen);
-            $newcategory->name = get_string('questionscategoryname', 'mod_concordance', $quizname);
-            $date = userdate(time(), get_string('strftimedatetime', 'langconfig'));
-            $newcategory->info = get_string('questionscategoryinfo', 'mod_concordance', $date);
-            $newcategory->sortorder = 999;
-            $newcategory->stamp = make_unique_id_code();
-            $newcategory->id = $DB->insert_record('question_categories', $newcategory);
-            question_move_questions_to_category($questionsids, $newcategory->id);
-
+            $this->move_under_the_concordance_module($newcm, $concordancem->sectionnum);
             // Compile the answers for panelists and questions included.
-            self::compileanswers($cm, $quizpanelist, $coursepanelist, $quizobj, $formdata);
+            $this->compile_answers($cm, $quizobj);
+            $this->update_progress_bar(100);
             return $newcm->id;
         }
         return null;
+    }
+
+    /**
+     * Move the new module under the concordance module.
+     *
+     * @param [type] $newcm
+     * @param [type] $sectionnum
+     * @return void
+     */
+    private function move_under_the_concordance_module($newcm, $sectionnum): void {
+        global $DB;
+        // Move the quiz to the right section.
+        $section = $DB->get_record(
+            'course_sections',
+            ['course' => $this->concordance->get('course'), 'section' => $sectionnum]
+        );
+        moveto_module($newcm, $section);
+    }
+
+    /**
+     * Generate the student quiz
+     * Duplicate the quiz from the original quiz
+     * Then duplicate the questions from the panelist quiz
+     *
+     * @param stdClass $course
+     * @return cm_info|null
+     */
+    private function duplicate_module_for_students($course): ?cm_info {
+        $originmodule = get_coursemodule_from_id('', $this->concordance->get('cmorigin'), 0, true, MUST_EXIST);
+        // Create the module for the student based on the original module!
+        $newcm = duplicate_module($course, $originmodule, null, false);
+        set_coursemodule_visible($newcm->id, 0);
+
+        $this->duplicate_questions_from_panelist_course(
+            $this->get_quiz_settings($course->id, $newcm->id),
+            $this->get_quiz_settings($this->concordance->get('coursegenerated'), $this->concordance->get('cmgenerated'))
+        );
+        return $newcm;
+    }
+
+    /**
+     * Verify if summative is requested based on the form provided
+     *
+     * @return bool
+     */
+    private function is_summative(): bool {
+        return isset($this->formdata->quiztype)
+            && ($this->formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHOUTFEEDBACK
+                || $this->formdata->quiztype == self::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK);
+    }
+
+    /**
+     * Get the concordance module
+     *
+     * @return stdClass
+     */
+    private function get_concordance_module(): stdClass {
+        return get_coursemodule_from_instance(
+            'concordance',
+            $this->concordance->get('id'),
+            $this->concordance->get('course'),
+            true,
+            MUST_EXIST
+        );
     }
 
     /**
@@ -355,8 +354,6 @@ class quizmanager {
      *
      * @param object $course course object.
      * @param object $cm course module object to be duplicated.
-     * @param int    $courseidavoidcap the course on which we want to avoid the capability check.
-     * @param int    $deletecoursesource the course id we want to delete before restore.
      *
      * @throws Exception
      * @throws coding_exception
@@ -365,24 +362,24 @@ class quizmanager {
      *
      * @return cm_info|null cminfo object if we sucessfully duplicated the mod and found the new cm.
      */
-    private static function duplicate_module($course, $cm, $courseidavoidcap = null, $deletecoursesource = false) {
+    private function duplicate_module_for_panelists($course, $cm) {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
         require_once($CFG->libdir . '/filelib.php');
 
         // Concordance modification : Temporarily enrol teacher in panelist course to avoid capability errors.
-        if (!$courseidavoidcap) {
-            $courseidavoidcap = $course->id;
-        }
+        $courseidavoidcap = $course->id;
         $enrolplugin = enrol_get_plugin('manual');
         $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher'], MUST_EXIST);
         $contextcoursecap = context_course::instance($courseidavoidcap);
         $cmcontext = context_module::instance($cm->id);
         $isenrolled = user_has_role_assignment($USER->id, $roleid, $contextcoursecap->id);
         if (!$isenrolled) {
-            $instances = $DB->get_records('enrol',
-                    ['courseid' => $courseidavoidcap, 'enrol' => 'manual']);
+            $instances = $DB->get_records(
+                'enrol',
+                ['courseid' => $courseidavoidcap, 'enrol' => 'manual']
+            );
             $enrolinstance = reset($instances);
             $enrolplugin->enrol_user($enrolinstance, $USER->id, $roleid, 0, 0, null, false);
         }
@@ -394,7 +391,7 @@ class quizmanager {
         if (!plugin_supports('mod', $cm->modname, FEATURE_BACKUP_MOODLE2)) {
             throw new moodle_exception('duplicatenosupport', 'error', '', $a);
         }
-
+        $this->update_progress_bar(20);
         // Backup the activity.
 
         $bc = new backup_controller(
@@ -412,11 +409,7 @@ class quizmanager {
         $bc->execute_plan();
 
         $bc->destroy();
-        // Delete source course before restore.
-        if ($deletecoursesource) {
-            delete_course($deletecoursesource, false);
-        }
-
+        $this->update_progress_bar(30);
         // Restore the backup immediately.
         $rc = new restore_controller(
             $backupid,
@@ -430,6 +423,7 @@ class quizmanager {
         // Make sure that the restore_general_groups setting is always enabled when duplicating an activity.
         $plan = $rc->get_plan();
         $groupsetting = $plan->get_setting('groups');
+        $this->update_progress_bar(40);
         if (empty($groupsetting->get_value())) {
             $groupsetting->set_value(true);
         }
@@ -442,8 +436,9 @@ class quizmanager {
                 }
             }
         }
-
+        $this->update_progress_bar(50);
         $rc->execute_plan();
+        $this->update_progress_bar(60);
 
         // Now a bit hacky part follows - we try to get the cmid of the newly
         // restored copy of the module.
@@ -459,11 +454,12 @@ class quizmanager {
         }
 
         $rc->destroy();
+        $this->update_progress_bar(70);
 
         if (empty($CFG->keeptempdirectoriesonbackup)) {
             fulldelete($backupbasepath);
         }
-
+        $this->update_progress_bar(80);
         // If we know the cmid of the new course module, let us move it
         // right below the original one. otherwise it will stay at the
         // end of the section.
@@ -490,6 +486,7 @@ class quizmanager {
         if (!$isenrolled) {
             $enrolplugin->unenrol_user($enrolinstance, $USER->id);
         }
+        $this->update_progress_bar(90);
 
         return isset($newcm) ? $newcm : null;
     }
@@ -498,14 +495,12 @@ class quizmanager {
      * Compile the answers from the panelists in the feedback for each choice of answer.
      *
      * @param stdClass $quizanswered The course module for the quiz answered by the panelists.
-     * @param stdClass $quizpanelist The quiz object from the DB (for the panelist).
-     * @param stdClass $coursepanelist The course object from the DB (for the panelist quiz).
-     * @param Quiz $newquiz The new quiz (for the students).
-     * @param object $formdata An object of data submitted by the 'Generate student quiz' form.
+     * @param quiz_settings $newquiz The new quiz (for the students).
      */
-    private static function compileanswers($quizanswered, $quizpanelist, $coursepanelist, $newquiz, $formdata) {
+    private function compile_answers($quizanswered, quiz_settings $newquiz) {
         global $DB;
-
+        $quizpanelist = $DB->get_record('quiz', ['id' => $quizanswered->instance], '*', MUST_EXIST);
+        $coursepanelist = $DB->get_record('course', ['id' => $quizanswered->course], '*', MUST_EXIST);
         $params = [];
         $params['quizid'] = $quizanswered->instance;
 
@@ -525,30 +520,24 @@ class quizmanager {
             // Consider this attempt only if it is the last one for this panelist and this panelist has to be included.
             if (
                 $attempt->userid != $previoususerid && !empty($panelist)
-                && isset($formdata->paneliststoinclude[$panelist->get('id')])
+                && in_array((int)$panelist->get('id'), $this->formdata->paneliststoinclude)
             ) {
                 $previoususerid = $attempt->userid;
                 $quizattempt = new quiz_attempt($attempt, $quizpanelist, $quizanswered, $coursepanelist);
                 $slots = $quizattempt->get_slots();
                 foreach ($slots as $slot) {
-                    if (!key_exists($slot, $formdata->questionstoinclude)) {
+                    if (!$this->question_should_be_included($slot)) {
                         continue;
                     }
                     $questionattempt = $quizattempt->get_question_attempt($slot);
                     $question = $questionattempt->get_question(false);
-                    $istcsquestion = $question instanceof \qtype_tcs_question;
-                    $isperceptionquestion = $question instanceof \qtype_tcsperception_question;
-                    if ($istcsquestion || $isperceptionquestion) {
+                    if ($this->is_tcs_question($question)) {
                         $qtdata = $questionattempt->get_last_qt_data();
-
-                        if ($istcsquestion) {
-                            $answer = self::gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
-                        }
-                        if ($isperceptionquestion) {
-                            $answer = self::getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers);
+                        if ($this->is_tcs_perception_question($question)) {
+                            $answer = $this->get_perception_combined_answers($qtdata, $slot, $panelist, $combinedanswers);
                             // Get drawing panelist.
                             $files = $question->get_image_for_files();
-                            $drawings = self::getperceptioncombineddrawings($qtdata, $slot, $panelist, $drawings, $files);
+                            $drawings = $this->get_perception_combined_drawings($qtdata, $slot, $panelist, $drawings, $files);
                             // Get general feedbacks.
                             if (isset($qtdata['generalcomment'])) {
                                 if (!isset($combinedanswers[$slot])) {
@@ -566,6 +555,8 @@ class quizmanager {
                                 $generalfeedbacks[$slot]['generalcomment'] .= $qtdata['generalcomment'];
                                 $generalfeedbacks[$slot]['generalcomment'] .= '<hr>';
                             }
+                        } else {
+                            $answer = $this->get_tcs_combined_answers($qtdata, $slot, $panelist, $combinedanswers);
                         }
                         if (!empty($answer)) {
                             $combinedanswers = $answer;
@@ -576,17 +567,15 @@ class quizmanager {
         }
 
         // Save the combined feedbacks and number of experts in the new quiz questions.
-        $questions = $newquiz->get_questions();
+        $questions = $this->get_questions_from_quiz($newquiz);
         foreach ($questions as $question) {
             $q = \question_bank::make_question($question);
-            $istcsquestion = $q instanceof \qtype_tcs_question
-                || $q instanceof \qtype_tcsperception_question;
-            if (!key_exists($question->slot, $formdata->questionstoinclude) || !$istcsquestion) {
+            if (!$this->is_tcs_question($q)) {
                 continue;
             }
             if (isset($question->options->showoutsidefieldcompetence)) {
                 $tcstype = $question->qtype;
-                $tablequestionoption = 'qtype_' . $tcstype .'_options';
+                $tablequestionoption = 'qtype_' . $tcstype . '_options';
                 $qorecord = $DB->get_record($tablequestionoption, ['id' => $question->options->id], '*', MUST_EXIST);
                 $qorecord->showoutsidefieldcompetence = 0;
                 $DB->update_record($tablequestionoption, $qorecord);
@@ -608,21 +597,15 @@ class quizmanager {
                 // Important to notify that the question was edited or the changes will not be visible.
                 \question_bank::notify_question_edited($question->id);
             }
-            if ($q instanceof \qtype_tcsperception_question) {
-                foreach ($drawings[$question->slot] as $key => $drawing) {
+            if ($this->is_tcs_perception_question($q)) {
+                $slotmapped = $this->formdata->questionstoinclude[$question->slot];
+                foreach ($drawings[$slotmapped] as $key => $drawing) {
                     $drawingobject = new \stdClass;
                     $drawingobject->questionid = $question->id;
-                    // Here add width and height in svg.
-                    $fullsvg = '<svg xmlns="http://www.w3.org/2000/svg"
-                                                width="' . $drawing['width'] . '"
-                                                height="' . $drawing['height'] . '">
-                                                    <g id="paths">';
-                    $fullsvg .= $drawing['answer'];
-                    $fullsvg .= '</g> </svg>';
-                    $drawingobject->answer = $fullsvg;
+                    $drawingobject->answer = $this->build_full_svg($drawing);
                     $drawingobject->image = $key;
                     $drawingobject->othervalues = json_encode($drawing['othervalues']);
-                    $DB->insert_record('qtype_tcsperception_answers', $drawingobject);
+                    $this->insert_or_update_perception_answer($drawingobject);
                 }
                 // Update general feedback.
                 if (isset($generalfeedbacks[$question->slot]['generalcomment'])) {
@@ -635,6 +618,7 @@ class quizmanager {
             }
         }
     }
+
     /**
      * Get combined answers for tcs and tcsjudgment questions
      *
@@ -644,7 +628,7 @@ class quizmanager {
      * @param array $combinedanswers
      * @return array
      */
-    protected static function gettcscombinedanswers($qtdata, $slot, $panelist, $combinedanswers): array {
+    protected function get_tcs_combined_answers($qtdata, $slot, $panelist, $combinedanswers): array {
         if (!empty($qtdata['outsidefieldcompetence']) && intval($qtdata['outsidefieldcompetence']) === 1) {
             return [];
         }
@@ -686,7 +670,7 @@ class quizmanager {
      * @param array $combinedanswers
      * @return array
      */
-    protected static function getperceptioncombinedanswers($qtdata, $slot, $panelist, $combinedanswers): array {
+    protected function get_perception_combined_answers($qtdata, $slot, $panelist, $combinedanswers): array {
         if (isset($qtdata['answermultiplechoice'])) {
             $qtchoiceorder = $qtdata['answermultiplechoice'];
 
@@ -723,10 +707,16 @@ class quizmanager {
      * @param number $slot
      * @param object $panelist
      * @param array $combineddrawings
-     * @param number $files
+     * @param array $files
      * @return array
      */
-    protected static function getperceptioncombineddrawings($qtdata, $slot, $panelist, $combineddrawings, $files): array {
+    protected function get_perception_combined_drawings(
+        array $qtdata,
+        int $slot,
+        object $panelist,
+        array $combineddrawings,
+        array $files
+    ): array {
         $nbfiles = count($files);
 
         if ($nbfiles !== 0) {
@@ -766,13 +756,15 @@ class quizmanager {
                 $svgcontent = preg_replace('/<svg[^>]*>/', '', $svgcontent);
                 $svgcontent = str_replace('</svg>', '', $svgcontent);
                 $svgcontent = str_replace(
-                                            'id="paths"', 'id="' . $uniqid . '" class="panelistdrawing ' . $uniqid . '"',
-                                            $svgcontent
-                                        );
+                    'id="paths"',
+                    'id="' . $uniqid . '" class="panelistdrawing ' . $uniqid . '"',
+                    $svgcontent
+                );
                 $svgcontent = preg_replace(
-                                            '/<title class="grouptitle">([^<]+)<\/title>/',
-                                            '<title class="grouptitle">' . $panelistname . '</title>', $svgcontent
-                                        );
+                    '/<title class="grouptitle">([^<]+)<\/title>/',
+                    '<title class="grouptitle">' . $panelistname . '</title>',
+                    $svgcontent
+                );
 
                 // Add class to identify panelist in line.
                 $svgcontent = preg_replace('/<line/', '<line class="' . $uniqid . '"', $svgcontent);
@@ -805,15 +797,15 @@ class quizmanager {
     /**
      * Get users who have attempted the quiz.
      *
-     * @param concordance $concordance Concordance persistence object.
+     * @param concordance $this->concordance Concordance persistence object.
      * @return array Array of users id.
      */
-    public static function getusersattemptedquiz($concordance) {
+    public function get_users_attempted_quiz() {
         global $DB;
-        if (empty($concordance->get('cmgenerated'))) {
+        if (empty($this->concordance->get('cmgenerated'))) {
             return [];
         }
-        $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
+        $cm = get_coursemodule_from_id('', $this->concordance->get('cmgenerated'), 0, true, MUST_EXIST);
         $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
         $params['quizid'] = $quiz->id;
         $query = "SELECT t1.userid AS userid, t1.state as state
@@ -828,41 +820,193 @@ class quizmanager {
     /**
      * Get structure from panelist quiz.
      *
-     * @param concordance $concordance Concordance persistence object.
-     * @return \mod_quiz\structure Quiz structure.
+     * @param concordance $this->concordance Concordance persistence object.
+     * @return structure|array Quiz structure.
      */
-    public static function getquizstructure($concordance) {
-        global $DB;
-        if (empty($concordance->get('cmgenerated'))) {
+    public function get_quiz_structure(): structure|array {
+        if (empty($this->concordance->get('cmgenerated'))) {
             return [];
         }
-        $coursegeneratedid = $concordance->get('coursegenerated');
-        $course = $DB->get_record('course', ['id' => $coursegeneratedid], '*', MUST_EXIST);
-        $cm = get_coursemodule_from_id('', $concordance->get('cmgenerated'), 0, true, MUST_EXIST);
-        $quizobjet = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
-        $quiz = new quiz_settings($quizobjet, $cm, $course);
-        return $quiz->get_structure();
+        $quizsettings = $this->get_quiz_settings(
+            $this->concordance->get('coursegenerated'),
+            $this->concordance->get('cmgenerated')
+        );
+        return $quizsettings->get_structure();
     }
 
     /**
-     * Update version and stamp fields for quiz questions.
+     * Unlink the questions generated when the quiz module was duplicated
+     * Then duplicate the question from the panelist quiz.
      *
-     * @param stdClass $quizobjet Quiz
-     * @param stdClass $cm   Course module
-     * @param stdClass $course Course
+     * @param quiz_settings $newquiz
+     * @param quiz_settings $panelistquiz
+     * @return void
      */
-    private static function updatestampandversionquestions($quizobjet, $cm, $course) {
-        global $DB;
-        $quiz = new quiz_settings($quizobjet, $cm, $course);
-        $quiz->preload_questions();
-        $quiz->load_questions();
-        $questions = $quiz->get_questions();
-        foreach ($questions as $question) {
-            $q = $DB->get_record('question', ['id' => $question->id], '*', MUST_EXIST);
-            $q->stamp = make_unique_id_code();
-            $q->version = make_unique_id_code();
-            $q->timemodified = time();
-            $DB->update_record('question', $q);
+    private function duplicate_questions_from_panelist_course(
+        quiz_settings $newquiz,
+        quiz_settings $panelistquiz
+    ): void {
+        // Remove all the questions linked to this quiz!
+        $quizstrucure = $newquiz->get_structure();
+        while ($quizstrucure->has_questions()) {
+            $quizstrucure->remove_slot(1);
         }
+
+        $questionspanelistquiz = array_values(
+            array_filter(
+                $this->get_questions_from_quiz($panelistquiz),
+                fn($q) => $this->question_should_be_included($q->slot)
+            )
+        );
+        $questionhandler = new questions_import_export_handler($newquiz, $questionspanelistquiz);
+        $questionhandler->duplicate_questions_in_quiz();
+    }
+
+    /**
+     * Get quiz settings
+     *
+     * @param concordance $this->concordance Concordance persistence object.
+     * @return quiz_settings Quiz structure.
+     */
+    private function get_quiz_settings(int $courseid, int $moduleid): quiz_settings {
+        global $DB;
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_id('', $moduleid, 0, true, MUST_EXIST);
+        $quizobjet = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        return new quiz_settings($quizobjet, $cm, $course);
+    }
+
+    /**
+     * Get all the questions of a quiz
+     *
+     * @param quiz_settings $quiz
+     * @return array
+     */
+    private function get_questions_from_quiz(quiz_settings $quiz): array {
+        if ($quiz->has_questions()) {
+            $quiz->load_questions();
+            return $quiz->get_questions();
+        }
+        return [];
+    }
+
+    /**
+     * Check if it is a tcs or tcs perception question type
+     *
+     * @param question_definition $question
+     * @return bool
+     */
+    private function is_tcs_question(question_definition $question): bool {
+        return  $question instanceof \qtype_tcs_question
+            || $question instanceof \qtype_tcsperception_question;
+    }
+
+    /**
+     * Check if it is tcs perception question type
+     *
+     * @param question_definition $question
+     * @return bool
+     */
+    private function is_tcs_perception_question(question_definition $question): bool {
+        return $question instanceof \qtype_tcsperception_question;
+    }
+
+    /**
+     * Verify if a question should be included based on the data provided in the form
+     *
+     * @param int $slot
+     * @return bool
+     */
+    private function question_should_be_included(int $slot): bool {
+        return in_array((int)$slot, $this->formdata->questionstoinclude);
+    }
+
+    /**
+     * Form data setter
+     *
+     * @param stdClass $form
+     * @return void
+     */
+    private function set_form_data(stdClass $form): void {
+        // Create a an array based on the question to include with the new slot as key and with the slot of the panelist as value !
+        $form->questionstoinclude = isset($form->questionstoinclude)
+            ? array_combine(range(1, count($form->questionstoinclude)), array_keys($form->questionstoinclude)) : [];
+        $form->paneliststoinclude = isset($form->paneliststoinclude) ? array_keys($form->paneliststoinclude) : [];
+        $this->formdata = $form;
+    }
+
+    /**
+     * Verify if the form contains selected questions
+     *
+     * @return bool
+     */
+    private function form_has_questions(): bool {
+        return !empty($this->formdata->questionstoinclude);
+    }
+
+    /**
+     * Build a clean svg
+     *
+     * @param array $drawing
+     * @return string
+     */
+    private function build_full_svg(array $drawing): string {
+        $width = $drawing['width'];
+        $height = $drawing['height'];
+        $answer = $drawing['answer'];
+        return <<<XML
+        <svg xmlns="http://www.w3.org/2000/svg" width="$width" height="$height">
+            <g id="paths">$answer</g>
+        </svg>
+        XML;
+    }
+
+    /**
+     * Insert or update a perception answer based on the existing data
+     *
+     * @param stdClass $answer
+     * @return void
+     */
+    private static function insert_or_update_perception_answer(stdClass $answer): void {
+        global $DB;
+        $existinganswer = $DB->get_record(
+            'qtype_tcsperception_answers',
+            [
+                'questionid' => $answer->questionid,
+                'image' => $answer->image,
+            ]
+        );
+        $method = 'insert_record';
+        if ($existinganswer) {
+            $answer->id = $existinganswer->id;
+            $answer->timemodified = time();
+            $method = 'update_record';
+        }
+
+        $DB->{$method}('qtype_tcsperception_answers', $answer);
+    }
+
+    /**
+     * Check if it should include the biography
+     *
+     * @return bool
+     */
+    private function include_biography(): bool {
+        return !empty($this->formdata->includebibliography)
+            && !empty($this->formdata->paneliststoinclude);
+    }
+
+    /**
+     * Update the progress bar to inform the progression to the user
+     *
+     * @param int $percent
+     * @return void
+     */
+    private function update_progress_bar(int $percent): void {
+        if (!$this->progressbar) {
+            $this->progressbar = new progress_bar();
+            $this->progressbar->create();
+        }
+        $this->progressbar->update_full($percent, get_string('progress_bar_message', 'mod_concordance'));
     }
 }
