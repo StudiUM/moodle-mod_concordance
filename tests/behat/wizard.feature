@@ -16,7 +16,7 @@ Feature: Wizard
       | teacher1 | c1     | editingteacher |
     And I log in as "teacher1"
     And I am on "Course1" course homepage with editing mode on
-    And I add a "Quiz" to section "1" and I fill the form with:
+    And I add a quiz activity to course "Course1" section "1" and I fill the form with:
       | Name          | Test quiz             |
       | Description   | Test quiz description |
       | Availability  | Hide on course page   |
@@ -28,7 +28,7 @@ Feature: Wizard
   Scenario: Test the wizard phases and tasks status.
     # Create a basic concordance activity.
     Given I am on "Course1" course homepage
-    When I add a "Learning by concordance management" to section "1"
+    When I add a concordance activity to course "Course1" section "1"
     Then "//div[contains(text(), 'Hide on course page')]/preceding-sibling::div[1][contains(.,'Availability')]" "xpath_element" should be visible
     And I set the field "Name" to "TestConcordance"
     And I press "Save and display"
@@ -100,7 +100,7 @@ Feature: Wizard
   Scenario: Test the wizard navigation.
     # Create a basic concordance activity.
     Given I am on "Course1" course homepage
-    When I add a "Learning by concordance management" to section "1" and I fill the form with:
+    When I add a concordance activity to course "Course1" section "1" and I fill the form with:
       | Name                          | TestConcordance                   |
     And I am on the "TestConcordance" "concordance activity" page
     Then the concordance wizard active phase should be "Setup"

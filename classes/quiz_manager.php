@@ -106,9 +106,8 @@ class quiz_manager {
     /**
      * Duplicate the origin quiz so it can be used by the panelists.
      *
-     * @param concordance $this->concordance Concordance persistence object.
      * @param bool $async True to delete the old quiz async, false otherwise (usually false only for test purpose).
-     * @return obj The new quiz object from the DB.
+     * @return object $quiz The new quiz object from the DB.
      */
     public function duplicate_quiz_for_panelists($async = true) {
         global $DB;
@@ -121,7 +120,9 @@ class quiz_manager {
 
         // If an origin quiz was selected, duplicate it in the panelists' course, make it visible and save it as 'cmgenerated'.
         if ($this->concordance->is_not_null('cmorigin')) {
-            $this->update_progress_bar(10);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(10);
+            }
             $cm = get_coursemodule_from_id('', $this->concordance->get('cmorigin'), 0, true, MUST_EXIST);
             $course = $DB->get_record('course', ['id' => $this->concordance->get('coursegenerated')], '*', MUST_EXIST);
             $context = \context_module::instance($this->get_concordance_module()->id);
@@ -165,7 +166,9 @@ class quiz_manager {
                 ? $this->concordance->get('descriptionpanelist')
                 : '';
             $DB->update_record('quiz', $quiz);
-            $this->update_progress_bar(100);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(100);
+            }
             return $quiz;
         }
     }
@@ -173,7 +176,6 @@ class quiz_manager {
     /**
      * Duplicate the panelist quiz so it can be used by the students.
      *
-     * @param concordance $this->concordance Concordance persistence object.
      * @param object $formdata The data submitted by the form.
      * @return int the new cm id generated
      */
@@ -182,14 +184,18 @@ class quiz_manager {
         $this->set_form_data($formdata);
         // Duplicate the panelist quiz in the students course and make it hidden.
         if ($this->concordance->is_not_null('cmgenerated') && $this->form_has_questions()) {
-            $this->update_progress_bar(25);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(25);
+            }
             $cm = get_coursemodule_from_id('', $this->concordance->get('cmgenerated'), 0, true, MUST_EXIST);
             $course = $DB->get_record('course', ['id' => $this->concordance->get('course')], '*', MUST_EXIST);
             $concordancem = $this->get_concordance_module();
             $context = context_module::instance($concordancem->id);
 
             $newcm = $this->duplicate_module_for_students($course);
-            $this->update_progress_bar(50);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(50);
+            }
 
             $quiz = $DB->get_record('quiz', ['id' => $newcm->instance], '*', MUST_EXIST);
             // Move files if exists.
@@ -252,7 +258,9 @@ class quiz_manager {
                     $quiz->intro .= $bibhtml;
                 }
             }
-            $this->update_progress_bar(75);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(75);
+            }
 
             // Set quiz name.
             if (isset($this->formdata->name) && !empty($this->formdata->name)) {
@@ -277,7 +285,9 @@ class quiz_manager {
             $this->move_under_the_concordance_module($newcm, $concordancem->sectionnum);
             // Compile the answers for panelists and questions included.
             $this->compile_answers($cm, $quizobj);
-            $this->update_progress_bar(100);
+            if (!PHPUNIT_TEST) {
+                $this->update_progress_bar(100);
+            }
             return $newcm->id;
         }
         return null;
@@ -391,7 +401,9 @@ class quiz_manager {
         if (!plugin_supports('mod', $cm->modname, FEATURE_BACKUP_MOODLE2)) {
             throw new moodle_exception('duplicatenosupport', 'error', '', $a);
         }
-        $this->update_progress_bar(20);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(20);
+        }
         // Backup the activity.
 
         $bc = new backup_controller(
@@ -409,7 +421,9 @@ class quiz_manager {
         $bc->execute_plan();
 
         $bc->destroy();
-        $this->update_progress_bar(30);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(30);
+        }
         // Restore the backup immediately.
         $rc = new restore_controller(
             $backupid,
@@ -423,7 +437,9 @@ class quiz_manager {
         // Make sure that the restore_general_groups setting is always enabled when duplicating an activity.
         $plan = $rc->get_plan();
         $groupsetting = $plan->get_setting('groups');
-        $this->update_progress_bar(40);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(40);
+        }
         if (empty($groupsetting->get_value())) {
             $groupsetting->set_value(true);
         }
@@ -436,9 +452,13 @@ class quiz_manager {
                 }
             }
         }
-        $this->update_progress_bar(50);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(50);
+        }
         $rc->execute_plan();
-        $this->update_progress_bar(60);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(60);
+        }
 
         // Now a bit hacky part follows - we try to get the cmid of the newly
         // restored copy of the module.
@@ -454,12 +474,16 @@ class quiz_manager {
         }
 
         $rc->destroy();
-        $this->update_progress_bar(70);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(70);
+        }
 
         if (empty($CFG->keeptempdirectoriesonbackup)) {
             fulldelete($backupbasepath);
         }
-        $this->update_progress_bar(80);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(80);
+        }
         // If we know the cmid of the new course module, let us move it
         // right below the original one. otherwise it will stay at the
         // end of the section.
@@ -486,7 +510,9 @@ class quiz_manager {
         if (!$isenrolled) {
             $enrolplugin->unenrol_user($enrolinstance, $USER->id);
         }
-        $this->update_progress_bar(90);
+        if (!PHPUNIT_TEST) {
+            $this->update_progress_bar(90);
+        }
 
         return isset($newcm) ? $newcm : null;
     }
@@ -704,7 +730,7 @@ class quiz_manager {
      * Get combined drawings for tcs perception questions
      *
      * @param array $qtdata
-     * @param number $slot
+     * @param int $slot
      * @param object $panelist
      * @param array $combineddrawings
      * @param array $files
@@ -797,7 +823,6 @@ class quiz_manager {
     /**
      * Get users who have attempted the quiz.
      *
-     * @param concordance $this->concordance Concordance persistence object.
      * @return array Array of users id.
      */
     public function get_users_attempted_quiz() {
@@ -820,7 +845,6 @@ class quiz_manager {
     /**
      * Get structure from panelist quiz.
      *
-     * @param concordance $this->concordance Concordance persistence object.
      * @return structure|array Quiz structure.
      */
     public function get_quiz_structure(): structure|array {
@@ -865,7 +889,8 @@ class quiz_manager {
     /**
      * Get quiz settings
      *
-     * @param concordance $this->concordance Concordance persistence object.
+     * @param int $courseid The course id.
+     * @param int $moduleid The course module id.
      * @return quiz_settings Quiz structure.
      */
     private function get_quiz_settings(int $courseid, int $moduleid): quiz_settings {
@@ -897,8 +922,10 @@ class quiz_manager {
      * @return bool
      */
     private function is_tcs_question(question_definition $question): bool {
-        return  $question instanceof \qtype_tcs_question
-            || $question instanceof \qtype_tcsperception_question;
+        $qtcs = "qtype_tcs_question";
+        $qtcsperception = "qtype_tcsperception_question";
+        return  $question instanceof $qtcs
+            || $question instanceof $qtcsperception;
     }
 
     /**
@@ -908,7 +935,8 @@ class quiz_manager {
      * @return bool
      */
     private function is_tcs_perception_question(question_definition $question): bool {
-        return $question instanceof \qtype_tcsperception_question;
+        $qtcsperception = "qtype_tcsperception_question";
+        return $question instanceof $qtcsperception;
     }
 
     /**
@@ -1003,6 +1031,9 @@ class quiz_manager {
      * @return void
      */
     private function update_progress_bar(int $percent): void {
+        if (PHPUNIT_TEST) {
+            return;
+        }
         if (!$this->progressbar) {
             $this->progressbar = new progress_bar();
             $this->progressbar->create();

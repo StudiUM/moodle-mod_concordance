@@ -42,15 +42,15 @@ Feature: Panelist system role
     And I log in as "teacher1"
     And I am on "Course1" course homepage with editing mode on
     # Create a basic concordance activity.
-    And I add a "Learning by concordance management" to section "1" and I fill the form with:
+    And I add a concordance activity to course "Course1" section "1" and I fill the form with:
       | Name                          | TestConcordance                   |
       | Description for the panelists | The description for the panelists |
       | Description for the students  | The description for the students  |
     # Create a quiz with one concordance question.
-    And I add a "Quiz" to section "1" and I fill the form with:
+    And I add a quiz activity to course "Course1" section "1" and I fill the form with:
       | Name          | Test quiz name        |
       | Description   | Test quiz description |
-      | Availability  | Hide on course page    |
+      | Availability  | Hide on course page   |
     And I add a "Concordance of reasoning" question to the "Test quiz name" quiz with:
       | Question name                                                       | Q1                          |
       | Display the "This question is outside my field of competence" field | No                          |

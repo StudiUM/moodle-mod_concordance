@@ -21,6 +21,7 @@ use context_course;
 use qformat_xml;
 use moodle_exception;
 use core_question\local\bank\question_edit_contexts;
+use qbank_importquestions\form\question_import_form;
 use Exception;
 use mod_quiz\quiz_settings;
 use stdClass;
@@ -96,7 +97,6 @@ class questions_import_export_handler {
         $this->export_questions_as_xml_in_file();
 
         require_once($CFG->dirroot . '/question/editlib.php');
-        require_once($CFG->dirroot . '/question/import_form.php');
         require_once($CFG->dirroot . '/question/format.php');
         require_once($CFG->dirroot . '/lib/questionlib.php');
 

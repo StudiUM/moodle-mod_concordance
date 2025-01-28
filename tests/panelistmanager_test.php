@@ -35,12 +35,13 @@ namespace mod_concordance;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \mod_concordance\panlistmanager
  */
-class panelistmanager_test extends \advanced_testcase {
+final class panelistmanager_test extends \advanced_testcase {
 
     /**
      * Setup.
      */
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
     }
@@ -49,7 +50,7 @@ class panelistmanager_test extends \advanced_testcase {
      * Test panelistcreated/panelistdeleted.
      * @return void
      */
-    public function test_panelist_created_deleted() {
+    public function test_panelist_created_deleted(): void {
         global $DB, $PAGE, $CFG;
         // Test panelist created.
         // Create a course.
@@ -86,7 +87,7 @@ class panelistmanager_test extends \advanced_testcase {
      * @throws coding_exception
      * @throws dml_exception
      */
-    public function test_panelist_having_no_system_role() {
+    public function test_panelist_having_no_system_role(): void {
         set_config('panelistssystemrole', 0, 'mod_concordance');
         $course = $this->getDataGenerator()->create_course();
         $concordance = $this->getDataGenerator()->create_module('concordance', ['course' => $course->id]);
@@ -102,7 +103,7 @@ class panelistmanager_test extends \advanced_testcase {
      * @throws coding_exception
      * @throws dml_exception
      */
-    public function test_panelist_having_system_role() {
+    public function test_panelist_having_system_role(): void {
         global $DB;
         $role = $DB->get_record('role', ['shortname' => 'coursecreator']);
         set_config('panelistssystemrole', $role->id, 'mod_concordance');
@@ -121,7 +122,7 @@ class panelistmanager_test extends \advanced_testcase {
      * @param int $concordanceid
      * @return int panelistid
      */
-    private function createpanelist($concordanceid) {
+    private function createpanelist($concordanceid): int {
         global $DB;
         $panelist = new \stdClass();
         $panelist->concordance = $concordanceid;

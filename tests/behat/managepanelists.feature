@@ -17,10 +17,10 @@ Feature: Manage panelists page
     And I log in as "teacher1"
     And I am on "Course1" course homepage with editing mode on
     # Create a basic concordance activity.
-    And I add a "Learning by concordance management" to section "1" and I fill the form with:
-      | Name                          | Test Concordance for Manage Panelists   |
-      | Description for the panelists | The description for the panelists       |
-      | Description for the students  | The description for the students        |
+    And I add a concordance activity to course "Course1" section "1" and I fill the form with:
+      | Name                          | Test Concordance for Manage Panelists |
+      | Description for the panelists | The description for the panelists     |
+      | Description for the students  | The description for the students      |
 
   Scenario: Manage the panelists
     Given I am on the "Test Concordance for Manage Panelists" "concordance activity" page logged in as teacher1

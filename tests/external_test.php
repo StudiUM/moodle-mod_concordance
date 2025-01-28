@@ -41,14 +41,14 @@ use mod_concordance\external;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \mod_concordance\external
  */
-class external_test extends \externallib_advanced_testcase {
+final class external_test extends \externallib_advanced_testcase {
 
     /**
      * Test send message external.
      * @runInSeparateProcess
      * @runTestsInSeparateProcesses
      */
-    public function test_send_message() {
+    public function test_send_message(): void {
         $this->resetAfterTest(true);
         // Create a course.
         $course = $this->getDataGenerator()->create_course();

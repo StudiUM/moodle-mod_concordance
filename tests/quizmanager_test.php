@@ -36,7 +36,7 @@ use mod_concordance\quiz_manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \mod_concordance\quiz_manager;
  */
-class quizmanager_test extends \advanced_testcase {
+final class quizmanager_test extends \advanced_testcase {
 
     /** @var concordance Concordance persistent object. */
     protected $concordancepersistent = null;
@@ -95,13 +95,14 @@ class quizmanager_test extends \advanced_testcase {
         $concordance->descriptionstudentformat = FORMAT_HTML;
         $DB->update_record('concordance', $concordance);
         $this->concordancepersistent = new concordance($concordance->id);
+        parent::setUp();
     }
 
     /**
      * Test duplicate_quiz_for_panelists.
      * @return void
      */
-    public function test_duplicate_quiz_for_panelists() {
+    public function test_duplicate_quiz_for_panelists(): void {
         global $DB;
         // Duplicate the quiz, when there are no quiz yet.
         $quizmanager = new quiz_manager($this->concordancepersistent);
@@ -173,7 +174,7 @@ class quizmanager_test extends \advanced_testcase {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function test_panelist_course_enrolments() {
+    public function test_panelist_course_enrolments(): void {
         global $DB;
         // Add an enrolment instance to course.
         $self = enrol_get_plugin('self');
@@ -214,7 +215,7 @@ class quizmanager_test extends \advanced_testcase {
      * Test duplicate_quiz_for_students.
      * @return void
      */
-    public function test_duplicate_quiz_for_students() {
+    public function test_duplicate_quiz_for_students(): void {
         global $DB;
 
         // Duplicate the quiz for students, when there are no panelist quiz yet.
@@ -328,7 +329,7 @@ class quizmanager_test extends \advanced_testcase {
      * Test get_users_attempted_quiz.
      * @return void
      */
-    public function test_get_users_attempted_quiz() {
+    public function test_get_users_attempted_quiz(): void {
         global $DB;
         $this->resetAfterTest();
 

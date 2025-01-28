@@ -72,9 +72,12 @@ class select_quiz_page implements renderable, templatable {
         $questions = $quizobj->get_questions();
         $concordancetypefound = false;
         $othertypefound = false;
+        $qtcs = "qtype_tcs_question";
+        $qtcsperception = "qtype_tcsperception_question";
         foreach ($questions as $question) {
-            if (\question_bank::make_question($question) instanceof \qtype_tcs_question
-                || \question_bank::make_question($question) instanceof \qtype_tcsperception_question) {
+            $qb = \question_bank::make_question($question);
+            if ($qb instanceof $qtcs
+                || $qb instanceof $qtcsperception) {
                 $data->hasconcordancetype = true;
                 $concordancetypefound = true;
             } else {
