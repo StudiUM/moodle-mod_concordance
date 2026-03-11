@@ -30,7 +30,7 @@
  * @return mixed True if module supports feature, false if not, null if doesn't know
  */
 function concordance_supports($feature) {
-    switch($feature) {
+    switch ($feature) {
         case FEATURE_MOD_ARCHETYPE:
             return MOD_ARCHETYPE_OTHER;
         case FEATURE_GROUPS:
@@ -86,14 +86,28 @@ function concordance_add_instance($data, $mform) {
     assign_capability('moodle/course:activityvisibility', CAP_PROHIBIT, $id, $context->id, true);
 
     if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
-        $data->descriptionpanelist = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance',
-                'descriptionpanelist', 0, concordance_get_editor_options($context), $data->descriptionpanelisteditor['text']);
+        $data->descriptionpanelist = file_save_draft_area_files(
+            $draftitemid,
+            $context->id,
+            'mod_concordance',
+            'descriptionpanelist',
+            0,
+            concordance_get_editor_options($context),
+            $data->descriptionpanelisteditor['text']
+        );
         $data->descriptionpanelistformat = $data->descriptionpanelisteditor['format'];
     }
 
     if ($draftitemid = $data->descriptionstudenteditor['itemid']) {
-        $data->descriptionstudent = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance', 'descriptionstudent',
-                0, concordance_get_editor_options($context), $data->descriptionstudenteditor['text']);
+        $data->descriptionstudent = file_save_draft_area_files(
+            $draftitemid,
+            $context->id,
+            'mod_concordance',
+            'descriptionstudent',
+            0,
+            concordance_get_editor_options($context),
+            $data->descriptionstudenteditor['text']
+        );
         $data->descriptionstudentformat = $data->descriptionstudenteditor['format'];
     }
 
@@ -171,14 +185,28 @@ function concordance_update_instance($data, $mform) {
 
     $context = context_module::instance($cmid);
     if ($draftitemid = $data->descriptionpanelisteditor['itemid']) {
-        $data->descriptionpanelist = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance',
-                'descriptionpanelist', 0, concordance_get_editor_options($context), $data->descriptionpanelisteditor['text']);
+        $data->descriptionpanelist = file_save_draft_area_files(
+            $draftitemid,
+            $context->id,
+            'mod_concordance',
+            'descriptionpanelist',
+            0,
+            concordance_get_editor_options($context),
+            $data->descriptionpanelisteditor['text']
+        );
         $data->descriptionpanelistformat = $data->descriptionpanelisteditor['format'];
     }
 
     if ($draftitemid = $data->descriptionstudenteditor['itemid']) {
-        $data->descriptionstudent = file_save_draft_area_files($draftitemid, $context->id, 'mod_concordance', 'descriptionstudent',
-                0, concordance_get_editor_options($context), $data->descriptionstudenteditor['text']);
+        $data->descriptionstudent = file_save_draft_area_files(
+            $draftitemid,
+            $context->id,
+            'mod_concordance',
+            'descriptionstudent',
+            0,
+            concordance_get_editor_options($context),
+            $data->descriptionstudenteditor['text']
+        );
         $data->descriptionstudentformat = $data->descriptionstudenteditor['format'];
     }
 
@@ -227,8 +255,15 @@ function concordance_delete_instance($id) {
  */
 function concordance_get_coursemodule_info($cm) {
     global $DB;
-    if (!($concordance = $DB->get_record('concordance', ['id' => $cm->instance],
-            'id, name'))) {
+    if (
+        !(
+            $concordance = $DB->get_record(
+                'concordance',
+                ['id' => $cm->instance],
+                'id, name'
+            )
+        )
+    ) {
         return null;
     }
     $cminfo = new cached_cm_info();

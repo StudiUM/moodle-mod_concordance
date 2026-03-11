@@ -60,12 +60,14 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
         echo $OUTPUT->notification(get_string('selectquiz_panelistcontacted', 'mod_concordance'));
         $cm = get_coursemodule_from_id('', $concordancepersistent->get('cmorigin'), 0, true, IGNORE_MISSING);
         if (!empty($cm)) {
-            echo '<p>'.get_string('pluginname', 'quiz').' : '.$cm->name.'</p>';
+            echo '<p>' . get_string('pluginname', 'quiz') . ' : ' . $cm->name . '</p>';
         }
     } else {
         $quizlist = \mod_concordance\concordance::quizlist($course);
-        $form = new \mod_concordance\form\quizselection($url->out(false),
-                ['quizlist' => $quizlist, 'context' => $context]);
+        $form = new \mod_concordance\form\quizselection(
+            $url->out(false),
+            ['quizlist' => $quizlist, 'context' => $context]
+        );
 
         $form->set_data(['cmorigin' => $concordancepersistent->get('cmorigin')]);
         $data = $form->get_submitted_data();
@@ -81,11 +83,15 @@ if (!$cms = get_coursemodules_in_course('quiz', $course->id)) {
             $quizmanager->duplicate_quiz_for_panelists();
             $concordancepersistent->update();
         }
-        $notification = $OUTPUT->notification(get_string('shouldnotmodifyquiz', 'mod_concordance'),
-                \core\output\notification::NOTIFY_INFO);
+        $notification = $OUTPUT->notification(
+            get_string('shouldnotmodifyquiz', 'mod_concordance'),
+            \core\output\notification::NOTIFY_INFO
+        );
         $classhidden = (empty($concordancepersistent->get('cmorigin'))) ? 'hidden' : '';
-        $notificationtemplate = $OUTPUT->render_from_template('mod_concordance/selectquiznotification',
-                ['html' => $notification, 'classhidden' => $classhidden]);
+        $notificationtemplate = $OUTPUT->render_from_template(
+            'mod_concordance/selectquiznotification',
+            ['html' => $notification, 'classhidden' => $classhidden]
+        );
         echo $notificationtemplate;
         $form->display();
     }

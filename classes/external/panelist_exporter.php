@@ -33,7 +33,6 @@ namespace mod_concordance\external;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class panelist_exporter extends \core\external\persistent_exporter {
-
     /**
      * Constructor.
      *

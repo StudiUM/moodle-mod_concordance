@@ -36,7 +36,6 @@ use moodle_url;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class concordance extends persistent {
-
     /** Table name for concordance persistency */
     const TABLE = 'concordance';
 
@@ -149,9 +148,11 @@ class concordance extends persistent {
                 return self::CONCORDANCE_TASKSTATUS_FAILED;
             }
         } else {
-            if ($data
+            if (
+                $data
                 && ($data->hasconcordancetype === false
-                    || $data->visible == true)) {
+                    || $data->visible == true)
+            ) {
                 return self::CONCORDANCE_TASKSTATUS_FAILED;
             } else {
                 return self::CONCORDANCE_TASKSTATUS_DONE;
@@ -353,9 +354,11 @@ class concordance extends persistent {
         global $DB;
         $cmid = $event->contextinstanceid;
         $data = $event->get_data();
-        if (isset($data['other'])
-                && isset($data['other']['modulename'])
-                && $data['other']['modulename'] === 'quiz') {
+        if (
+            isset($data['other'])
+            && isset($data['other']['modulename'])
+            && $data['other']['modulename'] === 'quiz'
+        ) {
             $updatesql = " UPDATE {concordance}
                               SET cmorigin = NULL
                             WHERE cmorigin = :cmid";

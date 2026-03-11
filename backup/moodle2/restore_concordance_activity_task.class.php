@@ -38,7 +38,6 @@ require_once($CFG->dirroot . '/mod/concordance/backup/moodle2/restore_concordanc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_concordance_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have.
      */

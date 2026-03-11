@@ -40,7 +40,6 @@ use mod_concordance\quiz_manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class contact_panelists_page implements renderable, templatable {
-
     /** @var int The course module id. */
     protected $cmid;
 

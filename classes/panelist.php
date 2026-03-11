@@ -35,7 +35,6 @@ use core\persistent;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class panelist extends persistent {
-
     /** Table name for panelist persistency */
     const TABLE = 'concordance_panelist';
 
@@ -176,7 +175,7 @@ class panelist extends persistent {
         global $DB;
         $panelists = [];
         if (!empty($ids)) {
-            list($insql, $params) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+            [$insql, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
             $params['concordance'] = $concordanceid;
             $panelists = self::get_records_select("id $insql AND concordance = :concordance", $params);
         }

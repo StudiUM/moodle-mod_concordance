@@ -45,7 +45,6 @@ use external_value;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external extends external_api {
-
     /**
      * Returns description of send_message() parameters.
      *

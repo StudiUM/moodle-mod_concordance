@@ -61,8 +61,10 @@ if (empty($id)) {
     $subtitle = get_string('editpanelist', 'mod_concordance');
     $PAGE->navbar->add($subtitle, $url);
 }
-$form = new \mod_concordance\form\panelist($url->out(false),
-        ['persistent' => $panelist, 'context' => $context, 'concordanceid' => $concordance->id, 'id' => $id]);
+$form = new \mod_concordance\form\panelist(
+    $url->out(false),
+    ['persistent' => $panelist, 'context' => $context, 'concordanceid' => $concordance->id, 'id' => $id]
+);
 if ($form->is_cancelled()) {
     redirect($panelistsurl);
 }
@@ -74,13 +76,15 @@ if ($data) {
         $panelistpersistent = new \mod_concordance\panelist(0, $data);
         $panelistpersistent = $panelistpersistent->create();
         if ($draftitemid) {
-            $bibliography = file_save_draft_area_files($draftitemid,
-                    $context->id,
-                    'mod_concordance',
-                    'bibliography',
-                    $panelistpersistent->get('id'),
-                    concordance_get_editor_options($context),
-                    $data->bibliography);
+            $bibliography = file_save_draft_area_files(
+                $draftitemid,
+                $context->id,
+                'mod_concordance',
+                'bibliography',
+                $panelistpersistent->get('id'),
+                concordance_get_editor_options($context),
+                $data->bibliography
+            );
             $panelistpersistent->set('bibliography', $bibliography);
             $panelistpersistent->update();
         }
@@ -92,13 +96,15 @@ if ($data) {
         $panelistpersistent = new \mod_concordance\panelist($data->id);
         $panelistpersistent->from_record($data);
         if ($draftitemid) {
-            $bibliography = file_save_draft_area_files($draftitemid,
-                    $context->id,
-                    'mod_concordance',
-                    'bibliography',
-                    $panelistpersistent->get('id'),
-                    concordance_get_editor_options($context),
-                    $data->bibliography);
+            $bibliography = file_save_draft_area_files(
+                $draftitemid,
+                $context->id,
+                'mod_concordance',
+                'bibliography',
+                $panelistpersistent->get('id'),
+                concordance_get_editor_options($context),
+                $data->bibliography
+            );
             $panelistpersistent->set('bibliography', $bibliography);
         }
 

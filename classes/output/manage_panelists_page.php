@@ -39,7 +39,6 @@ use moodle_url;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manage_panelists_page implements renderable, templatable {
-
     /** @var int The course module id. */
     protected $cmid;
 
@@ -75,13 +74,15 @@ class manage_panelists_page implements renderable, templatable {
                 'action' => 'delete', 'panelistid' => $panelist->get('id')];
             $deletebutton = new single_button(
                 new moodle_url('/mod/concordance/panelists.php', $paramsurldelete),
-                    get_string('delete'), 'get'
+                get_string('delete'),
+                'get'
             );
             $deletebutton->add_confirm_action(get_string('deletepanelistconfirm', 'mod_concordance'));
 
             $editbutton = new single_button(
                 new moodle_url('/mod/concordance/editpanelist.php', $paramsurledit),
-                get_string('edit'), 'get'
+                get_string('edit'),
+                'get'
             );
             $buttons = new \stdClass();
             $buttons->editbutton = $output->render($editbutton);
@@ -91,9 +92,9 @@ class manage_panelists_page implements renderable, templatable {
             $data->panelists[] = $exporter->export($output);
         }
         $button = new single_button(
-           new moodle_url('/mod/concordance/editpanelist.php', ['cmid' => $this->cmid]),
-           get_string('addnewpanelist', 'mod_concordance'),
-           'get'
+            new moodle_url('/mod/concordance/editpanelist.php', ['cmid' => $this->cmid]),
+            get_string('addnewpanelist', 'mod_concordance'),
+            'get'
         );
         $data->addbutton = $output->render($button);
         return $data;

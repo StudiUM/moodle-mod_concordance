@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../config.php');
+require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT); // Course ID.
 
@@ -42,7 +42,7 @@ $strphase = get_string('phase', 'mod_concordance');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/concordance/index.php', ['id' => $course->id]);
-$PAGE->set_title($course->shortname.': '.$strconcordances);
+$PAGE->set_title($course->shortname . ': ' . $strconcordances);
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add($strconcordances);
 echo $OUTPUT->header();
@@ -61,7 +61,7 @@ $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
-    $strsectionname = get_string('sectionname', 'format_'.$course->format);
+    $strsectionname = get_string('sectionname', 'format_' . $course->format);
     $table->head = [$strsectionname, $strname, $strphase];
     $table->align = ['center', 'left', 'left'];
 } else {
@@ -86,16 +86,16 @@ foreach ($concordances as $concordance) {
     switch ($concordancepersistent->get('activephase')) {
         case \mod_concordance\concordance::CONCORDANCE_PHASE_SETUP:
             $phase = get_string('phase_setup', 'mod_concordance');
-        break;
+            break;
         case \mod_concordance\concordance::CONCORDANCE_PHASE_PANELISTS:
             $phase = get_string('phase_panelists', 'mod_concordance');
-        break;
+            break;
         case \mod_concordance\concordance::CONCORDANCE_PHASE_STUDENTS:
             $phase = get_string('phase_students', 'mod_concordance');
-        break;
+            break;
         default:
             $phase = '';
-        break;
+            break;
     }
 
     $table->data[] = [

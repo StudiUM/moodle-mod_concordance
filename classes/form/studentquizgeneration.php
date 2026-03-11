@@ -41,7 +41,6 @@ use mod_quiz\quiz_attempt;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class studentquizgeneration extends \moodleform {
-
     /**
      * Define the form - called by parent constructor
      */
@@ -80,18 +79,26 @@ class studentquizgeneration extends \moodleform {
 
         // Panelists.
         $requiredicon = $OUTPUT->render_from_template('mod_concordance/required_field', []);
-        $mform->addElement('header', 'paneliststoincludeheader',
-                \html_writer::tag('h3', get_string('paneliststoinclude', 'mod_concordance') . $requiredicon));
-        $mform->addElement('html', $OUTPUT->render_from_template('mod_concordance/error_field', ['id' => 'paneliststoincludeerror',
-                            'message' => get_string('errorincludepanelist', 'mod_concordance')]));
+        $mform->addElement(
+            'header',
+            'paneliststoincludeheader',
+            \html_writer::tag('h3', get_string('paneliststoinclude', 'mod_concordance') . $requiredicon)
+        );
+        $mform->addElement(
+            'html',
+            $OUTPUT->render_from_template('mod_concordance/error_field', ['id' => 'paneliststoincludeerror',
+                            'message' => get_string('errorincludepanelist', 'mod_concordance')])
+        );
         $statelabel = get_string('quizstate', 'mod_concordance');
-        $mform->addElement('html',
-                "<table id='paneliststoincludetable'><thead><tr><th></th><th>$statelabel</th></tr></thead>");
+        $mform->addElement(
+            'html',
+            "<table id='paneliststoincludetable'><thead><tr><th></th><th>$statelabel</th></tr></thead>"
+        );
         $mform->addElement('html', '<tbody>');
         foreach ($this->_customdata['panelists'] as $panelist) {
-            $label = $panelist->get('firstname').' '.$panelist->get('lastname');
+            $label = $panelist->get('firstname') . ' ' . $panelist->get('lastname');
             $mform->addElement('html', '<tr><td>');
-            $mform->addElement('checkbox', 'paneliststoinclude['. $panelist->get("id").']', '', $label);
+            $mform->addElement('checkbox', 'paneliststoinclude[' . $panelist->get("id") . ']', '', $label);
             $quizstate = '';
             $quizstateclass = 'badge-info';
             if (key_exists($panelist->get("userid"), $this->_customdata['attempts'])) {
@@ -106,11 +113,11 @@ class studentquizgeneration extends \moodleform {
                     }
                 } else {
                     $quizstate = get_string('notcompleted', 'mod_concordance');
-                    $mform->freeze(['paneliststoinclude['. $panelist->get("id").']']);
+                    $mform->freeze(['paneliststoinclude[' . $panelist->get("id") . ']']);
                 }
             } else {
                 $quizstate = get_string('notcompleted', 'mod_concordance');
-                $mform->freeze(['paneliststoinclude['. $panelist->get("id").']']);
+                $mform->freeze(['paneliststoinclude[' . $panelist->get("id") . ']']);
             }
 
             $mform->addElement('html', '</td>');
@@ -119,8 +126,11 @@ class studentquizgeneration extends \moodleform {
         $mform->addElement('html', '</tbody></table>');
 
         // Questions.
-        $mform->addElement('header', 'questionstoincludeheader',
-                \html_writer::tag('h3', get_string('questionstoinclude', 'mod_concordance') . $requiredicon));
+        $mform->addElement(
+            'header',
+            'questionstoincludeheader',
+            \html_writer::tag('h3', get_string('questionstoinclude', 'mod_concordance') . $requiredicon)
+        );
         $mform->addElement('html', $OUTPUT->render_from_template('mod_concordance/error_field', ['id' => 'questionstoincludeerror',
                             'message' => get_string('errorincludequestion', 'mod_concordance')]));
         $structure = $this->_customdata['structure'];
@@ -144,8 +154,8 @@ class studentquizgeneration extends \moodleform {
                 $icon = $OUTPUT->pix_icon('icon', $namestr, $qtype->plugin_name(), ['title' => $namestr,
                         'class' => 'activityicon', 'alt' => ' ', 'role' => 'presentation']);
                 $label = quiz_question_tostring($question);
-                $mform->addElement('checkbox', 'questionstoinclude['. $slot .']', '', $icon . $label);
-                $mform->setDefault('questionstoinclude['. $slot .']', 1);
+                $mform->addElement('checkbox', 'questionstoinclude[' . $slot . ']', '', $icon . $label);
+                $mform->setDefault('questionstoinclude[' . $slot . ']', 1);
             }
             $mform->addElement('html', \html_writer::end_div());
         }

@@ -61,9 +61,13 @@ if (count($panelists) == 0) {
     $quizmanager = new \mod_concordance\quiz_manager($concordancepersistent);
     $attempts = $quizmanager->get_users_attempted_quiz();
     $structure = $quizmanager->get_quiz_structure();
-    $form = new \mod_concordance\form\studentquizgeneration($url->out(false),
-            ['panelists' => $panelists, 'context' => $context, 'attempts' => $attempts, 'structure' => $structure],
-            'post', '', ['id' => 'generatestudentquizform']);
+    $form = new \mod_concordance\form\studentquizgeneration(
+        $url->out(false),
+        ['panelists' => $panelists, 'context' => $context, 'attempts' => $attempts, 'structure' => $structure],
+        'post',
+        '',
+        ['id' => 'generatestudentquizform']
+    );
 
     $data = $form->get_submitted_data();
     if ($data) {

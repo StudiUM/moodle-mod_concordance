@@ -37,7 +37,6 @@ use mod_concordance\concordance;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends plugin_renderer_base {
-
     /**
      * Defer to template to render the wizard.
      *
@@ -123,7 +122,7 @@ class renderer extends plugin_renderer_base {
             'statusname' => get_string('task' . $status, 'mod_concordance'), 'statusclass' => $status];
         $nbcontacted = \mod_concordance\panelist::count_panelistscontacted_for_concordance($concordance->get('id'));
         $nbtotal = \mod_concordance\panelist::count_records_for_concordance($concordance->get('id'));
-        if ($nbcontacted > 0 && ($nbtotal > $nbcontacted) ) {
+        if ($nbcontacted > 0 && ($nbtotal > $nbcontacted)) {
             $statusinfo = concordance::CONCORDANCE_TASKSTATUS_INFO;
             $statusname = get_string('task' . $statusinfo, 'mod_concordance');
             $phasepanelists['tasks'][] = [

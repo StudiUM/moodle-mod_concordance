@@ -37,7 +37,6 @@ require_once($CFG->libdir . '/formslib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quizselection extends \moodleform {
-
     /**
      * Define the form - called by parent constructor
      */
@@ -45,13 +44,16 @@ class quizselection extends \moodleform {
         $mform = $this->_form;
 
         // Quiz selection.
-        $mform->addElement('select', 'cmorigin', get_string('pluginname', 'quiz'),
-                $this->_customdata['quizlist']);
+        $mform->addElement(
+            'select',
+            'cmorigin',
+            get_string('pluginname', 'quiz'),
+            $this->_customdata['quizlist']
+        );
         $mform->setType('cmorigin', PARAM_INT);
 
         // Disable short forms.
         $mform->setDisableShortforms();
         $this->add_action_buttons(false, get_string('savechanges'));
-
     }
 }

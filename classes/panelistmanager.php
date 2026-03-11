@@ -27,7 +27,7 @@ namespace mod_concordance;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot . '/user/lib.php');
 
 /**
  * Class for panelist management.
@@ -37,7 +37,6 @@ require_once($CFG->dirroot.'/user/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class panelistmanager {
-
     /**
      * Steps to do when a panelist is created:
      * Create Moodle user.
@@ -67,8 +66,10 @@ class panelistmanager {
                 // Enrol user in panelist course.
                 $plugin = enrol_get_plugin('manual');
                 $roleid = get_config('mod_concordance', 'panelistsrole');
-                $instances = $DB->get_records('enrol',
-                        ['courseid' => $panelistcourse, 'enrol' => 'manual']);
+                $instances = $DB->get_records(
+                    'enrol',
+                    ['courseid' => $panelistcourse, 'enrol' => 'manual']
+                );
                 $instance = reset($instances);
                 $plugin->enrol_user($instance, $userid, $roleid);
                 // Set userid in panelist.

@@ -25,7 +25,7 @@
 
 require('../../config.php');
 require_once("$CFG->libdir/externallib.php");
-require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 use mod_quiz\quiz_settings;
 
@@ -59,8 +59,10 @@ if (isloggedin() && !$confirm) {
         $info .= $output->quiz_intro($quiz, $cm);
 
         echo $OUTPUT->header();
-        echo $output->render_from_template('mod_concordance/accesspanelistquiz',
-                ['body' => $info, 'footer' => $output->render($button)]);
+        echo $output->render_from_template(
+            'mod_concordance/accesspanelistquiz',
+            ['body' => $info, 'footer' => $output->render($button)]
+        );
         echo $OUTPUT->footer();
         return;
     }

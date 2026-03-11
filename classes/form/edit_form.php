@@ -27,7 +27,7 @@ namespace mod_concordance\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 /**
  * Edit concordance content form.
  *
@@ -37,7 +37,6 @@ require_once($CFG->libdir.'/formslib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class edit_form extends \moodleform {
-
     /**
      * Form definition.
      */

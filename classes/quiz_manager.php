@@ -245,7 +245,7 @@ class quiz_manager {
                     if ($panelist && $panelist->get('bibliography')) {
                         $biographies .= \html_writer::empty_tag('br');
                         $biographies .= \html_writer::tag('h4', $panelist->get('firstname') . ' ' . $panelist->get('lastname'));
-                        $biographies .= $panelist->get('bibliography');;
+                        $biographies .= $panelist->get('bibliography');
                         if ($files = $fs->get_area_files($context->id, 'mod_concordance', 'bibliography', $id)) {
                             foreach ($files as $file) {
                                 $fs->create_file_from_storedfile($newfilerecord, $file);
@@ -626,7 +626,7 @@ class quiz_manager {
             if ($this->is_tcs_perception_question($q)) {
                 $slotmapped = $this->formdata->questionstoinclude[$question->slot];
                 foreach ($drawings[$slotmapped] as $key => $drawing) {
-                    $drawingobject = new \stdClass;
+                    $drawingobject = new \stdClass();
                     $drawingobject->questionid = $question->id;
                     $drawingobject->answer = $this->build_full_svg($drawing);
                     $drawingobject->image = $key;

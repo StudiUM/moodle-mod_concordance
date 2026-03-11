@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 /**
  * Concordance configuration form
@@ -36,7 +36,6 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_concordance_mod_form extends moodleform_mod {
-
     /**
      * Define form elements.
      */
@@ -53,13 +52,23 @@ class mod_concordance_mod_form extends moodleform_mod {
         }
 
         // Description for panelist.
-        $mform->addElement('editor', 'descriptionpanelisteditor', get_string('descriptionpanelist', 'mod_concordance'), null,
-                            concordance_get_editor_options($this->context));
+        $mform->addElement(
+            'editor',
+            'descriptionpanelisteditor',
+            get_string('descriptionpanelist', 'mod_concordance'),
+            null,
+            concordance_get_editor_options($this->context)
+        );
         $mform->setType('descriptionpanelisteditor', PARAM_RAW);
 
         // Description for student.
-        $mform->addElement('editor', 'descriptionstudenteditor', get_string('descriptionstudent', 'mod_concordance'), null,
-                            concordance_get_editor_options($this->context));
+        $mform->addElement(
+            'editor',
+            'descriptionstudenteditor',
+            get_string('descriptionstudent', 'mod_concordance'),
+            null,
+            concordance_get_editor_options($this->context)
+        );
         $mform->setType('descriptionstudenteditor', PARAM_RAW);
 
         $this->standard_coursemodule_elements();
@@ -80,19 +89,29 @@ class mod_concordance_mod_form extends moodleform_mod {
             // Prepare the added editor elements.
             // Descriptionpanelist.
             $draftitemid = file_get_submitted_draft_itemid('descriptionpanelist');
-            $data['descriptionpanelisteditor']['text'] = file_prepare_draft_area($draftitemid, $this->context->id,
-                                'mod_concordance', 'descriptionpanelist', 0,
-                                concordance_get_editor_options($this->context),
-                                $data['descriptionpanelist']);
+            $data['descriptionpanelisteditor']['text'] = file_prepare_draft_area(
+                $draftitemid,
+                $this->context->id,
+                'mod_concordance',
+                'descriptionpanelist',
+                0,
+                concordance_get_editor_options($this->context),
+                $data['descriptionpanelist']
+            );
             $data['descriptionpanelisteditor']['format'] = $data['descriptionpanelistformat'];
             $data['descriptionpanelisteditor']['itemid'] = $draftitemid;
 
             // Descriptionstudent.
             $draftitemid = file_get_submitted_draft_itemid('descriptionstudent');
-            $data['descriptionstudenteditor']['text'] = file_prepare_draft_area($draftitemid, $this->context->id,
-                                'mod_concordance', 'descriptionstudent', 0,
-                                concordance_get_editor_options($this->context),
-                                $data['descriptionstudent']);
+            $data['descriptionstudenteditor']['text'] = file_prepare_draft_area(
+                $draftitemid,
+                $this->context->id,
+                'mod_concordance',
+                'descriptionstudent',
+                0,
+                concordance_get_editor_options($this->context),
+                $data['descriptionstudent']
+            );
             $data['descriptionstudenteditor']['format'] = $data['descriptionstudentformat'];
             $data['descriptionstudenteditor']['itemid'] = $draftitemid;
         } else {

@@ -38,7 +38,6 @@ use mod_quiz\quiz_settings;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class select_quiz_page implements renderable, templatable {
-
     /** @var int The course module id. */
     protected $cmid;
 
@@ -58,7 +57,7 @@ class select_quiz_page implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $USER, $CFG;
-        require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+        require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
         $data = new stdClass();
         $data->hasconcordancetype = false;
@@ -76,8 +75,10 @@ class select_quiz_page implements renderable, templatable {
         $qtcsperception = "qtype_tcsperception_question";
         foreach ($questions as $question) {
             $qb = \question_bank::make_question($question);
-            if ($qb instanceof $qtcs
-                || $qb instanceof $qtcsperception) {
+            if (
+                $qb instanceof $qtcs
+                || $qb instanceof $qtcsperception
+            ) {
                 $data->hasconcordancetype = true;
                 $concordancetypefound = true;
             } else {
