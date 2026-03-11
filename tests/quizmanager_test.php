@@ -37,7 +37,6 @@ use mod_concordance\quiz_manager;
  * @covers \mod_concordance\quiz_manager;
  */
 final class quizmanager_test extends \advanced_testcase {
-
     /** @var concordance Concordance persistent object. */
     protected $concordancepersistent = null;
 
@@ -59,7 +58,7 @@ final class quizmanager_test extends \advanced_testcase {
         // Create and enrol the teacher.
         $teacher = $this->getDataGenerator()->create_user();
         $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
-        $this->getDataGenerator()->enrol_user($teacher->id,  $this->course->id, $teacherrole->id);
+        $this->getDataGenerator()->enrol_user($teacher->id, $this->course->id, $teacherrole->id);
 
         $this->setUser($teacher);
 
@@ -279,10 +278,16 @@ final class quizmanager_test extends \advanced_testcase {
         $this->assertEquals(0, $cm->visible);
         $this->assertEquals('description student', trim(strip_tags($quiz->intro)));
         $this->assertCount(2, $questions);
-        // Check that all questions are in a new category, that is a child of the category we created.
+        // Check that all questions are in a new category.
+        // With Moodle 5.1+, the category is created in the quiz module context, not the course context.
         foreach ($questions as $question) {
             $this->assertNotEquals($quizcat->id, $question->category);
-            $this->assertEquals($quizcat->id, $question->categoryobject->parent);
+            // The parent should be the top category of the quiz module context.
+            $topcategory = $DB->get_record('question_categories', [
+                'contextid' => $context->id,
+                'parent' => 0,
+            ]);
+            $this->assertEquals($topcategory->id, $question->categoryobject->parent);
             $firstchildcategory = $question->category;
         }
         $quizconfig = get_config('quiz');
@@ -308,6 +313,7 @@ final class quizmanager_test extends \advanced_testcase {
         $this->assertNotNull($cmid);
         $courseinfo = get_fast_modinfo($this->course);
         $cm = get_coursemodule_from_id('quiz', $cmid);
+        $context = \context_module::instance($cm->id);
         $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
         $quizobj = new quiz_settings($quiz, $cm, $this->course);
         $quizobj->preload_questions();
@@ -318,10 +324,15 @@ final class quizmanager_test extends \advanced_testcase {
         $this->assertEquals($question1->name, $question->name);
         $this->assertEquals(quiz_format_grade($quiz, 0), quiz_format_grade($quiz, $quiz->grade));
         $this->assertEquals('immediatefeedback', $quiz->preferredbehaviour);
-        // Check that the question is in a new category, that is a child of the category we created
-        // (and not the same as the other quiz we generated).
+        // Check that the question is in a new category.
+        // With Moodle 5.1+, the category is created in the quiz module context, not the course context.
         $this->assertNotEquals($quizcat->id, $question->category);
-        $this->assertEquals($quizcat->id, $question->categoryobject->parent);
+        // The parent should be the top category of the quiz module context.
+        $topcategory = $DB->get_record('question_categories', [
+            'contextid' => $context->id,
+            'parent' => 0,
+        ]);
+        $this->assertEquals($topcategory->id, $question->categoryobject->parent);
         $this->assertNotEquals($firstchildcategory, $question->category);
     }
 
@@ -380,7 +391,8 @@ final class quizmanager_test extends \advanced_testcase {
         quiz_attempt_save_started($quizobj1a, $quba1a, $attempt);
         $attemptobj = quiz_attempt::create($attempt->id);
         $attemptobj->process_submitted_actions($timenow, false, [1 => ['answer' => '3.14']]);
-        $attemptobj->process_finish($timenow, false);
+        $attemptobj->process_submit($timenow, false, null);
+        $attemptobj->process_grade_submission($timenow, false);
 
         // User 2 goes overdue in quiz 1.
         $attempt = quiz_create_attempt($quizobj1b, 1, false, $timenow, false, $u2->id);

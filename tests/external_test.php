@@ -42,7 +42,6 @@ use mod_concordance\external;
  * @covers \mod_concordance\external
  */
 final class external_test extends \externallib_advanced_testcase {
-
     /**
      * Test send message external.
      * @runInSeparateProcess
@@ -87,8 +86,13 @@ final class external_test extends \externallib_advanced_testcase {
         $this->setUser($teacher);
         $sink = $this->redirectEmails();
         $sinkevents = $this->redirectEvents();
-        $result = external::send_message([$panelist1->get('id'), $panelist2->get('id')],
-                $message, $subject, $concordance->cmid, false);
+        $result = external::send_message(
+            [$panelist1->get('id'), $panelist2->get('id')],
+            $message,
+            $subject,
+            $concordance->cmid,
+            false
+        );
         $result = (object) \external_api::clean_returnvalue(external::send_message_returns(), $result);
         $this->assertTrue($result->scalar);
 

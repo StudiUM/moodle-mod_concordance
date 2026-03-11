@@ -36,7 +36,6 @@ namespace mod_concordance;
  * @covers \mod_concordance\panlistmanager
  */
 final class panelistmanager_test extends \advanced_testcase {
-
     /**
      * Setup.
      */

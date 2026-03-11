@@ -38,7 +38,6 @@ require_once($CFG->dirroot . '/mod/concordance/backup/moodle2/backup_concordance
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_concordance_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */

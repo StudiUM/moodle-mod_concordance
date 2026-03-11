@@ -36,7 +36,6 @@ use core\form\persistent;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class panelist extends persistent {
-
     /** @var mod_concordance\panelist persistent class for form */
     protected static $persistentclass = 'mod_concordance\\panelist';
 
@@ -69,14 +68,18 @@ class panelist extends persistent {
         $mform->setType('email', PARAM_RAW_TRIMMED);
 
         // Bibliography.
-        $mform->addElement('editor', 'bibliography', get_string('bibliography', 'mod_concordance'), null,
-                            concordance_get_editor_options($this->_customdata['context']));
+        $mform->addElement(
+            'editor',
+            'bibliography',
+            get_string('bibliography', 'mod_concordance'),
+            null,
+            concordance_get_editor_options($this->_customdata['context'])
+        );
         $mform->setType('bibliography', PARAM_RAW);
 
         // Disable short forms.
         $mform->setDisableShortforms();
         $this->add_action_buttons(true, get_string('savechanges'));
-
     }
 
     /**
@@ -88,10 +91,15 @@ class panelist extends persistent {
      */
     public function data_preprocessing(&$data) {
         $draftitemid = file_get_submitted_draft_itemid('bibliography');
-        $text = file_prepare_draft_area($draftitemid, $this->_customdata['context']->id,
-                        'mod_concordance', 'bibliography', $data['id'],
-                        concordance_get_editor_options($this->_customdata['context']),
-                        $data['bibliography']['text']);
+        $text = file_prepare_draft_area(
+            $draftitemid,
+            $this->_customdata['context']->id,
+            'mod_concordance',
+            'bibliography',
+            $data['id'],
+            concordance_get_editor_options($this->_customdata['context']),
+            $data['bibliography']['text']
+        );
         $data['bibliography']['text'] = $text;
         $data['bibliography']['itemid'] = $draftitemid;
     }

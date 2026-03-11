@@ -19,7 +19,7 @@ Feature: Students quiz generation
     And I log in as "teacher1"
     And I follow "Preferences" in the user menu
     And I follow "Editor preferences"
-    And I set the field "Text editor" to "Atto HTML editor"
+    And I set the field "Text editor" to "TinyMCE editor"
     And I press "Save changes"
     And I am on "Course1" course homepage with editing mode on
     # Create a basic concordance activity.
@@ -75,23 +75,23 @@ Feature: Students quiz generation
     And I am on "Course1" course homepage
     And I am on the "TestConcordance" "concordance activity" page
     And I click on "Edit settings" "link" in the ".concordance-wizard" "css_element"
-    And I click on "Insert or edit image" "button" in the "//*[contains(.,'Description for the panelists')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
-    And I click on "Browse repositories..." "button"
+    And I click on "Image" "button" in the "//*[contains(.,'Description for the panelists')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
+    And I click on "Browse repositories" "button"
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodle_logo1.jpg" "link"
     And I click on "Select this file" "button"
-    And I set the field "Describe this image for someone who cannot see it" to "Image for panelists"
-    And I click on "Save image" "button"
+    And I set the field "How would you describe this image to someone who cannot see it?" to "Image for panelists"
+    And I click on "Save" "button" in the "Image details" "dialogue"
     # Behat has some issues if we open directly another popup here, so it is better to close the page completely.
     And I click on "Save and display" "button"
     And I click on "Edit settings" "link" in the ".concordance-wizard" "css_element"
-    And I click on "Insert or edit image" "button" in the "//*[contains(.,'Description for the students')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
-    And I click on "Browse repositories..." "button"
+    And I click on "Image" "button" in the "//*[contains(.,'Description for the students')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
+    And I click on "Browse repositories" "button"
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodle_logo2.jpg" "link"
     And I click on "Select this file" "button"
-    And I set the field "Describe this image for someone who cannot see it" to "Image for students"
-    And I click on "Save image" "button"
+    And I set the field "How would you describe this image to someone who cannot see it?" to "Image for students"
+    And I click on "Save" "button" in the "Image details" "dialogue"
     And I click on "Save and display" "button"
     # Select the quiz for panelists.
     And I am on the "TestConcordance" "concordance activity" page
@@ -115,13 +115,13 @@ Feature: Students quiz generation
       | Last name      | Fletcher                  |
       | Email address  | donaldf@example.com       |
       | Biography      | <p>Fletcher biography</p> |
-    And I click on "Insert or edit image" "button" in the "//*[contains(.,'Biography')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
-    And I click on "Browse repositories..." "button"
+    And I click on "Image" "button" in the "//*[contains(.,'Biography')]/following::div[1][@data-fieldtype='editor']" "xpath_element"
+    And I click on "Browse repositories" "button"
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodle_logo1.jpg" "link"
     And I click on "Select this file" "button"
-    And I set the field "Describe this image for someone who cannot see it" to "Image for Donald"
-    And I click on "Save image" "button"
+    And I set the field "How would you describe this image to someone who cannot see it?" to "Image for Donald"
+    And I click on "Save" "button" in the "Image details" "dialogue"
     And I click on "Save changes" "button"
     And I should see "Panelist created"
     And I click on "Add new panelist" "button"
@@ -173,6 +173,7 @@ Feature: Students quiz generation
     And I should see "Your attempts"
     And I should see "No more attempts are allowed"
     And I click on "Review" "button"
+    And I wait "3" seconds
     And I switch to "quizpopup" window
     And I should see "Comments from Rebecca for Q1"
     # Panelist 2 completes the quiz.
@@ -326,14 +327,18 @@ Feature: Students quiz generation
     And I click on "Save and return to course" "button"
     # Check the gradebook.
     And I navigate to "Grades" in current page administration
+    # Wait 2 secondes for grades calculation
+    And I run all adhoc tasks
+    And I reload the page
     And I should not see "Student quiz 1" in the "#page-content" "css_element"
     And I should see "Student quiz 2"
     And I should not see "Student quiz 3" in the "#page-content" "css_element"
     And I should see "Student quiz 4"
     And I should not see "Test quiz name" in the "#page-content" "css_element"
     # Check the question bank.
-    And I am on the "Course1" "core_question > course question bank" page
-    And I should see "Default for c1 (2)" in the "//div[contains(@class, 'form-autocomplete-selection')]/span" "xpath_element"
+    And I am on the "Student quiz 1" "quiz activity" page
+    And I click on "Question bank" "link"
+    And I should see "Test quiz name (2)"
 #    And the "Select a category" select box should contain "Concordance - Quiz \"Student quiz 1\" (2)"
 #    And the "Select a category" select box should contain "Concordance - Quiz \"Student quiz 2\" (1)"
 #    And the "Select a category" select box should contain "Concordance - Quiz \"Student quiz 3\" (2)"

@@ -26,8 +26,14 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_settings_coursecat_select('mod_concordance/categorypanelcourses',
-        get_string('categorypanelcourses', 'mod_concordance'), get_string('configcategorypanelcourses', 'mod_concordance'), 1));
+    $settings->add(
+        new admin_settings_coursecat_select(
+            'mod_concordance/categorypanelcourses',
+            get_string('categorypanelcourses', 'mod_concordance'),
+            get_string('configcategorypanelcourses', 'mod_concordance'),
+            1
+        )
+    );
 
     $studentroles = [];
     $roles = role_fix_names(get_all_roles(), null, ROLENAME_ORIGINALANDSHORT);
@@ -42,15 +48,28 @@ if ($ADMIN->fulltree) {
         $defaultstudentroleid = 0;
     }
 
-    $settings->add(new admin_setting_configselect('mod_concordance/panelistsrole', get_string('panelistsrole', 'mod_concordance'),
-        get_string('configpanelistsrole', 'mod_concordance'), $defaultstudentroleid, $studentroles));
+    $settings->add(
+        new admin_setting_configselect(
+            'mod_concordance/panelistsrole',
+            get_string('panelistsrole', 'mod_concordance'),
+            get_string('configpanelistsrole', 'mod_concordance'),
+            $defaultstudentroleid,
+            $studentroles
+        )
+    );
     $systemroles = [];
     $allowedsystemroleids = get_roles_for_contextlevels(CONTEXT_SYSTEM);
     $systemroles[0] = get_string('nosystemrole', 'mod_concordance');
     foreach ($allowedsystemroleids as $allowedsystemroleid) {
         $systemroles[$allowedsystemroleid] = $roles[$allowedsystemroleid]->localname;
     }
-    $settings->add(new admin_setting_configselect('mod_concordance/panelistssystemrole',
-        get_string('panelistssystemrole', 'mod_concordance'),
-        get_string('configpanelistssystemrole', 'mod_concordance'), 0, $systemroles));
+    $settings->add(
+        new admin_setting_configselect(
+            'mod_concordance/panelistssystemrole',
+            get_string('panelistssystemrole', 'mod_concordance'),
+            get_string('configpanelistssystemrole', 'mod_concordance'),
+            0,
+            $systemroles
+        )
+    );
 }

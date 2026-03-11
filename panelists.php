@@ -50,8 +50,10 @@ echo $output->header();
 if (!empty($panelistid) && $action === 'delete') {
     $panelist = new \mod_concordance\panelist($panelistid);
     $panelist->delete();
-    echo $OUTPUT->notification(get_string('panelistdeleted', 'mod_concordance'),
-                    \core\output\notification::NOTIFY_SUCCESS);
+    echo $OUTPUT->notification(
+        get_string('panelistdeleted', 'mod_concordance'),
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 echo $output->heading($panelistsmanagementstring);
 $page = new \mod_concordance\output\manage_panelists_page($cm->id, $concordance->id);

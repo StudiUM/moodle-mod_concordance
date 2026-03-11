@@ -81,7 +81,8 @@ class behat_mod_concordance extends behat_base {
     public function i_should_see_for_panelist_for_answer_of_question($comment, $panelist, $answer, $questionnb) {
         $xpath = "(//div[contains(@class,'que tcs')])[$questionnb]//div[contains(@class,'specificfeedback')]"
             . "/p[contains(.,'$answer')]/following::div[1]/p[contains(.,'$panelist')]/following::p[1]";
-        $this->execute("behat_general::assert_element_contains_text",
+        $this->execute(
+            "behat_general::assert_element_contains_text",
             [$comment, $xpath, "xpath_element"]
         );
     }
@@ -124,7 +125,8 @@ class behat_mod_concordance extends behat_base {
     public function there_should_be_an_info_after_concordance_task_saying($task, $text) {
         $xpath = "//div[contains(@class,'concordance-wizard')]//ul/li[contains(@class,'info') and contains(.,'$text')]"
             . "/preceding-sibling::li[not(contains(@class,'info'))][1]";
-        $this->execute("behat_general::assert_element_contains_text",
+        $this->execute(
+            "behat_general::assert_element_contains_text",
             [$task, $xpath, "xpath_element"]
         );
     }
@@ -141,7 +143,8 @@ class behat_mod_concordance extends behat_base {
     public function concordance_quiz_contains_the_following_questions($quizname, $data) {
         global $CFG;
         require_once(__DIR__ . '/../../../../mod/quiz/locallib.php');
-        $this->execute("behat_mod_quiz::quiz_contains_the_following_questions",
+        $this->execute(
+            "behat_mod_quiz::quiz_contains_the_following_questions",
             [$quizname, $data]
         );
     }
@@ -154,7 +157,8 @@ class behat_mod_concordance extends behat_base {
      */
     public function the_concordance_wizard_active_phase_should_be($phase) {
         $xpath = "//div[contains(@class,'concordance-wizard')]/dl[contains(@class,'phase active')]";
-        $this->execute("behat_general::assert_element_contains_text",
+        $this->execute(
+            "behat_general::assert_element_contains_text",
             [$phase, $xpath, "xpath_element"]
         );
     }

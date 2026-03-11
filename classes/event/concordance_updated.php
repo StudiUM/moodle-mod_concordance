@@ -34,7 +34,6 @@ namespace mod_concordance\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class concordance_updated extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -60,7 +59,7 @@ class concordance_updated extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' updated the concordance activity with course module id "
-            ."'$this->contextinstanceid'.";
+            . "'$this->contextinstanceid'.";
     }
 
     /**

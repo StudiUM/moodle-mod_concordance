@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../config.php');
+require(__DIR__ . '/../../config.php');
 
 $cmid = required_param('cmid', PARAM_INT);            // Course module.
 $phase = required_param('phase', PARAM_INT);           // The code of the new phase.

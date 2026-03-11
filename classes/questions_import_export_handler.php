@@ -36,7 +36,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class questions_import_export_handler {
-
     /** @var string  Filename to export temporary the questions of a quiz */
     protected string $filename;
 
@@ -50,8 +49,7 @@ class questions_import_export_handler {
         /** @var quiz_settings */
         protected quiz_settings $quizsettings,
         /** @var array */
-        protected array $questions,
-
+        protected array $questions
     ) {
         $this->filename = sprintf("/tmp/concordance_questions_%d.xml", time());
     }
@@ -158,10 +156,33 @@ class questions_import_export_handler {
      */
     private function create_new_category(): stdClass {
         global $DB;
-        $coursecontext = context_course::instance($this->quizsettings->get_courseid());
+
+        // Get the quiz context (module context), not course context.
+        $quiz = $this->quizsettings->get_quiz();
+        $coursemodule = get_coursemodule_from_instance('quiz', $quiz->id);
+        $quizcontext = context_module::instance($coursemodule->id, MUST_EXIST);
+
+        // Get the top category for this context (parent = 0).
+        $topcategory = $DB->get_record('question_categories', [
+            'contextid' => $quizcontext->id,
+            'parent' => 0,
+        ]);
+
+        // If no top category exists, create it manually.
+        if (!$topcategory) {
+            $topcategory = new stdClass();
+            $topcategory->name = 'top';
+            $topcategory->info = 'The top category for questions in this context.';
+            $topcategory->contextid = $quizcontext->id;
+            $topcategory->parent = 0;
+            $topcategory->sortorder = 0;
+            $topcategory->stamp = make_unique_id_code();
+            $topcategory->id = $DB->insert_record('question_categories', $topcategory);
+        }
+
         $newcategory = new stdClass();
-        $newcategory->parent = question_get_default_category($coursecontext->id)->id;
-        $newcategory->contextid = $coursecontext->id;
+        $newcategory->parent = $topcategory->id;
+        $newcategory->contextid = $quizcontext->id;
         $newcategory->name = $this->build_category_name();
         $date = userdate(time(), get_string('strftimedatetime', 'langconfig'));
         $newcategory->info = get_string('questionscategoryinfo', 'mod_concordance', $date);

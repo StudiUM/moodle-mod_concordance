@@ -35,7 +35,6 @@ $s = optional_param('sy', 0, PARAM_INT);
 if ($s) {
     $concordance = $DB->get_record('concordance', ['id' => $s], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('concordance', $concordance->id, $concordance->course, true, MUST_EXIST);
-
 } else {
     $cm = get_coursemodule_from_id('concordance', $id, 0, true, MUST_EXIST);
     $concordance = $DB->get_record('concordance', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -60,7 +59,7 @@ $event->trigger();
 
 $PAGE->set_url('/mod/concordance/view.php', ['id' => $cm->id]);
 
-$PAGE->set_title($course->shortname . ': '. $concordance->name);
+$PAGE->set_title($course->shortname . ': ' . $concordance->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($concordance);
 

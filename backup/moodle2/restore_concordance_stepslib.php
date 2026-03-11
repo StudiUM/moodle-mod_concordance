@@ -27,7 +27,6 @@ use mod_concordance\panelistmanager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_concordance_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * Function that will return the structure to be processed by this restore_step.
      * Must return one array of @restore_path_element elements

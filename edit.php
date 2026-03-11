@@ -46,7 +46,6 @@ $mform = new \mod_concordance\form\edit_form(null, ['data' => $data]);
 
 if ($mform->is_cancelled()) {
     redirect($redirecturl);
-
 } else if ($formdata = $mform->get_data()) {
     // Ici traiter le formulaire.
 
