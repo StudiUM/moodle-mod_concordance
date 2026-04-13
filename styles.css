@@ -38,7 +38,7 @@
     text-align: center;
 }
 
-.path-mod-concordance .concordance-wizard dt > div {
+.path-mod-concordance .concordance-wizard dt>div {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -93,11 +93,11 @@
  */
 .path-mod-concordance .concordance-wizard dd ul.tasks li {
     background-position: top left;
-    background-image: url([[pix:mod_workshop|userplan/task-todo]]);
+    background-image: url([[pix:mod_concordance|userplan/task-todo]]);
     background-repeat: no-repeat;
     list-style-type: none;
     min-height: 16px;
-    margin: .3em 0;
+    margin: 0.3em 0;
 }
 
 .path-mod-concordance .concordance-wizard dd ul.tasks li div {
@@ -105,21 +105,22 @@
 }
 
 .path-mod-concordance .concordance-wizard dd ul.tasks li.done {
-    background-image: url([[pix:mod_workshop|userplan/task-done]]);
+    background-image: url([[pix:mod_concordance|userplan/task-done]]);
 }
 
 .path-mod-concordance .concordance-wizard dd ul.tasks li.fail {
-    background-image: url([[pix:mod_workshop|userplan/task-fail]]);
+    background-image: url([[pix:mod_concordance|userplan/task-fail]]);
 }
 
 .path-mod-concordance .concordance-wizard dd ul.tasks li.info {
-    background-image: url([[pix:mod_workshop|userplan/task-info]]);
+    background-image: url([[pix:mod_concordance|userplan/task-info]]);
 }
 
 .path-mod-concordance .concordance-wizard dl dd .switchtonextphase {
     padding: 0 20px;
     text-align: center;
 }
+
 .path-mod-concordance .concordance-wizard dl dd .switchtonextphase a.btn {
     color: #fff;
     font-size: 100%;
@@ -137,16 +138,13 @@
         position: relative;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
     }
-
     .path-mod-concordance .concordance-wizard dl.active dd {
         border: none;
     }
-
-    .path-mod-concordance .concordance-wizard dt > div {
+    .path-mod-concordance .concordance-wizard dt>div {
         line-height: 38px;
     }
 }
-
 /**
  * Particularities for medium screens.
  */
@@ -155,13 +153,11 @@
         border-right: none;
         border-top: none;
     }
-
     .path-mod-concordance .concordance-wizard dl {
         width: 100%;
         border-right: none;
         background-color: #006bb6;
     }
-
     .path-mod-concordance .concordance-wizard dt {
         float: left;
         width: 30%;
@@ -169,22 +165,18 @@
         border-top: 1px solid #ddd;
         box-sizing: border-box;
     }
-
     .path-mod-concordance .concordance-wizard dl.active {
         background-color: #5aaa09;
     }
-
     .path-mod-concordance .concordance-wizard dt.active {
         border: none;
     }
-
     .path-mod-concordance .concordance-wizard dd {
         float: left;
         width: 70%;
         box-sizing: border-box;
     }
 }
-
 /**
  * Particularities for small screens.
  */
@@ -192,7 +184,6 @@
     .path-mod-concordance .concordance-wizard {
         border-bottom: none;
     }
-
     .path-mod-concordance .concordance-wizard dt {
         float: left;
         width: 100%;
@@ -202,7 +193,6 @@
         margin: 0;
         padding: 5px;
     }
-
     .path-mod-concordance .concordance-wizard dd {
         float: left;
         width: 100%;
@@ -211,15 +201,16 @@
         border-bottom: 1px solid #ddd;
     }
 }
-
 .path-mod-concordance table.managepanelists td.actions .singlebutton {
     display: inline-block;
-    margin-right: .5rem;
-    margin-bottom: .5rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
 }
-.path-mod-concordance table.managepanelists td.actions .singlebutton + .singlebutton {
+
+.path-mod-concordance table.managepanelists td.actions .singlebutton+.singlebutton {
     margin-left: 0;
 }
+
 .path-mod-concordance .concordance-wizard ul.tasks li.info {
     margin-left: 1rem;
 }
@@ -229,40 +220,46 @@
     justify-content: flex-start;
     width: 100%;
 }
+
 .path-mod-concordance #paneliststoincludetable .form-inline.col-md-9 {
     width: 100%;
     float: left;
     max-width: none;
     clear: left;
 }
+
 .path-mod-concordance #paneliststoincludetable .col-md-3 {
     width: auto;
     max-width: none;
 }
+
 .path-mod-concordance #paneliststoincludetable {
     float: left;
     display: inline-block;
     line-height: 1;
     width: 100%;
 }
+
 .path-mod-concordance #paneliststoincludetable td {
     vertical-align: top;
 }
+
 .path-mod-concordance #paneliststoincludetable td .form-group {
     margin-top: 0.25rem;
 }
+
 #page-mod-concordance-quizaccess .modal {
     position: relative;
 }
 
 @media (min-width: 768px) {
     .path-mod-concordance #paneliststoincludetable .col-md-3,
-    #id_questionstoincludeheader  .col-md-3 {
+    #id_questionstoincludeheader .col-md-3 {
         flex: 0 0 0%;
         max-width: 0%;
     }
     .path-mod-concordance #paneliststoincludetable .col-md-9,
-    #id_questionstoincludeheader  .col-md-9 {
+    #id_questionstoincludeheader .col-md-9 {
         flex: 0 0 100%;
         max-width: 100%;
     }
