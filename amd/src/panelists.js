@@ -173,7 +173,7 @@ define(['jquery', 'core/str', 'core/modal_factory', 'core/modal_events', 'core/t
             e.preventDefault();
             var messageText = this.modal.getRoot().find('form textarea').val();
             var subject = this.modal.getRoot().find('form input').val();
-            var loading = '<i class="fa fa-spinner fa-pulse m-l-1"></i><span class="sr-only">' + loadingtxt + '</span>';
+            var loading = '<i class="fa fa-spinner fa-pulse ms-1"></i><span class="visually-hidden">' + loadingtxt + '</span>';
             this.modal.getRoot().find('button[data-action="save"]').append(loading);
             this.modal.getRoot().find('.modal-content').css('pointer-events', 'none');
             return Ajax.call([{
