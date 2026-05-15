@@ -82,17 +82,17 @@ class contact_panelists_page implements renderable, templatable {
             $exporter = new \mod_concordance\external\panelist_exporter($panelist, $relateds);
             $exporteddata = $exporter->export($output);
             $exporteddata->quizstate = null;
-            $exporteddata->quizstateclass = 'badge-info';
+            $exporteddata->quizstateclass = 'text-bg-info';
 
             if (key_exists($exporteddata->userid, $usersattemptedquiz)) {
                 $state = $usersattemptedquiz[$panelist->get('userid')]->state;
                 if (!empty($state)) {
                     $exporteddata->quizstate = get_string('state' . $state, 'mod_quiz');
                     if ($state == quiz_attempt::FINISHED) {
-                        $exporteddata->quizstateclass = 'badge-success';
+                        $exporteddata->quizstateclass = 'text-bg-success';
                     }
                     if ($state == quiz_attempt::IN_PROGRESS) {
-                        $exporteddata->quizstateclass = 'badge-warning';
+                        $exporteddata->quizstateclass = 'text-bg-warning';
                     }
                 } else {
                     $exporteddata->quizstate = get_string('notcompleted', 'mod_concordance');

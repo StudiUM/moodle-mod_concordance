@@ -100,16 +100,16 @@ class studentquizgeneration extends \moodleform {
             $mform->addElement('html', '<tr><td>');
             $mform->addElement('checkbox', 'paneliststoinclude[' . $panelist->get("id") . ']', '', $label);
             $quizstate = '';
-            $quizstateclass = 'badge-info';
+            $quizstateclass = 'text-bg-info';
             if (key_exists($panelist->get("userid"), $this->_customdata['attempts'])) {
                 $state = $this->_customdata['attempts'][$panelist->get('userid')]->state;
                 if (!empty($state)) {
                     $quizstate = get_string('state' . $state, 'mod_quiz');
                     if ($state == quiz_attempt::FINISHED) {
-                        $quizstateclass = 'badge-success';
+                        $quizstateclass = 'text-bg-success';
                     }
                     if ($state == quiz_attempt::IN_PROGRESS) {
-                        $quizstateclass = 'badge-warning';
+                        $quizstateclass = 'text-bg-warning';
                     }
                 } else {
                     $quizstate = get_string('notcompleted', 'mod_concordance');
