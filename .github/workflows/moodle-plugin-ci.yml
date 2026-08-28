@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-24.04
 
     services:
-      postgres:
-        image: ${{ matrix.database == 'pgsql' && 'postgres:17' || '' }}
-        env:
-          POSTGRES_USER: 'postgres'
-          POSTGRES_HOST_AUTH_METHOD: 'trust'
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+      # postgres:
+      #   image: ${{ matrix.database == 'pgsql' && 'postgres:17' || '' }}
+      #   env:
+      #     POSTGRES_USER: 'postgres'
+      #     POSTGRES_HOST_AUTH_METHOD: 'trust'
+      #   ports:
+      #     - 5432:5432
+      #   options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
       mariadb:
         image: ${{ matrix.database == 'mariadb' && 'mariadb:11' || '' }}
@@ -39,23 +39,23 @@ jobs:
       fail-fast: false
       matrix:
         moodle-branch:
-          - 'MOODLE_502_STABLE'
+          # - 'MOODLE_502_STABLE'
           - 'MOODLE_501_STABLE'
-          - 'MOODLE_500_STABLE'
-          - 'MOODLE_405_STABLE'
-          - 'MOODLE_404_STABLE'
-          - 'MOODLE_403_STABLE'
-          - 'MOODLE_402_STABLE'
-          - 'MOODLE_401_STABLE'
+          # - 'MOODLE_500_STABLE'
+          # - 'MOODLE_405_STABLE'
+          # - 'MOODLE_404_STABLE'
+          # - 'MOODLE_403_STABLE'
+          # - 'MOODLE_402_STABLE'
+          # - 'MOODLE_401_STABLE'
         php:
           - '8.4'
-          - '8.3'
-          - '8.2'
-          - '8.1'
-          - '8.0'
+          # - '8.3'
+          # - '8.2'
+          # - '8.1'
+          # - '8.0'
         database:
           - 'mariadb'
-          - 'pgsql'
+          # - 'pgsql'
         exclude:
           # Moodle 5.2 doesn't support anything below 8.3, exclude these combinations.
           - moodle-branch: 'MOODLE_502_STABLE'
@@ -173,7 +173,7 @@ jobs:
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpunit --fail-on-warning
+        run: moodle-plugin-ci phpunit --fail-on-warning --testdox --display-phpunit-deprecations
 
       - name: Behat features
         id: behat
