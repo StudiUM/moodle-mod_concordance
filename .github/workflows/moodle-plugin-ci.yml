@@ -12,7 +12,7 @@ jobs:
     uses: StudiUM/common-workflows/.github/workflows/moodle-plugin-ci-template.yml@main
     with:
       moodle-branches: '["MOODLE_501_STABLE"]'
-      php-versions: '["8.4"]'
+      php-versions: '["8.4", "8.3"]'
       databases: '["mariadb"]'
       dependent-plugins: |
         --branch main StudiUM/moodle-qtype_tcs
