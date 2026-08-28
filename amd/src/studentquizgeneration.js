@@ -64,6 +64,7 @@ define(['jquery', 'core/yui'],
                     valid = false;
                     return false;
                 }
+                return true;
             });
 
             if (valid === false) {

@@ -31,6 +31,9 @@ global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 
 use mod_concordance\external;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * External testcase.
@@ -39,14 +42,14 @@ use mod_concordance\external;
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @copyright  2020 Université de Montréal
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \mod_concordance\external
  */
+#[CoversClass(external::class)]
+#[RunTestsInSeparateProcesses]
 final class external_test extends \externallib_advanced_testcase {
     /**
      * Test send message external.
-     * @runInSeparateProcess
-     * @runTestsInSeparateProcesses
      */
+    #[RunInSeparateProcess]
     public function test_send_message(): void {
         $this->resetAfterTest(true);
         // Create a course.
@@ -104,37 +107,35 @@ final class external_test extends \externallib_advanced_testcase {
         // Get our event.
         $events = $sinkevents->get_events();
         $this->assertCount(2, $events);
-        $eventpan2 = $events[0];
-        $eventpan1 = $events[1];
+        // Messages and events are not guaranteed to be returned in a particular order, so match them by panelist.
+        $resultbyemail = [];
+        foreach ($result as $sentmessage) {
+            $resultbyemail[$sentmessage->to] = $sentmessage;
+        }
+        $eventsbypanelistid = [];
+        foreach ($events as $event) {
+            $eventsbypanelistid[$event->other['panelistid']] = $event;
+        }
 
-        // Check the events data.
-        $this->assertInstanceOf('\mod_concordance\event\email_sent', $eventpan2);
-        $this->assertNull($eventpan2->relateduserid);
-        $this->assertEquals($teacher->id, $eventpan2->userid);
-        $this->assertEquals($context->id, $eventpan2->contextid);
-        $panleist2fullname = trim($panelist2->get('firstname') . ' ' . $panelist2->get('lastname'));
-        $eventdescpan2 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
-               "to the panelist '$panleist2fullname' with id '" . $panelist2->get('id') . "'";
-        $this->assertStringContainsString($eventdescpan2, $eventpan2->get_description());
+        foreach ([$panelist1, $panelist2] as $panelist) {
+            $event = $eventsbypanelistid[$panelist->get('id')];
+            $this->assertInstanceOf('\mod_concordance\event\email_sent', $event);
+            $this->assertNull($event->relateduserid);
+            $this->assertEquals($teacher->id, $event->userid);
+            $this->assertEquals($context->id, $event->contextid);
+            $panelistfullname = trim($panelist->get('firstname') . ' ' . $panelist->get('lastname'));
+            $eventdesc = "Email sent for contacting panelists from the user with id '$teacher->id' " .
+                   "to the panelist '$panelistfullname' with id '" . $panelist->get('id') . "'";
+            $this->assertStringContainsString($eventdesc, $event->get_description());
 
-        $this->assertInstanceOf('\mod_concordance\event\email_sent', $eventpan1);
-        $this->assertNull($eventpan1->relateduserid);
-        $this->assertEquals($teacher->id, $eventpan1->userid);
-        $this->assertEquals($context->id, $eventpan1->contextid);
-        $panleist1fullname = trim($panelist1->get('firstname') . ' ' . $panelist1->get('lastname'));
-        $eventdescpan1 = "Email sent for contacting panelists from the user with id '$teacher->id' " .
-               "to the panelist '$panleist1fullname' with id '" . $panelist1->get('id') . "'";
-        $this->assertStringContainsString($eventdescpan1, $eventpan1->get_description());
-
-        $this->assertSame($panelist2->get('email'), $result[0]->to);
-        $this->assertSame($subject, $result[0]->subject);
-        $this->assertStringContainsString($message, trim($result[0]->body));
-        $this->assertStringContainsString($panelist2->get_quizaccess_url()->out(true), quoted_printable_decode($result[0]->body));
-
-        $this->assertSame($panelist1->get('email'), $result[1]->to);
-        $this->assertSame($subject, $result[1]->subject);
-        $this->assertStringContainsString($message, trim($result[1]->body));
-        $this->assertStringContainsString($panelist1->get_quizaccess_url()->out(true), quoted_printable_decode($result[1]->body));
+            $panelistmessage = $resultbyemail[$panelist->get('email')];
+            $this->assertSame($subject, $panelistmessage->subject);
+            $this->assertStringContainsString($message, trim($panelistmessage->body));
+            $this->assertStringContainsString(
+                $panelist->get_quizaccess_url()->out(true),
+                quoted_printable_decode($panelistmessage->body)
+            );
+        }
         // Load panelists.
         $panelist1->read();
         $panelist2->read();

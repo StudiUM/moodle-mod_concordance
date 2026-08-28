@@ -108,4 +108,3 @@ Feature: Panelist system role
     # moodle/my:manageblocks
     When I follow "Dashboard"
     Then I should not see "Edit mode"
-
