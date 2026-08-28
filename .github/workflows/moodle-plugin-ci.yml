@@ -103,12 +103,6 @@ jobs:
             php: '8.2'
 
     steps:
-      - name: Check out dependent qtype_tcs question
-        uses: actions/checkout@v6
-        with:
-          repository: 'StudiUM/moodle-qtype_tcs'
-          ref: 'main'
-          path: moodle/public/question/type/tcs
       - name: Checkout repository code
         uses: actions/checkout@v6
         with:
@@ -134,6 +128,9 @@ jobs:
           # PHPUnit depends on en_AU.UTF-8 locale
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+
+      - name: Add dependent plugins
+        run: moodle-plugin-ci add-plugin --branch main StudiUM/moodle-qtype_tcs
 
       - name: Install moodle-plugin-ci
         # Need explicit IP to stop mysql client fail on attempt to use unix socket.
