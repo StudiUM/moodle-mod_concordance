@@ -173,7 +173,7 @@ jobs:
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpunit --fail-on-warning --testdox --display-phpunit-deprecations
+        run: moodle-plugin-ci phpunit --fail-on-warning --testdox
 
       - name: Behat features
         id: behat
