@@ -108,7 +108,7 @@ jobs:
         with:
           repository: 'StudiUM/moodle-qtype_tcs'
           ref: 'main'
-          path: plugin
+          path: moodle/public/question/type/tcs
       - name: Checkout repository code
         uses: actions/checkout@v6
         with:
