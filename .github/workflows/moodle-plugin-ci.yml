@@ -103,6 +103,12 @@ jobs:
             php: '8.2'
 
     steps:
+      - name: Check out dependent qtype_tcs question
+        uses: actions/checkout@v6
+        with:
+          repository: 'StudiUM/moodle-qtype_tcs'
+          ref: 'main'
+          path: plugin
       - name: Checkout repository code
         uses: actions/checkout@v6
         with:
