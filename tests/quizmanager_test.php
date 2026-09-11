@@ -26,6 +26,7 @@ use question_engine;
 use mod_quiz\quiz_settings;
 use mod_quiz\quiz_attempt;
 use mod_concordance\quiz_manager;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Unit tests for mod_concordance quiz_manager
@@ -34,8 +35,8 @@ use mod_concordance\quiz_manager;
  * @copyright  2020 Université de Montréal
  * @author     Marie-Eve Lévesque <marie-eve.levesque.8@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \mod_concordance\quiz_manager;
  */
+#[CoversClass(quiz_manager::class)]
 final class quizmanager_test extends \advanced_testcase {
     /** @var concordance Concordance persistent object. */
     protected $concordancepersistent = null;

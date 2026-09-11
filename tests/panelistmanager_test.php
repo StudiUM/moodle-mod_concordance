@@ -25,6 +25,7 @@
 
 namespace mod_concordance;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Unit tests for mod_concordance panelistmanager
@@ -33,8 +34,8 @@ namespace mod_concordance;
  * @copyright  2020 Université de Montréal
  * @author     Issam Taboubi <issam.taboubi@umontreal.ca>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \mod_concordance\panlistmanager
  */
+#[CoversClass(panelistmanager::class)]
 final class panelistmanager_test extends \advanced_testcase {
     /**
      * Setup.

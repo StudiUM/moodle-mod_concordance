@@ -38,7 +38,7 @@
     text-align: center;
 }
 
-.path-mod-concordance .concordance-wizard dt>div {
+.path-mod-concordance .concordance-wizard dt > div {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -141,7 +141,7 @@
     .path-mod-concordance .concordance-wizard dl.active dd {
         border: none;
     }
-    .path-mod-concordance .concordance-wizard dt>div {
+    .path-mod-concordance .concordance-wizard dt > div {
         line-height: 38px;
     }
 }
@@ -207,7 +207,7 @@
     margin-bottom: 0.5rem;
 }
 
-.path-mod-concordance table.managepanelists td.actions .singlebutton+.singlebutton {
+.path-mod-concordance table.managepanelists td.actions .singlebutton + .singlebutton {
     margin-left: 0;
 }
 
