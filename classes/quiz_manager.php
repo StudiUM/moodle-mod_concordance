@@ -871,19 +871,120 @@ class quiz_manager {
         quiz_settings $panelistquiz
     ): void {
         // Remove all the questions linked to this quiz!
-        $quizstrucure = $newquiz->get_structure();
-        while ($quizstrucure->has_questions()) {
-            $quizstrucure->remove_slot(1);
+        // The student quiz is a copy of the origin quiz which may contain more than one section.
+        // structure::remove_slot() refuses to delete the only slot of a section while several sections
+        // remain, so we first remove the extra section headings before deleting the slots one by one.
+        $this->remove_extra_sections($newquiz);
+        $quizstructure = $newquiz->get_structure();
+        while ($quizstructure->has_questions()) {
+            $quizstructure->remove_slot(1);
         }
 
+        $allquestions = $this->get_questions_from_quiz($panelistquiz);
         $questionspanelistquiz = array_values(
             array_filter(
-                $this->get_questions_from_quiz($panelistquiz),
+                $allquestions,
                 fn($q) => $this->question_should_be_included($q->slot)
             )
         );
+        // Must be computed before the import, which renumbers the slot of the questions.
+        $sectionsplan = $this->build_sections_plan($panelistquiz, $allquestions);
         $questionhandler = new questions_import_export_handler($newquiz, $questionspanelistquiz);
         $questionhandler->duplicate_questions_in_quiz();
+        $this->restore_sections($newquiz, $sectionsplan);
+    }
+
+    /**
+     * Describe the sections of the panelist quiz to recreate in the student quiz.
+     *
+     * A section is kept only if at least one of its questions is included. It starts on the page
+     * of its first included question (pages are preserved when the questions are duplicated).
+     *
+     * @param quiz_settings $panelistquiz The panelist quiz.
+     * @param array $questions All the questions of the panelist quiz.
+     * @return array List of ['heading' => string, 'shuffle' => bool, 'page' => int], ordered by page.
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    private function build_sections_plan(quiz_settings $panelistquiz, array $questions): array {
+        $structure = $panelistquiz->get_structure();
+        $plan = [];
+        foreach ($structure->get_sections() as $section) {
+            foreach ($structure->get_slots_in_section($section->id) as $slot) {
+                $included = $this->question_should_be_included((int)$slot);
+                $question = array_values(array_filter($questions, fn($q) => $q->slot == $slot));
+                if ($included && !empty($question)) {
+                    $plan[] = [
+                        'heading' => (string)$section->heading,
+                        'shuffle' => !empty($section->shufflequestions),
+                        'page' => (int)$question[0]->page,
+                    ];
+                    break;
+                }
+            }
+        }
+        return $plan;
+    }
+
+    /**
+     * Recreate in the student quiz the sections of the panelist quiz.
+     *
+     * The first section always exists in the student quiz, so it is only renamed. The others are added.
+     *
+     * @param quiz_settings $newquiz The student quiz.
+     * @param array $plan The sections to recreate, see {@see build_sections_plan()}.
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    private function restore_sections(quiz_settings $newquiz, array $plan): void {
+        foreach ($plan as $index => $sectiondata) {
+            $structure = $newquiz->get_structure();
+            if ($index === 0) {
+                $sections = $structure->get_sections();
+                $sectionid = reset($sections)->id;
+                $structure->set_section_heading($sectionid, $sectiondata['heading']);
+            } else {
+                $sectionid = $structure->add_section_heading($sectiondata['page'], $sectiondata['heading']);
+            }
+            $structure->set_section_shuffle($sectionid, $sectiondata['shuffle']);
+        }
+    }
+
+    /**
+     * Remove every section heading of the quiz except the first one.
+     *
+     * When the origin quiz contains more than one section, {@see structure::remove_slot()} throws a
+     * coding_exception when asked to delete the only remaining slot of a section. Removing the extra
+     * sections beforehand guarantees a single section is left so the slots can then be deleted safely.
+     *
+     * A fresh structure is fetched after each deletion because {@see structure::remove_section_heading()}
+     * only deletes the database record and does not refresh the in-memory section list.
+     *
+     * @param quiz_settings $quiz The quiz whose extra sections must be removed.
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    private function remove_extra_sections(quiz_settings $quiz): void {
+        $structure = $quiz->get_structure();
+        while ($structure->get_section_count() > 1) {
+            $removed = false;
+            foreach ($structure->get_sections() as $section) {
+                // The first section (firstslot == 1) cannot be removed.
+                if ($section->firstslot != 1) {
+                    $structure->remove_section_heading($section->id);
+                    $removed = true;
+                    break;
+                }
+            }
+            // Safety guard: stop if no removable section was found to avoid an infinite loop.
+            if (!$removed) {
+                break;
+            }
+            // Re-fetch a fresh structure since remove_section_heading() does not refresh the in-memory state.
+            $structure = $quiz->get_structure();
+        }
     }
 
     /**

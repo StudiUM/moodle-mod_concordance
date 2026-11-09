@@ -177,6 +177,32 @@ class behat_mod_concordance extends behat_base {
     }
 
     /**
+     * Make a panelist submit an attempt (without any answer) on the quiz generated for the panelists.
+     *
+     * It is a shortcut to avoid going through the whole panelist interface when the test only needs
+     * the panelist to have finished the quiz (the "Generate the quiz for students" form requires it).
+     *
+     * @Given panelist :email has completed the panelists quiz of concordance :concordancename
+     * @param string $email The panelist email.
+     * @param string $concordancename The name of the concordance activity.
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function panelist_has_completed_the_panelists_quiz_of_concordance($email, $concordancename) {
+        $concordance = concordance::get_record(['name' => $concordancename]);
+        $panelist = panelist::get_record(['email' => $email]);
+        $cm = get_coursemodule_from_id('quiz', $concordance->get('cmgenerated'), 0, false, MUST_EXIST);
+        $user = $panelist->get_user();
+
+        /** @var mod_quiz_generator $quizgenerator */
+        $quizgenerator = behat_util::get_data_generator()->get_plugin_generator('mod_quiz');
+        $this->set_user($user);
+        $attempt = $quizgenerator->create_attempt($cm->instance, $user->id);
+        $quizgenerator->submit_responses($attempt->id, [], false, true);
+        $this->set_user();
+    }
+
+    /**
      * Switch to the popup window that was opened last, whatever is its name.
      *
      * @Given I switch to the last window
