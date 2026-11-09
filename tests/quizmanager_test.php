@@ -408,11 +408,16 @@ final class quizmanager_test extends \advanced_testcase {
      *
      * @param int $nbquestions Number of questions (one per page) in the origin quiz.
      * @param int[] $includedslots Slots of the panelist quiz to include in the student quiz.
+     * @param bool $shufflesecond Whether the second section of the origin quiz shuffles its questions.
      * @return \stdClass Object with the student 'quizobj' (quiz_settings) and its 'questions' in order.
      * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
      * @copyright  2026 Université de Montréal
      */
-    private function duplicate_sectioned_quiz_for_students(int $nbquestions, array $includedslots): \stdClass {
+    private function duplicate_sectioned_quiz_for_students(
+        int $nbquestions,
+        array $includedslots,
+        bool $shufflesecond = false
+    ): \stdClass {
         global $DB;
 
         $dg = $this->getDataGenerator();
@@ -427,7 +432,10 @@ final class quizmanager_test extends \advanced_testcase {
         $quiz1cm = get_coursemodule_from_instance('quiz', $quiz1->id, $this->course->id, false, MUST_EXIST);
         $quiz1record = $DB->get_record('quiz', ['id' => $quiz1->id], '*', MUST_EXIST);
         $quiz1obj = new quiz_settings($quiz1record, $quiz1cm, $this->course);
-        $quiz1obj->get_structure()->add_section_heading(2, 'Second section');
+        $secondsectionid = $quiz1obj->get_structure()->add_section_heading(2, 'Second section');
+        if ($shufflesecond) {
+            $quiz1obj->get_structure()->set_section_shuffle($secondsectionid, true);
+        }
 
         $quizmanager = new quiz_manager($this->concordancepersistent);
         $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
@@ -484,6 +492,23 @@ final class quizmanager_test extends \advanced_testcase {
 
         $this->assertCount(1, $result->questions);
         $this->assertEquals(1, $result->quizobj->get_structure()->get_section_count());
+    }
+
+    /**
+     * Test that the shuffle setting of a section is restored in the student quiz.
+     *
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function test_duplicate_quiz_for_students_restores_section_shuffle(): void {
+        $result = $this->duplicate_sectioned_quiz_for_students(3, [1, 2, 3], true);
+
+        $sections = array_values($result->quizobj->get_structure()->get_sections());
+        $this->assertCount(2, $sections);
+        $this->assertEmpty($sections[0]->shufflequestions);
+        $this->assertEquals('Second section', $sections[1]->heading);
+        $this->assertNotEmpty($sections[1]->shufflequestions);
     }
 
     /**
