@@ -95,6 +95,8 @@
     background-position: top left;
     background-image: url([[pix:mod_concordance|userplan/task-todo]]);
     background-repeat: no-repeat;
+    /* The SVG icons have no intrinsic size, so without this they stretch to the height of the li. */
+    background-size: auto 16px;
     list-style-type: none;
     min-height: 16px;
     margin: 0.3em 0;
