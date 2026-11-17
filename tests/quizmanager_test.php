@@ -326,6 +326,192 @@ final class quizmanager_test extends \advanced_testcase {
     }
 
     /**
+     * Test duplicate_quiz_for_students when the origin quiz contains more than one section.
+     *
+     * This is a regression test for the "You cannot remove the last slot in a section." coding_exception
+     * raised while cleaning up the questions of the freshly duplicated student quiz.
+     *
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function test_duplicate_quiz_for_students_with_multiple_sections(): void {
+        global $DB;
+
+        $dg = $this->getDataGenerator();
+
+        // Add a quiz to the course.
+        $quizgenerator = $dg->get_plugin_generator('mod_quiz');
+        $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'First quiz', 'visible' => false]);
+
+        // Add two questions, each on its own page, so a second section can start on page 2.
+        $questgen = $dg->get_plugin_generator('core_question');
+        $quizcat = $questgen->create_question_category(['contextid' => \context_course::instance($this->course->id)->id]);
+        $question1 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+        $question1 = $questgen->update_question($question1);
+        $question2 = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+        quiz_add_quiz_question($question1->id, $quiz1, 1);
+        quiz_add_quiz_question($question2->id, $quiz1, 2);
+
+        // Add a second section starting on the second page.
+        $quiz1cm = get_coursemodule_from_instance('quiz', $quiz1->id, $this->course->id, false, MUST_EXIST);
+        $quiz1record = $DB->get_record('quiz', ['id' => $quiz1->id], '*', MUST_EXIST);
+        $quiz1obj = new quiz_settings($quiz1record, $quiz1cm, $this->course);
+        $structure = $quiz1obj->get_structure();
+        $structure->add_section_heading(2, 'Second section');
+        // Sanity check : the origin quiz now has two sections.
+        $this->assertEquals(2, $quiz1obj->get_structure()->get_section_count());
+
+        // Select the quiz for the Concordance activity and duplicate it for panelists.
+        $quizmanager = new quiz_manager($this->concordancepersistent);
+        $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
+        $quizmanager->duplicate_quiz_for_panelists(false);
+        $cmpanelist = get_coursemodule_from_id('', $this->concordancepersistent->get('cmgenerated'), 0, true, MUST_EXIST);
+        $quizpanelist = $DB->get_record('quiz', ['id' => $cmpanelist->instance], '*', MUST_EXIST);
+        $coursepanelist = $DB->get_record(
+            'course',
+            ['id' => $this->concordancepersistent->get('coursegenerated')],
+            '*',
+            MUST_EXIST
+        );
+        $quizobj = new quiz_settings($quizpanelist, $cmpanelist, $coursepanelist);
+        $quizobj->preload_questions();
+        $quizobj->load_questions();
+        $questions = array_values($quizobj->get_questions());
+        $this->assertCount(2, $questions);
+        $slot1 = $questions[0]->slot;
+        $slot2 = $questions[1]->slot;
+
+        // Duplicate the quiz for students. Without the fix this would throw a coding_exception.
+        $formdata = new \stdClass();
+        $formdata->questionstoinclude = ["$slot1" => 1, "$slot2" => 1];
+        $formdata->quiztype = quiz_manager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK;
+        $cmid = $quizmanager->duplicate_quiz_for_students($formdata);
+        $this->assertNotNull($cmid);
+
+        // The generated student quiz has the expected questions and a single section.
+        $cm = get_coursemodule_from_id('quiz', $cmid);
+        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        $studentquizobj = new quiz_settings($quiz, $cm, $this->course);
+        $studentquizobj->preload_questions();
+        $studentquizobj->load_questions();
+        $this->assertCount(2, $studentquizobj->get_questions());
+        // The sections of the panelist quiz are restored in the student quiz.
+        $sections = array_values($studentquizobj->get_structure()->get_sections());
+        $this->assertCount(2, $sections);
+        $this->assertEquals('Second section', $sections[1]->heading);
+    }
+
+    /**
+     * Create a quiz with one numerical question per page, add a "Second section" heading on page 2,
+     * duplicate it for panelists, then duplicate it for students with only the given slots included.
+     *
+     * @param int $nbquestions Number of questions (one per page) in the origin quiz.
+     * @param int[] $includedslots Slots of the panelist quiz to include in the student quiz.
+     * @param bool $shufflesecond Whether the second section of the origin quiz shuffles its questions.
+     * @return \stdClass Object with the student 'quizobj' (quiz_settings) and its 'questions' in order.
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    private function duplicate_sectioned_quiz_for_students(
+        int $nbquestions,
+        array $includedslots,
+        bool $shufflesecond = false
+    ): \stdClass {
+        global $DB;
+
+        $dg = $this->getDataGenerator();
+        $quizgenerator = $dg->get_plugin_generator('mod_quiz');
+        $quiz1 = $quizgenerator->create_instance(['course' => $this->course->id, 'name' => 'First quiz', 'visible' => false]);
+        $questgen = $dg->get_plugin_generator('core_question');
+        $quizcat = $questgen->create_question_category(['contextid' => \context_course::instance($this->course->id)->id]);
+        for ($i = 1; $i <= $nbquestions; $i++) {
+            $question = $questgen->create_question('numerical', null, ['category' => $quizcat->id]);
+            quiz_add_quiz_question($question->id, $quiz1, $i);
+        }
+        $quiz1cm = get_coursemodule_from_instance('quiz', $quiz1->id, $this->course->id, false, MUST_EXIST);
+        $quiz1record = $DB->get_record('quiz', ['id' => $quiz1->id], '*', MUST_EXIST);
+        $quiz1obj = new quiz_settings($quiz1record, $quiz1cm, $this->course);
+        $secondsectionid = $quiz1obj->get_structure()->add_section_heading(2, 'Second section');
+        if ($shufflesecond) {
+            $quiz1obj->get_structure()->set_section_shuffle($secondsectionid, true);
+        }
+
+        $quizmanager = new quiz_manager($this->concordancepersistent);
+        $this->concordancepersistent->set('cmorigin', $quiz1->cmid);
+        $quizmanager->duplicate_quiz_for_panelists(false);
+
+        $formdata = new \stdClass();
+        $formdata->questionstoinclude = array_fill_keys($includedslots, 1);
+        $formdata->quiztype = quiz_manager::CONCORDANCE_QUIZTYPE_SUMMATIVE_WITHFEEDBACK;
+        $cmid = $quizmanager->duplicate_quiz_for_students($formdata);
+        $this->assertNotNull($cmid);
+
+        $cm = get_coursemodule_from_id('quiz', $cmid);
+        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
+        $studentquizobj = new quiz_settings($quiz, $cm, $this->course);
+        $studentquizobj->preload_questions();
+        $studentquizobj->load_questions();
+        return (object)[
+            'quizobj' => $studentquizobj,
+            'questions' => array_values($studentquizobj->get_questions()),
+        ];
+    }
+
+    /**
+     * Test that when the first question of the second section is excluded, the section heading
+     * is moved to the first included question of that section.
+     *
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function test_duplicate_quiz_for_students_first_question_of_second_section_excluded(): void {
+        // Slots 2 and 3 are in the second section, slot 2 is excluded.
+        $result = $this->duplicate_sectioned_quiz_for_students(3, [1, 3]);
+
+        $this->assertCount(2, $result->questions);
+        $structure = $result->quizobj->get_structure();
+        $this->assertEquals(2, $structure->get_section_count());
+        $sections = array_values($structure->get_sections());
+        $this->assertEquals('Second section', $sections[1]->heading);
+        // The heading starts on the first included question of the section, not on the first section.
+        $this->assertEquals(2, $sections[1]->firstslot);
+        $this->assertEquals(1, $sections[0]->firstslot);
+    }
+
+    /**
+     * Test that when every question of the second section is excluded, only one section remains.
+     *
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function test_duplicate_quiz_for_students_second_section_fully_excluded(): void {
+        $result = $this->duplicate_sectioned_quiz_for_students(3, [1]);
+
+        $this->assertCount(1, $result->questions);
+        $this->assertEquals(1, $result->quizobj->get_structure()->get_section_count());
+    }
+
+    /**
+     * Test that the shuffle setting of a section is restored in the student quiz.
+     *
+     * @return void
+     * @author     Gurvan Giboire <gurvan.giboire@umontreal.ca>
+     * @copyright  2026 Université de Montréal
+     */
+    public function test_duplicate_quiz_for_students_restores_section_shuffle(): void {
+        $result = $this->duplicate_sectioned_quiz_for_students(3, [1, 2, 3], true);
+
+        $sections = array_values($result->quizobj->get_structure()->get_sections());
+        $this->assertCount(2, $sections);
+        $this->assertEmpty($sections[0]->shufflequestions);
+        $this->assertEquals('Second section', $sections[1]->heading);
+        $this->assertNotEmpty($sections[1]->shufflequestions);
+    }
+
+    /**
      * Test get_users_attempted_quiz.
      * @return void
      */
